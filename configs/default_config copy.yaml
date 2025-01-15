@@ -1,0 +1,37 @@
+model:
+  type: "resnet"
+  weights: "path/to/weights.pth"
+
+loss:
+  type: "triplet"
+
+optimizer:
+  type: "adam"
+  lr: 0.001
+
+data:
+  train:
+    path: "data/train"
+    batch_size: 32
+  test:
+    path: "data/test"
+    batch_size: 32
+  inference:
+    path: "data/inference"
+    batch_size: 32
+
+training:
+  epochs: 50
+  pipeline: "default_train"
+
+testing:
+  pipeline: "default_test"
+
+retrieval:
+  pipeline: "retrieval_test"
+
+output:
+  artifacts: "outputs/"
+  predictions: "outputs/predictions/"
+logging:
+  level: "info"

@@ -1,0 +1,61 @@
+# Paths and directories for training and testing data
+data:
+  train_dir: "datasets/final/terumo/train"
+  test_dir: "datasets/final/terumo/test"
+  class_mapping:
+    Crescent: 0
+    Hypercellularity: 1
+    Membranous: 2
+    Normal: 3
+    Podocytopathy: 4
+    Sclerosis: 5
+  batch_size: 32
+  num_workers: 3  # Number of workers to load the data
+
+# Transformation configuration for image preprocessing
+transform:
+  resize: [224, 224]  # Resize images to 224x224
+  horizontal_flip: true  # Apply random horizontal flip
+  random_brightness_contrast: true  # Apply random brightness and contrast adjustments
+  normalize:
+    mean: [0.5, 0.5, 0.5]  # Normalize mean
+    std: [0.5, 0.5, 0.5]   # Normalize std
+  to_tensor: true  # Convert to tensor (default is true)
+
+# Model configuration
+model:
+  name: "resnet50"  # Example: You can set it to resnet18, resnet34, etc.
+  pretrained: true  # Use pre-trained weights
+  num_classes: 6  # Number of classes in the dataset
+
+# Loss function configuration
+loss:
+  name: "cross_entropy"  # Specify the loss function (cross_entropy, etc.)
+
+# Optimizer configuration
+optimizer:
+  name: "adam"  # Specify the optimizer (adam, sgd, etc.)
+  lr: 0.001  # Learning rate
+  weight_decay: 1e-4  # Weight decay for regularization
+
+# Training configuration
+training:
+  pipeline: "train_multilabel"  # The pipeline to run (e.g., train, finetune, etc.)
+  epochs: 50  # Number of epochs to train
+  lr_scheduler:
+    name: "step_lr"  # Learning rate scheduler (step_lr, cosine_annealing, etc.)
+    step_size: 10  # Step size for scheduler (for step_lr)
+
+# Logging configuration
+logging:
+  log_file: "./logs.txt"  # file to save logs
+  log_level: "INFO"  # Set logging level (DEBUG, INFO, WARNING, ERROR)
+
+# Output configuration
+output:
+  model_dir: "path/to/save/model"  # Directory to save model artifacts
+  results_dir: "path/to/save/results"  # Directory to save results
+
+# Evaluation configuration
+retrieval:
+  pipeline: "evaluation"  # Evaluation pipeline (standard testing, retrieval, etc.)
