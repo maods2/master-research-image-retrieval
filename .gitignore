@@ -20,6 +20,8 @@ notebooks/*.jpg
 *.gif
 *.json
 *.mat
+*.csv
+*.txt
 
 .venv
 .idea
