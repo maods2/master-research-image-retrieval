@@ -1,5 +1,5 @@
 from torch.utils.data import DataLoader
-from src.dataloaders.dataset_terumo import TerumoImageDataset
+from dataloaders.dataset_terumo import TerumoImageDataset
 
 def get_dataloader(data_config, transform):
     """

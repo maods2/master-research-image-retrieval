@@ -1,12 +1,14 @@
-from src.dataloaders.factory_transforms import get_transforms
-from src.dataloaders.factory_loaders import get_dataloader
-from src.optimizers.factory import get_optimizer
-from src.pipelines.train_pipes.factory import get_train_function
-from src.models.factory import get_model
-from src.losses.factory import get_loss
-from src.utils.logger import setup_logger
-from src.utils.catalog import save_artifacts
-# from src.metrics.retrieval_metrics import evaluate
+from dataloaders.factory_transforms import get_transforms
+from dataloaders.factory_loaders import get_dataloader
+from optimizers.factory import get_optimizer
+from pipelines.test_pipes.factory import get_test_function
+from pipelines.test_pipes.metrics.factory import get_metrics
+from pipelines.train_pipes.factory import get_train_function
+from models.factory import get_model
+from losses.factory import get_loss
+from utils.logger import setup_logger
+from utils.catalog import save_artifacts
+# from metrics.retrieval_metrics import evaluate
 
 def train_wrapper(config):
     logger = setup_logger(config["logging"])
@@ -25,7 +27,7 @@ def train_wrapper(config):
 
     # Custom training function
     train_fn = get_train_function(config["training"]["pipeline"])
-    # test_fn = get_test_function(config["testing"]["pipeline"])
+    test_fn = get_test_function(config["testing"])
     # retrieval_fn = get_retrieval_function(config["retrieval"]["pipeline"])
 
     # Training
@@ -42,3 +44,4 @@ def train_wrapper(config):
 
     # Saving artifacts
     # save_artifacts(model, results, config["output"])
+

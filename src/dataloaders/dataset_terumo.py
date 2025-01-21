@@ -1,7 +1,7 @@
 from pathlib import Path
 import time
 import cv2
-from src.dataloaders.dataset import StandardImageDataset
+from dataloaders.dataset import StandardImageDataset
 import numpy as np
 import torch
 from torch.utils.data import Dataset

@@ -1,6 +1,6 @@
 import argparse
-from src.utils.config_loader import load_config
-from src.pipelines import train, test, inference
+from utils.config_loader import load_config
+from pipelines import train, test, inference
 
 def main(args):
     config = load_config(args.config)
