@@ -1,7 +1,8 @@
 from typing import Dict
 
-from pipelines.test_pipes.metrics.factory import get_metrics
-from pipelines.test_pipes.metrics.metric_base import MetricLoggerBase
+from metrics.factory import get_metrics
+from metrics.metric_base import MetricBase, MetricLoggerBase
+
 
 
 
@@ -17,7 +18,7 @@ def default_test_fn(model, train_loader, test_loader, config, logger, metric_log
         logger: Logger object for logging.
         metric_logger: MetricLoggerBase instance for logging metrics.
     """
-    metrics_list = get_test_function(config["testing"])
+    metrics_list: list[MetricBase]  = get_metrics(config["testing"])
     
     for metric in metrics_list:
         results = metric(model, train_loader, test_loader, config, logger)

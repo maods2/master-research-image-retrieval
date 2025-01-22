@@ -25,6 +25,7 @@ transform:
 # Model configuration
 model:
   name: "resnet50"  # Example: You can set it to resnet18, resnet34, etc.
+  experiment_name: "terumo"  # Name of the experiment
   pretrained: true  # Use pre-trained weights
   num_classes: 6  # Number of classes in the dataset
   load_checkpoint: false  # Load a pre-trained model checkpoint
@@ -69,11 +70,12 @@ logging:
   log_file: "./logs.txt"  # file to save logs
   log_level: "INFO"  # Set logging level (DEBUG, INFO, WARNING, ERROR)
 
+metric_logging:
+  tool: "txt"  # Tool to log metrics (txt, csv, mlflow, etc.)
+  
 # Output configuration
 output:
   model_dir: "path/to/save/model"  # Directory to save model artifacts
   results_dir: "path/to/save/results"  # Directory to save results
 
-# Evaluation configuration
-retrieval:
-  pipeline: "evaluation"  # Evaluation pipeline (standard testing, retrieval, etc.)
+

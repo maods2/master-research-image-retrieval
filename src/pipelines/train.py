@@ -12,6 +12,7 @@ from utils.catalog import save_artifacts
 
 def train_wrapper(config):
     logger = setup_logger(config["logging"])
+    metric_logger = setup_metric_logger(config["metric_logging"])
 
     # Load model, loss, and optimizer
     model = get_model(config["model"])
@@ -28,7 +29,6 @@ def train_wrapper(config):
     # Custom training function
     train_fn = get_train_function(config["training"]["pipeline"])
     test_fn = get_test_function(config["testing"])
-    # retrieval_fn = get_retrieval_function(config["retrieval"]["pipeline"])
 
     # Training
     logger.info("Starting training...")
@@ -36,11 +36,11 @@ def train_wrapper(config):
 
     # Teste padrão
     logger.info("Running standard testing...")
-    # test_fn(model, test_loader, config, logger)
+    test_fn(model, test_loader, config, logger)
 
     # Retrieval testing
     logger.info("Running retrieval testing...")
-    # results = retrieval_fn(model, test_loader, config, logger)
+
 
     # Saving artifacts
     # save_artifacts(model, results, config["output"])

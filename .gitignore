@@ -9,7 +9,7 @@ wandb/
 *.tar
 *.zip
 
-
+mlruns
 notebooks/*.jpg
 *.jpg
 *.jpeg
