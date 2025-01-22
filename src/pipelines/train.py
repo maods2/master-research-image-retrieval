@@ -2,17 +2,19 @@ from dataloaders.factory_transforms import get_transforms
 from dataloaders.factory_loaders import get_dataloader
 from optimizers.factory import get_optimizer
 from pipelines.test_pipes.factory import get_test_function
-from pipelines.test_pipes.metrics.factory import get_metrics
+from metrics.factory import get_metrics
 from pipelines.train_pipes.factory import get_train_function
 from models.factory import get_model
 from losses.factory import get_loss
+from utils.catalog import save_artifacts, save_checkpoint
 from utils.logger import setup_logger
-from utils.catalog import save_artifacts
+from utils.metric_logger import setup_metric_logger
+
 # from metrics.retrieval_metrics import evaluate
 
 def train_wrapper(config):
     logger = setup_logger(config["logging"])
-    metric_logger = setup_metric_logger(config["metric_logging"])
+    metric_logger = setup_metric_logger(config)
 
     # Load model, loss, and optimizer
     model = get_model(config["model"])
@@ -32,16 +34,21 @@ def train_wrapper(config):
 
     # Training
     logger.info("Starting training...")
-    train_fn(model, loss_fn, optimizer, train_loader, config, logger)
+    train_fn(model, loss_fn, optimizer, train_loader, config, logger, metric_logger)
 
     # Teste padrão
     logger.info("Running standard testing...")
-    test_fn(model, test_loader, config, logger)
+    test_fn(model, train_loader, test_loader, config, logger, metric_logger)
 
     # Retrieval testing
     logger.info("Running retrieval testing...")
 
 
     # Saving artifacts
-    # save_artifacts(model, results, config["output"])
+    filepath = save_checkpoint(
+        model, 
+        config=config
+        )
+    
+    metric_logger.log_artifact(filepath)
 

@@ -44,7 +44,7 @@ optimizer:
 # Training configuration
 training:
   pipeline: "train_multilabel"  # The pipeline to run (e.g., train, finetune, etc.)
-  epochs: 50  # Number of epochs to train
+  epochs: 2  # Number of epochs to train
   lr_scheduler:
     name: "step_lr"  # Learning rate scheduler (step_lr, cosine_annealing, etc.)
     step_size: 10  # Step size for scheduler (for step_lr)
@@ -54,8 +54,8 @@ testing:
   list_of_metrics:
     - type: accuracy
     - type: f1_score
-    - type: precision
-    - type: recall
+    # - type: precision
+    # - type: recall
     - type: map@k
       k: 5
     - type: precision@k
@@ -71,11 +71,11 @@ logging:
   log_level: "INFO"  # Set logging level (DEBUG, INFO, WARNING, ERROR)
 
 metric_logging:
-  tool: "txt"  # Tool to log metrics (txt, csv, mlflow, etc.)
+  tool: "mlflow"  # Tool to log metrics (txt, csv, mlflow, etc.)
   
 # Output configuration
 output:
-  model_dir: "path/to/save/model"  # Directory to save model artifacts
-  results_dir: "path/to/save/results"  # Directory to save results
+  model_dir: "./artifacts"  # Directory to save model artifacts
+  results_dir: "."  # Directory to save results
 
 

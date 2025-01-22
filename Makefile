@@ -3,4 +3,4 @@
 CONFIG ?= default_config.yaml
 
 train:
-	python main.py --config config/$(CONFIG) --pipeline train
+	python3 src/main.py --config configs/$(CONFIG) --pipeline train

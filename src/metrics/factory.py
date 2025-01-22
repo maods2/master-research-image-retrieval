@@ -34,12 +34,13 @@ def create_metric_instance(metric_type: str, metric_config: Dict):
     """
     # Define the mapping of metric types to their respective module paths
     metric_modules = {
-        "accuracy": "pipelines.test_pipes.metrics.accuracy.Accuracy",
-        "multilabel_accuracy": "pipelines.test_pipes.metrics.multilabel_accuracy.MultilabelAccuracy",
-        "map@k": "pipelines.test_pipes.metrics.map_at_k.MapAtK",
-        "precision@k": "pipelines.test_pipes.metrics.precision_at_k.PrecisionAtK",
-        "recall@k": "pipelines.test_pipes.metrics.recall_at_k.RecallAtK",
-        "accuracy@k": "pipelines.test_pipes.metrics.accuracy_at_k.AccuracyAtK",
+        "accuracy": "metrics.accuracy.Accuracy",
+        "f1_score": "metrics.f1_score.F1Score",
+        # "multilabel_accuracy": "metrics.multilabel_accuracy.MultilabelAccuracy",
+        "map@k": "metrics.map_at_k.MapAtK",
+        "precision@k": "metrics.precision_at_k.PrecisionAtK",
+        "recall@k": "metrics.recall_at_k.RecallAtK",
+        "accuracy@k": "metrics.accuracy_at_k.AccuracyAtK",
     }
 
     if metric_type not in metric_modules:

@@ -5,17 +5,26 @@ import torch
 import torchvision.models as models
 import torch.nn as nn
 
+from metrics.metric_base import MetricLoggerBase
+from utils.metric_logger import TxtMetricLogger
+
 
 # Load a pretrained ResNet-50 model
-def load_pretrained_model(num_classes):
+def load_pretrained_model(num_classes: int) -> torch.nn.Module:
     model = models.resnet50(pretrained=True)  # Load a pretrained ResNet-50
     # Modify the final layer to fit your number of classes (for multilabel classification)
     model.fc = nn.Linear(model.fc.in_features, num_classes)
-    
     return model
 
 
-def train_one_epoch(model, loss_fn, optimizer, train_loader, device, log_interval, logger):
+def train_one_epoch(
+    model: torch.nn.Module, 
+    loss_fn: callable, 
+    optimizer: torch.optim.Optimizer, 
+    train_loader: torch.utils.data.DataLoader, 
+    device: str, 
+    log_interval: int, 
+) -> tuple[float, torch.Tensor, torch.Tensor]:
     """
     Train the model for one epoch.
 
@@ -23,15 +32,12 @@ def train_one_epoch(model, loss_fn, optimizer, train_loader, device, log_interva
         model (torch.nn.Module): The model to train.
         loss_fn (callable): Loss function for optimization.
         optimizer (torch.optim.Optimizer): Optimizer for training.
-        train_loader (DataLoader): DataLoader for the training data.
+        train_loader (torch.utils.data.DataLoader): DataLoader for the training data.
         device (str): Device to run the model on (e.g., "cuda" or "cpu").
         log_interval (int): Interval for logging batch-wise metrics.
-        logger (callable): Function to log metrics.
     
     Returns:
-        float: The average loss for the epoch.
-        torch.Tensor: All predictions for the epoch.
-        torch.Tensor: All targets for the epoch.
+        tuple: The average loss for the epoch, all predictions for the epoch, all targets for the epoch.
     """
     model.train()
     running_loss = 0.0
@@ -64,12 +70,11 @@ def train_one_epoch(model, loss_fn, optimizer, train_loader, device, log_interva
             avg_loss = running_loss / (batch_idx + 1)
             progress_bar.set_postfix(loss=avg_loss)
 
-
     # Return the average loss and all predictions/targets for the epoch
     return running_loss / len(train_loader), torch.cat(all_preds, dim=0), torch.cat(all_targets, dim=0)
 
 
-def compute_metrics(all_preds, all_targets):
+def compute_metrics(all_preds: torch.Tensor, all_targets: torch.Tensor) -> tuple[float, float]:
     """
     Compute F1 score and accuracy for the epoch.
 
@@ -89,7 +94,15 @@ def compute_metrics(all_preds, all_targets):
     return epoch_f1, epoch_accuracy
 
 
-def train_multilabel(model, loss_fn, optimizer, train_loader, config, logger, epochs=10):
+def train_multilabel(
+    model: torch.nn.Module, 
+    loss_fn: callable, 
+    optimizer: torch.optim.Optimizer, 
+    train_loader: torch.utils.data.DataLoader, 
+    config: dict, 
+    logger: callable, 
+    metric_logger: MetricLoggerBase
+) -> torch.nn.Module:
     """
     Train the model for the specified number of epochs.
 
@@ -97,28 +110,33 @@ def train_multilabel(model, loss_fn, optimizer, train_loader, config, logger, ep
         model (torch.nn.Module): The model to train.
         loss_fn (callable): Loss function for optimization.
         optimizer (torch.optim.Optimizer): Optimizer for training.
-        train_loader (DataLoader): DataLoader for the training data.
+        train_loader (torch.utils.data.DataLoader): DataLoader for the training data.
         config (dict): Configuration dictionary (e.g., device, logging frequency).
         logger (callable): Function to log metrics.
-        epochs (int): Number of epochs to train the model.
+        metric_logger (MetricLoggerBase): Logger for metrics.
+
+    Returns:
+        torch.nn.Module: The trained model.
     """
     device = config.get("device", "cuda" if torch.cuda.is_available() else "cpu")
     log_interval = config.get("log_interval", 10)
+    epochs = config["training"]["epochs"]
 
     model.to(device)
 
     for epoch in range(epochs):
         # Train the model for one epoch
         epoch_loss, all_preds, all_targets = train_one_epoch(
-            model, loss_fn, optimizer, train_loader, device, log_interval, logger
+            model, loss_fn, optimizer, train_loader, device, log_interval
         )
 
         # Compute metrics (F1 score and accuracy)
         epoch_f1, epoch_accuracy = compute_metrics(all_preds, all_targets)
 
         # Log metrics for the epoch
-        
-
+        metric_logger.log_metric('epoch_loss', epoch_loss, step=epoch)
+        metric_logger.log_metric('epoch_accuracy', epoch_accuracy, step=epoch)
+        metric_logger.log_metric('epoch_f1', epoch_f1, step=epoch)
         logger.info(f"Epoch {epoch + 1}/{epochs} - Loss: {epoch_loss:.4f}, F1 Score: {epoch_f1:.4f}, Accuracy: {epoch_accuracy:.4f}")
 
     return model

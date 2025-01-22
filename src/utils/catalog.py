@@ -1,7 +1,8 @@
+import os
 import torch
 from datetime import datetime
 
-def save_checkpoint(model, filepath=None, optimizer=None, epoch=None, loss=None, scheduler=None, model_id="model"):
+def save_checkpoint(model, filepath=None, optimizer=None, epoch=None, loss=None, scheduler=None, config=None):
     """
     Saves a checkpoint with the model's state and optionally optimizer, epoch, loss, and scheduler states.
     
@@ -30,10 +31,20 @@ def save_checkpoint(model, filepath=None, optimizer=None, epoch=None, loss=None,
         checkpoint['scheduler_state_dict'] = scheduler.state_dict()
     
     # Generate file name if not provided
-    if not filepath:
+    if config:
+        workspace_dir = config.get('output', {}).get('model_dir', './')
+        model_name = config.get('model', {}).get('name', 'default_model')
+        experiment_name = config.get('model', {}).get('experiment_name', 'default_experiment')
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        file_name = f"{experiment_name}_{model_name}_{timestamp}_checkpoint.pth"
+        filepath = os.path.join(workspace_dir, file_name)
+        
+    elif not filepath:
         date_str = datetime.now().strftime("%Y-%m-%d")
-        filepath = f"{model_id}_checkpoint_{date_str}.pth"
+        filepath = f"checkpoint_{date_str}.pth"
     
+    # Ensure the directory exists
+    os.makedirs(os.path.dirname(filepath), exist_ok=True)
     torch.save(checkpoint, filepath)
     print(f"Checkpoint saved at {filepath}")
     return filepath
