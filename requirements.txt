@@ -192,3 +192,4 @@ zipp==1.0.0
 albumentations
 opencv-python
 mlflow
+streamlit
