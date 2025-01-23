@@ -57,13 +57,13 @@ testing:
     # - type: precision
     # - type: recall
     - type: map@k
-      k: 5
+      k_values: [1, 3, 5, 10]
     - type: precision@k
-      k: 5
+      k_values: [1, 3, 5, 10]
     - type: recall@k
-      k: 5
+      k_values: [1, 3, 5, 10]
     - type: accuracy@k
-      k: 5
+      k_values: [1, 3, 5, 10]
 
 # Logging configuration
 logging:
