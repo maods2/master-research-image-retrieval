@@ -6,7 +6,7 @@ from metrics.factory import get_metrics
 from pipelines.train_pipes.factory import get_train_function
 from models.factory import get_model
 from losses.factory import get_loss
-from utils.catalog import save_artifacts, save_checkpoint
+from utils.checkpoint_utils import save_artifacts, save_checkpoint
 from utils.logger import setup_logger
 from utils.metric_logger import setup_metric_logger
 

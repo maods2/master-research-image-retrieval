@@ -51,6 +51,4 @@ def create_metric_instance(metric_type: str, metric_config: Dict):
     MetricClass = getattr(importlib.import_module(module_path), class_name)
 
     # Initialize the metric instance, passing additional parameters if required
-    if "k" in metric_config:
-        return MetricClass(k=metric_config["k"])
-    return MetricClass()
+    return MetricClass(**metric_config)

@@ -1,7 +1,7 @@
 from torchvision import models
 import torch.nn as nn
 
-from utils.catalog import load_checkpoint
+from utils.checkpoint_utils import load_checkpoint
 
 def get_model(model_config):
     model_name = model_config["name"]
