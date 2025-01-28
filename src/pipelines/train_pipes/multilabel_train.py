@@ -24,6 +24,7 @@ def train_one_epoch(
     train_loader: torch.utils.data.DataLoader, 
     device: str, 
     log_interval: int, 
+    epoch: int
 ) -> tuple[float, torch.Tensor, torch.Tensor]:
     """
     Train the model for one epoch.
@@ -44,7 +45,7 @@ def train_one_epoch(
     all_preds = []
     all_targets = []
 
-    progress_bar = tqdm(enumerate(train_loader), total=len(train_loader), desc="Training")
+    progress_bar = tqdm(enumerate(train_loader), total=len(train_loader), desc=f"Training Epoch {epoch + 1}")
 
     for batch_idx, (images, targets) in progress_bar:
         images = images.to(device)
@@ -126,7 +127,7 @@ def train_multilabel(
     for epoch in range(epochs):
         # Train the model for one epoch
         epoch_loss, all_preds, all_targets = train_one_epoch(
-            model, loss_fn, optimizer, train_loader, device, log_interval
+            model, loss_fn, optimizer, train_loader, device, log_interval, epoch
         )
 
         # Compute metrics (F1 score and accuracy)
