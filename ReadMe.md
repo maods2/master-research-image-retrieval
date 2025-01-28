@@ -20,4 +20,6 @@
 - [ ] Process row datasets and create dataloaders
 - [ ] Check possibilities to simplify framework
 - [ ] Implement retrieval demo
+- [ ] Plan how to store embeddings databases in order to save processing time ???
+- [ ] Improve how statistics are logged into mflow, in order to provide better comparision view
 

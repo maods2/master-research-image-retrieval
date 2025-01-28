@@ -47,7 +47,8 @@ def train_one_epoch(
     progress_bar = tqdm(enumerate(train_loader), total=len(train_loader), desc="Training")
 
     for batch_idx, (images, targets) in progress_bar:
-        images, targets = images.to(device), targets.to(device)
+        images = images.to(device)
+        targets = targets.to(device).float()
 
         # Forward pass
         outputs = model(images)
@@ -61,17 +62,15 @@ def train_one_epoch(
         running_loss += loss.item()
 
         # Predictions and metrics
-        preds = (outputs > 0.5).float()  # Threshold for multilabel classification
-        all_preds.append(preds.cpu())
-        all_targets.append(targets.cpu())
+        preds = (torch.sigmoid(outputs) > 0.5).float()
+        all_preds.append(preds.cpu().detach())
+        all_targets.append(targets.cpu().detach())
 
         # Logging batch-wise loss
-        if batch_idx % log_interval == 0:
-            avg_loss = running_loss / (batch_idx + 1)
-            progress_bar.set_postfix(loss=avg_loss)
+        progress_bar.set_postfix(loss=running_loss/(batch_idx+1))
 
     # Return the average loss and all predictions/targets for the epoch
-    return running_loss / len(train_loader), torch.cat(all_preds, dim=0), torch.cat(all_targets, dim=0)
+    return running_loss/len(train_loader), torch.cat(all_preds), torch.cat(all_targets)
 
 
 def compute_metrics(all_preds: torch.Tensor, all_targets: torch.Tensor) -> tuple[float, float]:
