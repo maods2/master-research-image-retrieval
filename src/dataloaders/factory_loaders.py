@@ -1,5 +1,6 @@
 from torch.utils.data import DataLoader
 from dataloaders.dataset_terumo import TerumoImageDataset
+from dataloaders.dataset_triplet import MixedTripletDataset, TripletDataset
 
 def get_dataloader(data_config, transform):
     """
@@ -15,15 +16,26 @@ def get_dataloader(data_config, transform):
         test_loader (DataLoader): PyTorch DataLoader for the test set
     """
     # Get transformations based on config
+    dataset_name = data_config.get("dataset_type", "TerumoImageDataset")  # Default to TerumoImageDataset
 
+    # Select dataset class dynamically based on config
+    if dataset_name == "TerumoImageDataset":
+        dataset_class = TerumoImageDataset
+    elif dataset_name == "TripletDataset":
+        dataset_class = TripletDataset
+    elif dataset_name == "MixedTripletDataset":
+        dataset_class = MixedTripletDataset
+    else:
+        raise ValueError(f"Dataset {dataset_name} is not supported.")
     # Create dataset instances for training and testing
-    train_dataset = TerumoImageDataset(
+    train_dataset = dataset_class(
         root_dir=data_config["train_dir"],  # Directory for training data
         transform=transform,                # Transformations to apply
         class_mapping=data_config["class_mapping"]  # Custom class mappings
     )
 
-    test_dataset = TerumoImageDataset(
+    # TODO: add support for different transformations for test set
+    test_dataset = dataset_class(
         root_dir=data_config["test_dir"],   # Directory for testing data
         transform=transform,                # Transformations to apply
         class_mapping=data_config["class_mapping"]  # Custom class mappings
