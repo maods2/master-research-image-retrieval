@@ -9,7 +9,9 @@ import cv2
 import numpy as np
 import albumentations as A
 
-class TripletData(Dataset):
+from dataloaders.dataset_terumo import TerumoImageDataset
+
+class TripletDataset(Dataset):
     def __init__(self, root_dir, transform=None, class_mapping=None):
         self.root_dir = Path(root_dir)
         self.transform = transform if transform else A.Compose([A.ToFloat()])
@@ -67,6 +69,26 @@ class TripletData(Dataset):
         
         return anchor, positive, negative
 
+
+class MixedTripletDataset(Dataset):
+    def __init__(self, root_dir, transform=None, class_mapping=None):
+        self.triplet_active = True
+        self._multiclass_dataset = TerumoImageDataset(root_dir, transform, class_mapping)
+        self._triplet_dataset = TripletDataset(root_dir, transform, class_mapping)
+    
+    def __len__(self):
+        if self.triplet_active:
+            return self._triplet_dataset.__len__()
+        return self._multiclass_dataset.__len__()
+    
+    def __getitem__(self, idx: int):
+        if self.triplet_active:
+            return self._triplet_dataset.__getitem__(idx)
+        return self._multiclass_dataset.__getitem__(idx)
+    
+    def switch_to_classifcation_dataset(self):
+        self.triplet_active = False
+
 # Example usage
 if __name__ == "__main__":
     from albumentations.pytorch import ToTensorV2
@@ -81,7 +103,7 @@ if __name__ == "__main__":
         A.Normalize(mean=(0.5, 0.5, 0.5),std=(0.5, 0.5, 0.5)),
         ToTensorV2()                             
     ])
-    data = TripletData(IMAGE_DIR,data_transforms)
+    data = TripletDataset(IMAGE_DIR,data_transforms)
     print("Number of samples:", len(data))
     data_loader = torch.utils.data.DataLoader(data, batch_size=32, shuffle=True)
     for batch in data_loader:
