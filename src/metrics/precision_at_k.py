@@ -28,6 +28,8 @@ class PrecisionAtK(MetricBase):
             raise ValueError("k_values must be provided.")
         self.k_values = k_values
         self.similarity_fn = similarity_fn
+        self.database = {}
+        self.query = {}
 
     def create_embeddings(self, model, data_loader, device, logger, desc="Extracting features"):
         """
@@ -78,10 +80,15 @@ class PrecisionAtK(MetricBase):
         # Use the dynamically provided similarity/distance function
         similarity_matrix = self.similarity_fn(query_embeddings, database_embeddings)
         
-        #TODO: Double chekc this
-        # If the similarity function computes distance (not similarity), invert it for ranking
-        if np.min(similarity_matrix) >= 0:  # Assumption: similarity is always positive
-            similarity_matrix = -similarity_matrix
+        # Check if similarity or distance is being calculated
+        if np.min(similarity_matrix) >= 0:  # Similarity should be non-negative (e.g., cosine)
+            similarity_matrix = -similarity_matrix  # Invert to make higher values more similar
+        elif np.min(similarity_matrix) < 0:  # In the case of distance (e.g., Euclidean)
+            # We assume the function returns a distance and the smaller value is closer
+            # No need to invert the matrix, as smaller values are already more similar
+            pass
+        else:
+            raise ValueError("Similarity/distance matrix is not valid")
 
         num_queries = similarity_matrix.shape[0]
         precisions = []
@@ -118,24 +125,25 @@ class PrecisionAtK(MetricBase):
         """
         device = "cuda" if torch.cuda.is_available() else "cpu"
 
-        # Create embeddings database from the training data
-        logger.info("Creating embeddings database from training data...")
-        database_embeddings, database_labels = self.create_embeddings(
-            model, train_loader, device, logger, desc="Creating database"
-        )
+        if not 'embeddings' in self.database:
+            # Create embeddings database from the training data
+            logger.info("Creating embeddings database from training data...")
+            self.database['embeddings'], self.database['labels'] = self.create_embeddings(
+                model, train_loader, device, logger, desc="Creating database"
+            )
 
-        # Generate query embeddings and labels from the test data
-        logger.info("Generating query embeddings from test data...")
-        query_embeddings, query_labels = self.create_embeddings(
-            model, test_loader, device, logger, desc="Generating queries"
-        )
+            # Generate query embeddings and labels from the test data
+            logger.info("Generating query embeddings from test data...")
+            self.query['embeddings'], self.query['labels'] = self.create_embeddings(
+                model, test_loader, device, logger, desc="Generating queries"
+            )
 
         # Compute Precision for all k values
         logger.info("Computing Precision@K...")
         precision_results = {}
         for k in self.k_values:
             precision_results[f"precisionAt{k}"] = self.compute_precision_at_k(
-                query_embeddings, query_labels, database_embeddings, database_labels, k
+                self.query['embeddings'], self.query['labels'], self.database['embeddings'], self.database['labels'], k
             )
             logger.info(f"Precision@{k}: {precision_results[f'precisionAt{k}']}")
 
