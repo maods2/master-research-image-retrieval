@@ -7,5 +7,8 @@ train:
 train-m:
 	python3 src/main.py --config configs/multilable_train_config.yaml --pipeline train
 
+train-t:
+	python3 src/main.py --config configs/triplet_res_train_config.yaml --pipeline train
+
 app:
 	streamlit run demo/app.py 
