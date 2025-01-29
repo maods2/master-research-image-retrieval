@@ -6,7 +6,6 @@ from metrics.factory import get_metrics
 from pipelines.train_pipes.factory import get_train_function
 from models.factory import get_model
 from losses.factory import get_loss
-from utils.checkpoint_utils import save_artifacts, save_checkpoint
 from utils.logger import setup_logger
 from utils.metric_logger import setup_metric_logger
 
@@ -43,12 +42,4 @@ def train_wrapper(config):
     # Retrieval testing
     logger.info("Running retrieval testing...")
 
-
-    # Saving artifacts
-    filepath = save_checkpoint(
-        model, 
-        config=config
-        )
-    
-    metric_logger.log_artifact(filepath)
 

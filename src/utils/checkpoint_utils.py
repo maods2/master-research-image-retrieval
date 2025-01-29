@@ -31,7 +31,7 @@ def save_checkpoint(model, filepath=None, optimizer=None, epoch=None, loss=None,
         checkpoint['scheduler_state_dict'] = scheduler.state_dict()
     
     # Generate file name if not provided
-    if config:
+    if config and not filepath:
         workspace_dir = config.get('output', {}).get('model_dir', './')
         model_name = config.get('model', {}).get('name', 'default_model')
         experiment_name = config.get('model', {}).get('experiment_name', 'default_experiment')
@@ -49,7 +49,12 @@ def save_checkpoint(model, filepath=None, optimizer=None, epoch=None, loss=None,
     print(f"Checkpoint saved at {filepath}")
     return filepath
 
-
+# Saving artifacts
+def save_model_and_log_artifact(metric_logger, config, model, filepath=None):
+    filepath = save_checkpoint(model,filepath=filepath, config=config)
+    metric_logger.log_artifact(filepath)
+    return filepath
+        
 def load_checkpoint(filepath, model, optimizer=None, scheduler=None):
     """
     Loads a checkpoint and restores the state of the model, optimizer, and scheduler if available.
@@ -80,14 +85,4 @@ def load_checkpoint(filepath, model, optimizer=None, scheduler=None):
         'loss': checkpoint.get('loss', None)
     }
 
-# TODO: We may want to delete this function in the future
-def save_artifacts(model, results, output_config):
-    model_path = output_config["model_path"]
-    results_path = output_config["results_path"]
-    
-    # Save the model state dict
-    torch.save(model.state_dict(), model_path)
-    
-    # Save any results you want, e.g., test performance or retrieval results
-    with open(results_path, "w") as f:
-        f.write(str(results))
+

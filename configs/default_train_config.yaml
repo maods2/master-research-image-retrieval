@@ -16,7 +16,41 @@ data:
 transform:
   resize: [224, 224]  # Resize images to 224x224
   horizontal_flip: true  # Apply random horizontal flip
-  random_brightness_contrast: true  # Apply random brightness and contrast adjustments
+  vertical_flip: true  # Apply random vertical flip
+  rotation:
+    max_angle: 30  # Maximum rotation angle
+    probability: 0.5  # Probability of applying rotation
+  color_jitter:
+    brightness: 0.2  # Brightness factor
+    contrast: 0.2  # Contrast factor
+    saturation: 0.2  # Saturation factor
+    hue: 0.1  # Hue factor
+    probability: 0.5  # Probability of applying color jitter
+  gaussian_noise:
+    var_limit: [10, 50]  # Variance range for Gaussian noise
+    mean: 0  # Mean for Gaussian noise
+    probability: 0.5  # Probability of applying Gaussian noise
+  gaussian_blur:
+    blur_limit: [3, 7]  # Kernel size limit for Gaussian blur
+    probability: 0.5  # Probability of applying Gaussian blur
+  coarse_dropout:
+    max_holes: 8  # Maximum number of holes
+    max_height: 16  # Maximum height of holes
+    max_width: 16  # Maximum width of holes
+    min_holes: 1  # Minimum number of holes
+    min_height: 4  # Minimum height of holes
+    min_width: 4  # Minimum width of holes
+    probability: 0.5  # Probability of applying coarse dropout
+  distortion:
+    optical_distortion: 0.5  # Probability of applying optical distortion
+    grid_distortion: 0.5  # Probability of applying grid distortion
+    piecewise_affine: 0.5  # Probability of applying piecewise affine
+    probability: 0.5  # Probability of applying one of the distortions
+  shift_scale_rotate:
+    shift_limit: 0.0625  # Limit for shifting
+    scale_limit: 0.1  # Limit for scaling
+    rotate_limit: 45  # Limit for rotation
+    probability: 0.5  # Probability of applying shift-scale-rotate
   normalize:
     mean: [0.5, 0.5, 0.5]  # Normalize mean
     std: [0.5, 0.5, 0.5]   # Normalize std

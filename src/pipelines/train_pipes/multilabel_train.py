@@ -6,6 +6,7 @@ import torchvision.models as models
 import torch.nn as nn
 
 from metrics.metric_base import MetricLoggerBase
+from utils.checkpoint_utils import save_model_and_log_artifact
 from utils.metric_logger import TxtMetricLogger
 
 
@@ -124,6 +125,9 @@ def train_multilabel(
 
     model.to(device)
 
+    checkpoint_path = None
+    max_val_f1score = 0
+    
     for epoch in range(epochs):
         # Train the model for one epoch
         epoch_loss, all_preds, all_targets = train_one_epoch(
@@ -138,6 +142,10 @@ def train_multilabel(
         metric_logger.log_metric('epoch_accuracy', epoch_accuracy, step=epoch)
         metric_logger.log_metric('epoch_f1', epoch_f1, step=epoch)
         logger.info(f"Epoch {epoch + 1}/{epochs} - Loss: {epoch_loss:.4f}, F1 Score: {epoch_f1:.4f}, Accuracy: {epoch_accuracy:.4f}")
+        
+        if epoch_f1 > max_val_f1score:
+            max_val_f1score = epoch_f1
+            checkpoint_path = save_model_and_log_artifact(metric_logger, config, model, filepath=checkpoint_path)
 
     return model
 
