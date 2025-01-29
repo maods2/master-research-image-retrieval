@@ -193,3 +193,4 @@ albumentations
 opencv-python
 mlflow
 streamlit
+performer-pytorch
