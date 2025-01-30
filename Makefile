@@ -12,3 +12,6 @@ train-t:
 
 app:
 	streamlit run demo/app.py 
+
+clean:
+	find . -type d -name "__pycache__" ! -path "./env_tcc_eeg/*" -exec rm -rv {} \;
