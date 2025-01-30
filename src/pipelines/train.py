@@ -1,11 +1,11 @@
-from dataloaders.factory_transforms import get_transforms
-from dataloaders.factory_loaders import get_dataloader
-from optimizers.factory import get_optimizer
+from dataloaders.transform_factory import get_transforms
+from dataloaders.dataset_factory import get_dataloader
+from optimizers.optimizer_factory import get_optimizer
 from pipelines.test_pipes.factory import get_test_function
 from metrics.factory import get_metrics
-from pipelines.train_pipes.factory import get_train_function
-from models.factory import get_model
-from losses.factory import get_loss
+from pipelines.train_pipes.train_factory import get_train_function
+from models.model_factory import get_model
+from losses.loss_factory import get_loss
 from utils.logger import setup_logger
 from utils.metric_logger import setup_metric_logger
 

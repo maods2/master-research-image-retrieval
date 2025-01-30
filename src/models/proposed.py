@@ -87,6 +87,8 @@ class MedicalRetrievalModel(nn.Module):
         # Attention & projection
         self.embed_proj = nn.Linear(num_classes, embed_dim)
         self.attn = PerformerLM(
+            num_tokens= ,
+            max_seq_len= ,
             dim=embed_dim,
             depth=1,
             heads=8,

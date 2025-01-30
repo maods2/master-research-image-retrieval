@@ -115,5 +115,5 @@ def setup_metric_logger(config):
     else:
         raise ValueError(f"Unsupported metric logging tool: {config['metric_logging']['tool']}")
     
-    return logger
+
 

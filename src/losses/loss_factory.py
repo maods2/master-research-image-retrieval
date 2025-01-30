@@ -1,6 +1,6 @@
 import torch.nn as nn
 
-from losses.triplet_loss import AdaptiveTripletLoss
+from losses.loss_triplet import AdaptiveTripletLoss
 
 def get_loss(loss_config):
     loss_name = loss_config["name"]
