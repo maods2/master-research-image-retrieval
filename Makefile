@@ -12,6 +12,11 @@ train-t:
 
 app:
 	streamlit run demo/app.py 
+lint:
+	blue ./src ./demo && isort  ./src ./demo
+
+lint-diff:
+	blue --check --diff ./src ./demo && isort --check --diff ./src ./demo
 
 clean:
 	find . -type d -name "__pycache__" ! -path "./env_tcc_eeg/*" -exec rm -rv {} \;
