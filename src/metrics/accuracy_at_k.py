@@ -12,7 +12,9 @@ import tqdm
 
 
 class AccuracyAtK(MetricBase):
-    def __init__(self, k_values=None, similarity_fn=cosine_similarity, **kwargs):
+    def __init__(
+        self, k_values=None, similarity_fn=cosine_similarity, **kwargs
+    ):
         """
         Initialize the AccuracyAtK metric with a list of k values and a similarity function.
 
@@ -24,11 +26,13 @@ class AccuracyAtK(MetricBase):
         """
         # Explicit required properties
         if k_values is None:
-            raise ValueError("k_values must be provided.")
+            raise ValueError('k_values must be provided.')
         self.k_values = k_values
         self.similarity_fn = similarity_fn
 
-    def create_embeddings(self, model, data_loader, device, logger, desc="Extracting features"):
+    def create_embeddings(
+        self, model, data_loader, device, logger, desc='Extracting features'
+    ):
         """
         Generate embeddings and labels from a given data loader.
 
@@ -57,10 +61,19 @@ class AccuracyAtK(MetricBase):
         embeddings = np.concatenate(embeddings, axis=0)
         labels = np.concatenate(labels, axis=0)
 
-        logger.info(f"Embeddings shape: {embeddings.shape}, Labels shape: {labels.shape}")
+        logger.info(
+            f'Embeddings shape: {embeddings.shape}, Labels shape: {labels.shape}'
+        )
         return embeddings, labels
 
-    def compute_accuracy_at_k(self, query_embeddings, query_labels, database_embeddings, database_labels, k):
+    def compute_accuracy_at_k(
+        self,
+        query_embeddings,
+        query_labels,
+        database_embeddings,
+        database_labels,
+        k,
+    ):
         """
         Compute Accuracy@K for the given queries and database.
 
@@ -75,10 +88,14 @@ class AccuracyAtK(MetricBase):
             float: The Accuracy@K score.
         """
         # Use the dynamically provided similarity/distance function
-        similarity_matrix = self.similarity_fn(query_embeddings, database_embeddings)
+        similarity_matrix = self.similarity_fn(
+            query_embeddings, database_embeddings
+        )
 
         # If the similarity function computes distance, invert it for ranking
-        if np.min(similarity_matrix) >= 0:  # Assumption: similarity is always positive
+        if (
+            np.min(similarity_matrix) >= 0
+        ):  # Assumption: similarity is always positive
             similarity_matrix = -similarity_matrix
 
         num_queries = similarity_matrix.shape[0]
@@ -87,7 +104,9 @@ class AccuracyAtK(MetricBase):
         for i in range(num_queries):
             query_label = query_labels[i]
             similarities = similarity_matrix[i]
-            sorted_indices = np.argsort(-similarities)  # Descending order (higher similarity first)
+            sorted_indices = np.argsort(
+                -similarities
+            )  # Descending order (higher similarity first)
 
             # Get the labels of the top K results
             top_k_labels = database_labels[sorted_indices[:k]]
@@ -113,29 +132,31 @@ class AccuracyAtK(MetricBase):
         Returns:
             dict: A dictionary containing Accuracy@K values for each k in self.k_values.
         """
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
         # Create embeddings database from the training data
-        logger.info("Creating embeddings database from training data...")
+        logger.info('Creating embeddings database from training data...')
         database_embeddings, database_labels = self.create_embeddings(
-            model, train_loader, device, logger, desc="Creating database"
+            model, train_loader, device, logger, desc='Creating database'
         )
 
         # Generate query embeddings and labels from the test data
-        logger.info("Generating query embeddings from test data...")
+        logger.info('Generating query embeddings from test data...')
         query_embeddings, query_labels = self.create_embeddings(
-            model, test_loader, device, logger, desc="Generating queries"
+            model, test_loader, device, logger, desc='Generating queries'
         )
 
         # Compute Accuracy for all k values
-        logger.info("Computing Accuracy@K...")
+        logger.info('Computing Accuracy@K...')
         accuracy_results = {}
         for k in self.k_values:
-            accuracy_results[f"accuracyAt{k}"] = self.compute_accuracy_at_k(
-                query_embeddings, query_labels, database_embeddings, database_labels, k
+            accuracy_results[f'accuracyAt{k}'] = self.compute_accuracy_at_k(
+                query_embeddings,
+                query_labels,
+                database_embeddings,
+                database_labels,
+                k,
             )
             logger.info(f"Accuracy@{k}: {accuracy_results[f'accuracyAt{k}']}")
 
         return accuracy_results
-
-

@@ -12,11 +12,14 @@ from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 import tqdm
 
+
 class MapAtK(MetricBase):
-    def __init__(self, k_values=None, similarity_fn=cosine_similarity, **kwargs):
+    def __init__(
+        self, k_values=None, similarity_fn=cosine_similarity, **kwargs
+    ):
         """
         Initialize the MapAtK metric with a list of k values.
-        
+
         Args:
             k_values (list): List of integers representing the k values to compute Accuracy for.
             similarity_fn (callable): A function to compute similarity or distance between embeddings.
@@ -25,11 +28,13 @@ class MapAtK(MetricBase):
         """
         # Explicit required properties
         if k_values is None:
-            raise ValueError("k_values must be provided.")
+            raise ValueError('k_values must be provided.')
         self.k_values = k_values
         self.similarity_fn = similarity_fn
-        
-    def create_embeddings(self, model, data_loader, device, logger, desc="Extracting features"):
+
+    def create_embeddings(
+        self, model, data_loader, device, logger, desc='Extracting features'
+    ):
         """
         Generate embeddings and labels from a given data loader.
 
@@ -58,10 +63,19 @@ class MapAtK(MetricBase):
         embeddings = np.concatenate(embeddings, axis=0)
         labels = np.concatenate(labels, axis=0)
 
-        logger.info(f"Embeddings shape: {embeddings.shape}, Labels shape: {labels.shape}")
+        logger.info(
+            f'Embeddings shape: {embeddings.shape}, Labels shape: {labels.shape}'
+        )
         return embeddings, labels
 
-    def compute_map_at_k(self, query_embeddings, query_labels, database_embeddings, database_labels, k):
+    def compute_map_at_k(
+        self,
+        query_embeddings,
+        query_labels,
+        database_embeddings,
+        database_labels,
+        k,
+    ):
         """
         Compute MAP@K for the given queries and database.
 
@@ -76,8 +90,10 @@ class MapAtK(MetricBase):
             float: The MAP@K score.
         """
         # Use the dynamically provided similarity/distance function
-        similarity_matrix = self.similarity_fn(query_embeddings, database_embeddings)
-        
+        similarity_matrix = self.similarity_fn(
+            query_embeddings, database_embeddings
+        )
+
         num_queries = similarity_matrix.shape[0]
         average_precisions = []
 
@@ -95,7 +111,9 @@ class MapAtK(MetricBase):
                     precision_at_k += relevant_count / rank
 
             if relevant_count > 0:
-                average_precisions.append(precision_at_k / min(k, relevant_count))
+                average_precisions.append(
+                    precision_at_k / min(k, relevant_count)
+                )
             else:
                 average_precisions.append(0.0)
 
@@ -115,35 +133,37 @@ class MapAtK(MetricBase):
         Returns:
             dict: A dictionary containing MAP@K values for each k in self.k_values.
         """
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
         # Create embeddings database from the training data
-        logger.info("Creating embeddings database from training data...")
+        logger.info('Creating embeddings database from training data...')
         database_embeddings, database_labels = self.create_embeddings(
-            model, train_loader, device, logger, desc="Creating database"
+            model, train_loader, device, logger, desc='Creating database'
         )
 
         # Generate query embeddings and labels from the test data
-        logger.info("Generating query embeddings from test data...")
+        logger.info('Generating query embeddings from test data...')
         query_embeddings, query_labels = self.create_embeddings(
-            model, test_loader, device, logger, desc="Generating queries"
+            model, test_loader, device, logger, desc='Generating queries'
         )
 
         # Compute MAP for all k values
-        logger.info("Computing MAP@K...")
+        logger.info('Computing MAP@K...')
         map_results = {}
         for k in self.k_values:
-            map_results[f"mapAt{k}"] = self.compute_map_at_k(
-                query_embeddings, query_labels, database_embeddings, database_labels, k
+            map_results[f'mapAt{k}'] = self.compute_map_at_k(
+                query_embeddings,
+                query_labels,
+                database_embeddings,
+                database_labels,
+                k,
             )
             logger.info(f"MAP@{k}: {map_results[f'mapAt{k}']}")
 
         return map_results
 
-    
 
-    
-if __name__== "__main__":
+if __name__ == '__main__':
     import albumentations as A
     from albumentations.pytorch import ToTensorV2
     from torch.utils.data import DataLoader
@@ -152,7 +172,7 @@ if __name__== "__main__":
     import torch.nn as nn
 
     import tqdm
-    
+
     class SimpleLogger:
         def info(self, metrics):
             print(metrics)
@@ -160,38 +180,54 @@ if __name__== "__main__":
     num_classes = 6
     model = models.resnet50(pretrained=True)
     model.fc = nn.Identity()
-    
-    root_dir = "../../datasets/final/terumo/train"
-    custom_mapping = {"Crescent": 0, "Hypercellularity": 1, "Membranous": 2, "Normal": 3, "Podocytopathy": 4, "Sclerosis": 5}
-    
+
+    root_dir = '../../datasets/final/terumo/train'
+    custom_mapping = {
+        'Crescent': 0,
+        'Hypercellularity': 1,
+        'Membranous': 2,
+        'Normal': 3,
+        'Podocytopathy': 4,
+        'Sclerosis': 5,
+    }
+
     # Define transformations using Albumentations
-    data_transforms = A.Compose([
-        A.Resize(224, 224),                        
-        A.Normalize(mean=(0.5, 0.5, 0.5),         
-                    std=(0.5, 0.5, 0.5)),
-        ToTensorV2()                              
-    ])
+    data_transforms = A.Compose(
+        [
+            A.Resize(224, 224),
+            A.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
+            ToTensorV2(),
+        ]
+    )
 
     # Create the dataset
-    dataset = TerumoImageDataset(root_dir=root_dir, transform=data_transforms, class_mapping=custom_mapping)
-    dataset_test = TerumoImageDataset(root_dir=root_dir.replace("train","test"), transform=data_transforms, class_mapping=custom_mapping)
-    
+    dataset = TerumoImageDataset(
+        root_dir=root_dir,
+        transform=data_transforms,
+        class_mapping=custom_mapping,
+    )
+    dataset_test = TerumoImageDataset(
+        root_dir=root_dir.replace('train', 'test'),
+        transform=data_transforms,
+        class_mapping=custom_mapping,
+    )
+
     train_loader = DataLoader(
-        dataset,                            
-        batch_size=32,                      
-        shuffle=True,                       
-        num_workers=3,                      
-        pin_memory=True,                    
-        )
-    
+        dataset,
+        batch_size=32,
+        shuffle=True,
+        num_workers=3,
+        pin_memory=True,
+    )
+
     test_loader = DataLoader(
-        dataset_test,                            
-        batch_size=32,                      
-        shuffle=True,                       
-        num_workers=3,                      
-        pin_memory=True,                    
-        )
-    
+        dataset_test,
+        batch_size=32,
+        shuffle=True,
+        num_workers=3,
+        pin_memory=True,
+    )
+
     # for k in [1, 5, 10]:
     #     map_at_k = MapAtK(k)
     #     metrics = map_at_k(model, train_loader, train_loader, None, simple_logger)

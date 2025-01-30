@@ -1,6 +1,7 @@
 from typing import Dict, List
 import importlib
 
+
 def get_metrics(testing_config: Dict) -> List:
     """
     Constructs test pipelines based on the provided testing configuration.
@@ -13,8 +14,8 @@ def get_metrics(testing_config: Dict) -> List:
     """
     test_pipelines = []
 
-    for metric_dict in testing_config["list_of_metrics"]:
-        metric_type = metric_dict["type"]
+    for metric_dict in testing_config['list_of_metrics']:
+        metric_type = metric_dict['type']
         metric_instance = create_metric_instance(metric_type, metric_dict)
         test_pipelines.append(metric_instance)
 
@@ -34,13 +35,13 @@ def create_metric_instance(metric_type: str, metric_config: Dict):
     """
     # Define the mapping of metric types to their respective module paths
     metric_modules = {
-        "accuracy": "metrics.accuracy.Accuracy",
-        "f1_score": "metrics.f1_score.F1Score",
+        'accuracy': 'metrics.accuracy.Accuracy',
+        'f1_score': 'metrics.f1_score.F1Score',
         # "multilabel_accuracy": "metrics.multilabel_accuracy.MultilabelAccuracy",
-        "map@k": "metrics.map_at_k.MapAtK",
-        "precision@k": "metrics.precision_at_k.PrecisionAtK",
-        "recall@k": "metrics.recall_at_k.RecallAtK",
-        "accuracy@k": "metrics.accuracy_at_k.AccuracyAtK",
+        'map@k': 'metrics.map_at_k.MapAtK',
+        'precision@k': 'metrics.precision_at_k.PrecisionAtK',
+        'recall@k': 'metrics.recall_at_k.RecallAtK',
+        'accuracy@k': 'metrics.accuracy_at_k.AccuracyAtK',
     }
 
     if metric_type not in metric_modules:

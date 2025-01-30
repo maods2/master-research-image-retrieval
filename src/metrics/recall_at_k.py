@@ -11,8 +11,11 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.metrics.pairwise import cosine_similarity
 import tqdm
 
+
 class RecallAtK(MetricBase):
-    def __init__(self, k_values=None, similarity_fn=cosine_similarity, **kwargs):
+    def __init__(
+        self, k_values=None, similarity_fn=cosine_similarity, **kwargs
+    ):
         """
         Initialize the RecallAtK metric with a list of k values and a similarity function.
 
@@ -24,11 +27,13 @@ class RecallAtK(MetricBase):
         """
         # Explicit required properties
         if k_values is None:
-            raise ValueError("k_values must be provided.")
+            raise ValueError('k_values must be provided.')
         self.k_values = k_values
         self.similarity_fn = similarity_fn
 
-    def create_embeddings(self, model, data_loader, device, logger, desc="Extracting features"):
+    def create_embeddings(
+        self, model, data_loader, device, logger, desc='Extracting features'
+    ):
         """
         Generate embeddings and labels from a given data loader.
 
@@ -57,10 +62,19 @@ class RecallAtK(MetricBase):
         embeddings = np.concatenate(embeddings, axis=0)
         labels = np.concatenate(labels, axis=0)
 
-        logger.info(f"Embeddings shape: {embeddings.shape}, Labels shape: {labels.shape}")
+        logger.info(
+            f'Embeddings shape: {embeddings.shape}, Labels shape: {labels.shape}'
+        )
         return embeddings, labels
 
-    def compute_recall_at_k(self, query_embeddings, query_labels, database_embeddings, database_labels, k):
+    def compute_recall_at_k(
+        self,
+        query_embeddings,
+        query_labels,
+        database_embeddings,
+        database_labels,
+        k,
+    ):
         """
         Compute Recall@K for the given queries and database.
 
@@ -75,10 +89,14 @@ class RecallAtK(MetricBase):
             float: The Recall@K score.
         """
         # Use the dynamically provided similarity/distance function
-        similarity_matrix = self.similarity_fn(query_embeddings, database_embeddings)
-        
+        similarity_matrix = self.similarity_fn(
+            query_embeddings, database_embeddings
+        )
+
         # If the similarity function computes distance, invert it for ranking
-        if np.min(similarity_matrix) >= 0:  # Assumption: similarity is always positive
+        if (
+            np.min(similarity_matrix) >= 0
+        ):  # Assumption: similarity is always positive
             similarity_matrix = -similarity_matrix
 
         num_queries = similarity_matrix.shape[0]
@@ -87,14 +105,20 @@ class RecallAtK(MetricBase):
         for i in range(num_queries):
             query_label = query_labels[i]
             similarities = similarity_matrix[i]
-            sorted_indices = np.argsort(-similarities)  # Descending order (higher similarity first)
+            sorted_indices = np.argsort(
+                -similarities
+            )  # Descending order (higher similarity first)
 
             # Get the labels of the top K results
             top_k_labels = database_labels[sorted_indices[:k]]
 
             # Compute recall
-            relevant_count = (top_k_labels == query_label).sum()  # Count relevant items in the top K
-            total_relevant = (database_labels == query_label).sum()  # Total relevant items in the database
+            relevant_count = (
+                top_k_labels == query_label
+            ).sum()  # Count relevant items in the top K
+            total_relevant = (
+                database_labels == query_label
+            ).sum()  # Total relevant items in the database
 
             if total_relevant > 0:
                 recalls.append(relevant_count / total_relevant)
@@ -117,26 +141,30 @@ class RecallAtK(MetricBase):
         Returns:
             dict: A dictionary containing Recall@K values for each k in self.k_values.
         """
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
         # Create embeddings database from the training data
-        logger.info("Creating embeddings database from training data...")
+        logger.info('Creating embeddings database from training data...')
         database_embeddings, database_labels = self.create_embeddings(
-            model, train_loader, device, logger, desc="Creating database"
+            model, train_loader, device, logger, desc='Creating database'
         )
 
         # Generate query embeddings and labels from the test data
-        logger.info("Generating query embeddings from test data...")
+        logger.info('Generating query embeddings from test data...')
         query_embeddings, query_labels = self.create_embeddings(
-            model, test_loader, device, logger, desc="Generating queries"
+            model, test_loader, device, logger, desc='Generating queries'
         )
 
         # Compute Recall for all k values
-        logger.info("Computing Recall@K...")
+        logger.info('Computing Recall@K...')
         recall_results = {}
         for k in self.k_values:
-            recall_results[f"recallAt{k}"] = self.compute_recall_at_k(
-                query_embeddings, query_labels, database_embeddings, database_labels, k
+            recall_results[f'recallAt{k}'] = self.compute_recall_at_k(
+                query_embeddings,
+                query_labels,
+                database_embeddings,
+                database_labels,
+                k,
             )
             logger.info(f"Recall@{k}: {recall_results[f'recallAt{k}']}")
 

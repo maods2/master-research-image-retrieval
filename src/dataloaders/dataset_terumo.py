@@ -9,6 +9,7 @@ import albumentations as A
 from albumentations.pytorch import ToTensorV2
 from torch.utils.data import DataLoader
 
+
 class TerumoImageDataset(StandardImageDataset):
     def __init__(self, root_dir, transform=None, class_mapping=None):
         """
@@ -24,46 +25,63 @@ class TerumoImageDataset(StandardImageDataset):
 
 
 # Example usage
-if __name__ == "__main__":
+if __name__ == '__main__':
     start = time.time()
-    
-    root_dir = "datasets/final/terumo/train"
-    custom_mapping = {"Crescent": 0, "Hypercellularity": 1, "Membranous": 2, "Normal": 3, "Podocytopathy": 4, "Sclerosis": 5}
-    
+
+    root_dir = 'datasets/final/terumo/train'
+    custom_mapping = {
+        'Crescent': 0,
+        'Hypercellularity': 1,
+        'Membranous': 2,
+        'Normal': 3,
+        'Podocytopathy': 4,
+        'Sclerosis': 5,
+    }
+
     # Define transformations using Albumentations
-    data_transforms = A.Compose([
-        A.Resize(224, 224),                        # Resize the image
-        A.HorizontalFlip(p=0.5),                  # Random horizontal flip
-        A.RandomBrightnessContrast(p=0.2),        # Random brightness and contrast adjustments
-        A.Normalize(mean=(0.5, 0.5, 0.5),         # Normalize to [-1, 1]
-                    std=(0.5, 0.5, 0.5)),
-        ToTensorV2()                              # Convert to PyTorch tensor
-    ])
+    data_transforms = A.Compose(
+        [
+            A.Resize(224, 224),  # Resize the image
+            A.HorizontalFlip(p=0.5),  # Random horizontal flip
+            A.RandomBrightnessContrast(
+                p=0.2
+            ),  # Random brightness and contrast adjustments
+            A.Normalize(
+                mean=(0.5, 0.5, 0.5),  # Normalize to [-1, 1]
+                std=(0.5, 0.5, 0.5),
+            ),
+            ToTensorV2(),  # Convert to PyTorch tensor
+        ]
+    )
 
     # Create the dataset
-    dataset = TerumoImageDataset(root_dir=root_dir, transform=data_transforms, class_mapping=custom_mapping)
+    dataset = TerumoImageDataset(
+        root_dir=root_dir,
+        transform=data_transforms,
+        class_mapping=custom_mapping,
+    )
 
     # Example of access
-    print("Dataset size:", len(dataset))
-    print("Classes:", dataset.class_mapping)
+    print('Dataset size:', len(dataset))
+    print('Classes:', dataset.class_mapping)
     img, one_hot_label = dataset[0]
-    print("First image shape:", img.shape, "One-hot label:", one_hot_label)
-    
+    print('First image shape:', img.shape, 'One-hot label:', one_hot_label)
+
     # Create DataLoader
     train_loader = DataLoader(
-        dataset,                      # Dataset instance
-        batch_size=32,                      # Set batch size as per your preference
-        shuffle=True,                       # Shuffle dataset for better generalization
-        num_workers=3,                      # Number of CPU cores to use for loading data in parallel
-        pin_memory=True,                    # Pin memory to speed up data transfer to GPU
+        dataset,  # Dataset instance
+        batch_size=32,  # Set batch size as per your preference
+        shuffle=True,  # Shuffle dataset for better generalization
+        num_workers=3,  # Number of CPU cores to use for loading data in parallel
+        pin_memory=True,  # Pin memory to speed up data transfer to GPU
     )
-    i=0
+    i = 0
     # Example usage: iterate over the DataLoader
     for images, one_hot_labels in train_loader:
         # print(images.shape, one_hot_labels)
         if i == 5:
             break
-        i+=1
-        
+        i += 1
+
     end = time.time()
-    print("Time taken:", end - start)
+    print('Time taken:', end - start)
