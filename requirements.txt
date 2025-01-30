@@ -194,3 +194,5 @@ opencv-python
 mlflow
 streamlit
 performer-pytorch
+isort
+blue
