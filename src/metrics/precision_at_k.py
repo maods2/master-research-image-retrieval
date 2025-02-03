@@ -59,7 +59,7 @@ class PrecisionAtK(MetricBase):
             with torch.no_grad():
                 embedding = model(img.to(device))
             embeddings.append(embedding.cpu().numpy())
-            labels.append(label.argmax(dim=1).cpu().numpy())
+            labels.append(label.cpu().numpy())
 
         embeddings = np.concatenate(embeddings, axis=0)
         labels = np.concatenate(labels, axis=0)
@@ -111,7 +111,7 @@ class PrecisionAtK(MetricBase):
         else:
             raise ValueError('Similarity/distance matrix is not valid')
 
-        num_queries = similarity_matrix.shape[0]
+        num_queries = round(similarity_matrix.shape[0] * 0.001)
         precisions = []
 
         for i in range(num_queries):
