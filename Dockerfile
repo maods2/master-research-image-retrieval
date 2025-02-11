@@ -1,10 +1,10 @@
-FROM nvidia/cuda:12.1.1-devel-ubuntu22.04
+FROM nvidia/cuda:12.6.3-devel-ubuntu22.04
 
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Versions
-ARG CUDA="cu121"
-ARG PYTORCH="2.3.0"
+ARG CUDA="cu126"
+ARG PYTORCH="2.6.0+cu126"
 ARG FLASH_ATTN="2.5.8"
 ARG TRANSFORMERS="4.42.3"
 ARG DIFFUSERS="0.28.0"
@@ -47,23 +47,25 @@ RUN apt-get update && \
 RUN pip install --upgrade pip
 
 # Install latest release PyTorch (PyTorch must be installed before any DeepSpeed c++/cuda ops.)
-RUN pip install --no-cache-dir -U torch==${PYTORCH} torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/${CUDA}
+# RUN pip install --no-cache-dir -U torch==${PYTORCH} torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/${CUDA}
+# RUN pip install --no-cache-dir -U torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/${CUDA}
 
 
+RUN pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126
 # Install Hugging Face Libraries
-RUN pip install --upgrade --no-cache-dir \
-    transformers[sklearn,sentencepiece,vision]==${TRANSFORMERS} \
-    diffusers==${DIFFUSERS} \
-    datasets==${DATASETS} \
-    accelerate==${ACCELERATE} \
-    evaluate==${EVALUATE} \
-    peft==${PEFT} \
-    trl==${TRL} \
-    sentence-transformers==${SENTENCE_TRANSFORMERS} \
-    deepspeed==${DEEPSPEED} \
-    bitsandbytes==${BITSANDBYTES} \
-    tensorboard \
-    jupyter notebook
+# RUN pip install --upgrade --no-cache-dir \
+#     transformers[sklearn,sentencepiece,vision]==${TRANSFORMERS} \
+#     diffusers==${DIFFUSERS} \
+#     datasets==${DATASETS} \
+#     accelerate==${ACCELERATE} \
+#     evaluate==${EVALUATE} \
+#     peft==${PEFT} \
+#     trl==${TRL} \
+#     sentence-transformers==${SENTENCE_TRANSFORMERS} \
+#     deepspeed==${DEEPSPEED} \
+#     bitsandbytes==${BITSANDBYTES} \
+#     tensorboard \
+#     jupyter notebook
 
 COPY requirements.txt requirements.txt
 # Install Google Cloud Dependencies
