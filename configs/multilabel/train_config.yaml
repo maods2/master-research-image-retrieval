@@ -29,7 +29,7 @@ model:
   pretrained: true  # Use pre-trained weights
   num_classes: 6  # Number of classes in the dataset
   load_checkpoint: true  # Load a pre-trained model checkpoint
-  checkpoint_path: "./artifacts/multilable_resnet50_2025-01-28_03-18-23_checkpoint.pth"  # Path to the model checkpoint
+  checkpoint_path: "./mlruns/717525794081901535/a04e0d85e88948a5830eda6fbadc1646/artifacts/multilable_resnet50_2025-01-28_06-21-24_checkpoint.pth"  # Path to the model checkpoint
 
 # Loss function configuration
 loss:
@@ -44,7 +44,7 @@ optimizer:
 # Training configuration
 training:
   pipeline: "train_multilabel"  # The pipeline to run (e.g., train, finetune, etc.)
-  epochs: 60  # Number of epochs to train
+  epochs: 5  # Number of epochs to train
   lr_scheduler:
     name: "step_lr"  # Learning rate scheduler (step_lr, cosine_annealing, etc.)
     step_size: 10  # Step size for scheduler (for step_lr)
@@ -53,6 +53,7 @@ testing:
   pipeline: "default"  # The pipeline to run (e.g., default, retrieval, etc.)
   list_of_metrics:
     - type: accuracy
+    - type: multilabel_accuracy
     - type: f1_score
     # - type: precision
     # - type: recall

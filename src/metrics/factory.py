@@ -37,7 +37,7 @@ def create_metric_instance(metric_type: str, metric_config: Dict):
     metric_modules = {
         'accuracy': 'metrics.accuracy.Accuracy',
         'f1_score': 'metrics.f1_score.F1Score',
-        # "multilabel_accuracy": "metrics.multilabel_accuracy.MultilabelAccuracy",
+        "multilabel_accuracy": "metrics.accuracy.MultilabelAccuracy",
         'map@k': 'metrics.map_at_k.MapAtK',
         'precision@k': 'metrics.precision_at_k.PrecisionAtK',
         'recall@k': 'metrics.recall_at_k.RecallAtK',
