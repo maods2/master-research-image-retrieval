@@ -4,6 +4,8 @@ from torch.utils.data import Dataset, DataLoader
 import timm
 from torch.nn import TransformerEncoder, TransformerEncoderLayer
 from torch.cuda.amp import autocast, GradScaler
+import torchvision.transforms as transforms
+import torch.nn.functional as F
 
 # ------------------
 # Architecture
@@ -12,6 +14,17 @@ from torch.cuda.amp import autocast, GradScaler
 class PromptEncoder(nn.Module):
     def __init__(self, embed_dim=768, num_heads=12, num_layers=4):
         super().__init__()
+        self.embed_dim = embed_dim
+        self.num_heads = num_heads
+        
+        # Cross-attention between positive and negative embeddings
+        self.cross_attn = nn.MultiheadAttention(embed_dim, num_heads, batch_first=True)
+        
+        # Similarity projection layers
+        self.pos_proj = nn.Linear(embed_dim, embed_dim)
+        self.neg_proj = nn.Linear(embed_dim, embed_dim)
+        
+        # Context transformer
         self.transformer = TransformerEncoder(
             TransformerEncoderLayer(
                 d_model=embed_dim,
@@ -20,22 +33,61 @@ class PromptEncoder(nn.Module):
             ),
             num_layers=num_layers
         )
-        self.context_proj = nn.Linear(2*embed_dim, embed_dim)
         
+        # Similarity metrics
+        self.sim_weight = nn.Parameter(torch.tensor(0.1))
+        self.context_proj = nn.Linear(3*embed_dim, embed_dim)
+        self.combined_proj = nn.Linear(3*embed_dim, embed_dim)  # New projection layer
+
     def forward(self, pos_emb, neg_emb):
         """
         pos_emb: [B, N, D] - positive prompt embeddings
         neg_emb: [B, M, D] - negative prompt embeddings
         Returns: [B, D] context embedding
         """
-        # Concatenate positive and negative embeddings
-        combined = torch.cat([pos_emb, neg_emb], dim=1)  # [B, N+M, D]
+        B, N, D = pos_emb.shape
+        M = neg_emb.shape[1]
+        
+        # Project embeddings
+        pos_proj = self.pos_proj(pos_emb)  # [B, N, D]
+        neg_proj = self.neg_proj(neg_emb)  # [B, M, D]
+        
+        # Compute cross-attention between positive and negative
+        attn_output, _ = self.cross_attn(
+            query=pos_proj,
+            key=neg_proj,
+            value=neg_proj,
+            need_weights=False
+        )  # [B, N, D]
+        
+        # Compute cosine similarities
+        pos_neg_sim = F.cosine_similarity(
+            pos_proj.unsqueeze(2),  # [B, N, 1, D]
+            neg_proj.unsqueeze(1),  # [B, 1, M, D]
+            dim=-1
+        )  # [B, N, M]
+        sim_mask = (pos_neg_sim > 0.5).float()  # Learnable threshold
+        sim_context = torch.einsum('bnm,bmd->bnd', sim_mask, neg_proj)  # [B, N, D]
+        
+        # Combine features
+        combined = torch.cat([
+            pos_emb,
+            attn_output,
+            self.sim_weight * sim_context
+        ], dim=-1)  # [B, N, 3D]
+        
+        # Project combined features back to embed_dim
+        combined = self.combined_proj(combined)  # [B, N, D]
         
         # Process through transformer
-        encoded = self.transformer(combined)  # [B, N+M, D]
+        encoded = self.transformer(combined)  # [B, N, D]
         
-        # Aggregate using CLS token (first position)
-        context = encoded[:, 0, :]  # [B, D]
+        # Aggregate using attention pooling
+        cls_token = encoded.mean(dim=1)  # [B, D]
+        max_token = encoded.max(dim=1).values  # [B, D]
+        std_token = encoded.std(dim=1)  # [B, D]
+        
+        context = torch.cat([cls_token, max_token, std_token], dim=-1)
         return self.context_proj(context)
 
 class PromptableBinaryClassifier(nn.Module):
@@ -48,60 +100,45 @@ class PromptableBinaryClassifier(nn.Module):
         # Prompt processing
         self.prompt_encoder = PromptEncoder(embed_dim=self.embed_dim)
         
-        # Feature fusion
-        self.fusion = nn.Sequential(
-            nn.LayerNorm(self.embed_dim),
-            TransformerEncoder(
-                TransformerEncoderLayer(
-                    d_model=self.embed_dim,
-                    nhead=12,
-                    dim_feedforward=4*self.embed_dim
-                ),
-                num_layers=2
-            )
+        # Dynamic attention fusion
+        self.fusion_attn = nn.MultiheadAttention(
+            self.embed_dim, 
+            num_heads=8, 
+            batch_first=True
         )
         
         # Classification head
         self.classifier = nn.Sequential(
+            nn.LayerNorm(self.embed_dim),
             nn.Linear(self.embed_dim, 256),
             nn.GELU(),
             nn.Linear(256, num_classes)
         )
 
     def _get_cls_embeddings(self, x):
-        """Extract CLS token embeddings from input images"""
-        features = self.backbone(x)  # [B, num_tokens, D]
-        return features[:, 0, :]  # CLS token [B, D]
+        features = self.backbone(x)
+        return features
 
     def forward(self, query_img, pos_imgs, neg_imgs):
-        """
-        query_img: [B, C, H, W]
-        pos_imgs: [B, N, C, H, W] - positive prompt images
-        neg_imgs: [B, M, C, H, W] - negative prompt images
-        """
         B = query_img.shape[0]
         
-        # Get query embedding
-        query_emb = self._get_cls_embeddings(query_img)  # [B, D]
-        
-        # Process positive prompts
+        # Get embeddings
+        query_emb = self._get_cls_embeddings(query_img)
         pos_flat = pos_imgs.view(B*self.num_prompts, *pos_imgs.shape[2:])
-        pos_embs = self._get_cls_embeddings(pos_flat)
-        pos_embs = pos_embs.view(B, self.num_prompts, -1)  # [B, N, D]
-        
-        # Process negative prompts
+        pos_embs = self._get_cls_embeddings(pos_flat).view(B, self.num_prompts, -1)
         neg_flat = neg_imgs.view(B*self.num_prompts, *neg_imgs.shape[2:])
-        neg_embs = self._get_cls_embeddings(neg_flat)
-        neg_embs = neg_embs.view(B, self.num_prompts, -1)  # [B, M, D]
+        neg_embs = self._get_cls_embeddings(neg_flat).view(B, self.num_prompts, -1)
         
-        # Encode prompts
-        prompt_context = self.prompt_encoder(pos_embs, neg_embs)  # [B, D]
+        # Encode prompts with similarity
+        prompt_context = self.prompt_encoder(pos_embs, neg_embs)
         
-        # Combine with query embedding
-        combined = query_emb + prompt_context
-        
-        # Final fusion
-        fused = self.fusion(combined.unsqueeze(1)).squeeze(1)
+        # Attention-based fusion
+        fused, _ = self.fusion_attn(
+            query=query_emb.unsqueeze(1),
+            key=prompt_context.unsqueeze(1),
+            value=prompt_context.unsqueeze(1)
+        )
+        fused = fused.squeeze(1)
         
         return self.classifier(fused)
 
@@ -150,10 +187,10 @@ class PromptDataset(Dataset):
         }
     
     def default_transform(self):
-        return nn.Sequential(
-            nn.Resize((224, 224)),
-            nn.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-        )
+            return transforms.Compose([
+                transforms.Resize((224, 224)),
+                transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+            ])
 
 # ------------------
 # Training Pipeline
