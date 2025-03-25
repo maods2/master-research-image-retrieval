@@ -1,37 +1,17 @@
-# import torch
-# import timm
-
-# # Criar um modelo ViT pré-treinado
-# model = timm.create_model("vit_base_patch16_224", pretrained=True)
-
-# # Colocar o modelo em modo de avaliação
-# model.eval()
-
-# # Criar uma função para capturar TODOS os embeddings
-# def extract_all_embeddings(model, x):
-#     with torch.no_grad():
-#         x = model.patch_embed(x)  # Criar patches e embeddings
-#         x = torch.cat([model.cls_token.expand(x.shape[0], -1, -1), x], dim=1)  # Adicionar CLS Token
-#         x = model.pos_drop(x + model.pos_embed)  # Adicionar embeddings de posição e dropout
-#         for blk in model.blocks:  # Passar pelos blocos Transformer
-#             x = blk(x)
-#         embeddings = x  # Retorna todos os tokens (CLS + patches)
-#     return embeddings
-
-# # Criar uma entrada fictícia (imagem de 224x224 com 3 canais)
-# x = torch.randn(1, 3, 224, 224)  # Um batch com 1 imagem
-
-# # Extrair todos os embeddings
-# embeddings = extract_all_embeddings(model, x)
-# print(embeddings.shape)  # Deve ser algo como (1, 197, 768)
-
-# patch_embeddings = embeddings[:, 1:, :]  # Remove CLS Token
-# print(patch_embeddings.shape)  # Deve ser (1, 196, 768)
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import timm
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from tqdm import tqdm
+import torch
+import torch.nn as nn
+import torch.optim as optim
+import matplotlib.pyplot as plt
+from tqdm import tqdm
+import numpy as np
 
 # -------------------------------
 # 1. ViT Backbone Compartilhado
@@ -171,21 +151,224 @@ class PromptableBinaryClassifier(nn.Module):
         logits = self.classifier(fused)  # [B, 1]
         return logits
 
+
+
+def train_model(model, dataloader, epochs=10, lr=1e-4):
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model = model.to(device)
+    
+    criterion = nn.BCEWithLogitsLoss()
+    optimizer = optim.Adam(model.parameters(), lr=lr)
+    
+    best_acc = 0.0
+    for epoch in range(epochs):
+        model.train()
+        running_loss = 0.0
+        correct = 0
+        total = 0
+        
+        progress_bar = tqdm(dataloader, desc=f'Epoch {epoch+1}/{epochs}')
+        for batch in progress_bar:
+            # Move data para GPU
+            query = batch['query'].to(device)
+            pos = batch['pos_imgs'].to(device)
+            neg = batch['neg_imgs'].to(device)
+            labels = batch['query_label'].float().to('cuda')
+            
+            # Zero grad
+            optimizer.zero_grad()
+            
+            # Forward pass
+            logits = model(query, pos, neg).squeeze()
+            
+            # Cálculo da loss
+            loss = criterion(logits, labels)
+            
+            # Backward pass
+            loss.backward()
+            optimizer.step()
+            
+            # Estatísticas
+            running_loss += loss.item() * query.size(0)
+            preds = torch.sigmoid(logits) > 0.5
+            correct += (preds == labels).sum().item()
+            total += labels.size(0)
+            
+            # Atualiza a barra de progresso
+            progress_bar.set_postfix({
+                'loss': running_loss / total,
+                'acc': correct / total
+            })
+        
+        # Cálculo da acurácia epoch
+        epoch_loss = running_loss / total
+        epoch_acc = correct / total
+        
+        print(f'Epoch {epoch+1} - Loss: {epoch_loss:.4f} Acc: {epoch_acc:.4f}')
+    
+    return model
+
+class Trainer:
+    def __init__(self, model, dataloader, device='cuda'):
+        self.model = model.to(device)
+        self.dataloader = dataloader
+        self.device = device
+        self.history = {'train_loss': [], 'train_acc': []}
+        
+    def train(self, epochs=10, lr=1e-4, overfit_batch=False):
+        criterion = nn.BCEWithLogitsLoss()
+        optimizer = optim.Adam(self.model.parameters(), lr=lr)
+        
+        # Modo overfit: pega um único batch
+        if overfit_batch:
+            single_batch = next(iter(self.dataloader))
+            print("\nModo overfit ativado - usando um único batch")
+        
+        for epoch in range(epochs):
+            self.model.train()
+            running_loss = 0.0
+            correct = 0
+            total = 0
+            
+            # Barra de progresso
+            if overfit_batch:
+                progress_bar = tqdm([single_batch], desc=f'Epoch {epoch+1}/{epochs}')
+            else:
+                progress_bar = tqdm(self.dataloader, desc=f'Epoch {epoch+1}/{epochs}')
+            
+            for batch in progress_bar:
+                # Preparação dos dados
+                query = batch['query'].to(self.device)
+                pos = batch['pos_imgs'].to(self.device)
+                neg = batch['neg_imgs'].to(self.device)
+                labels = batch['query_label'].float().to('cuda')
+                
+                # Zerar gradientes
+                optimizer.zero_grad()
+                
+                # Forward pass
+                logits = self.model(query, pos, neg).squeeze()
+                
+                # Cálculo da loss
+                loss = criterion(logits, labels)
+                
+                # Backward pass
+                loss.backward()
+                optimizer.step()
+                
+                # Estatísticas
+                running_loss += loss.item() * query.size(0)
+                preds = torch.sigmoid(logits) > 0.5
+                correct += (preds == labels).sum().item()
+                total += labels.size(0)
+                
+                # Atualizar barra de progresso
+                progress_bar.set_postfix({
+                    'loss': running_loss / total,
+                    'acc': correct / total
+                })
+            
+            # Armazenar métricas
+            epoch_loss = running_loss / total
+            epoch_acc = correct / total
+            self.history['train_loss'].append(epoch_loss)
+            self.history['train_acc'].append(epoch_acc)
+            
+            print(f'Epoch {epoch+1} - Loss: {epoch_loss:.4f} - Acc: {epoch_acc:.4f}')
+    
+    def plot_training_history(self):
+        plt.figure(figsize=(12, 5))
+        
+        # Plot loss
+        plt.subplot(1, 2, 1)
+        plt.plot(self.history['train_loss'], label='Train Loss')
+        plt.title('Training Loss')
+        plt.xlabel('Epoch')
+        plt.ylabel('Loss')
+        plt.legend()
+        
+        # Plot accuracy
+        plt.subplot(1, 2, 2)
+        plt.plot(self.history['train_acc'], label='Train Accuracy')
+        plt.title('Training Accuracy')
+        plt.xlabel('Epoch')
+        plt.ylabel('Accuracy')
+        plt.legend()
+        
+        plt.tight_layout()
+        plt.show()
+
+def test_overfitting(model, dataloader, epochs=50, lr=1e-3):
+    # Pegar um único batch
+    single_batch = next(iter(dataloader))
+    
+    # Criar trainer com modo overfit
+    trainer = Trainer(model, dataloader)
+    
+    print("Iniciando teste de overfitting em um único batch...")
+    trainer.train(epochs=epochs, lr=lr, overfit_batch=True)
+    
+    # Plotar resultados
+    trainer.plot_training_history()
+    
+    # Verificar se conseguiu overfit (acc deveria chegar perto de 1.0)
+    final_acc = trainer.history['train_acc'][-1]
+    print(f"\nAcurácia final no batch: {final_acc:.4f}")
+    if final_acc > 0.95:
+        print("✅ Modelo conseguiu overfit no batch (como esperado)")
+    else:
+        print("❌ Modelo não conseguiu overfit - verifique arquitetura/learning rate")
+
+
 # -------------------------------
 # Exemplo de uso
 # -------------------------------
 if __name__ == '__main__':
-    # Instancia o modelo
+    
+    from pbc_dataset import PromptDataset, custom_collate
+    from torch.utils.data import DataLoader
+    
+    BATCH_SIZE = 12
+    EPOCHS = 20
+    LR = 1e-4
+    
+    # Dataset e DataLoader
+    train_dataset = PromptDataset("datasets/final/terumo/train", num_prompts=2)
+    train_loader = DataLoader(
+        train_dataset,
+        batch_size=BATCH_SIZE,
+        shuffle=True,
+        collate_fn=custom_collate,
+        num_workers=4
+    )
+    
+    # Modelo
     model = PromptableBinaryClassifier()
     
-    # Exemplo de batch com 2 imagens de consulta
-    query_img = torch.randn(2, 3, 224, 224)
+    # Opção 1: Treinamento normal
+    print("Iniciando treinamento normal...")
+    normal_trainer = Trainer(model, train_loader)
+    # normal_trainer.train(epochs=EPOCHS, lr=LR)
+    # normal_trainer.plot_training_history()
     
-    # Exemplo com 3 prompts positivos e 3 negativos por amostra
-    pos_prompts = torch.randn(2, 10, 3, 224, 224)
-    neg_prompts = torch.randn(2, 10, 3, 224, 224)
+    # Opção 2: Teste de overfitting (descomente para executar)
+    test_overfitting(model, train_loader, epochs=50, lr=1e-3)
     
-    # Forward
-    logits = model(query_img, pos_prompts, neg_prompts)
-    print("Logits:", logits.shape)
-    print("Logits:", logits)
+    
+    # model.to('cuda')
+    # for batch in dataloader:
+        
+    #     query_img = batch['query'].to('cuda')
+    #     pos_prompts = batch['pos_imgs'].to('cuda')
+    #     neg_prompts = batch['neg_imgs'].to('cuda')
+    #     labels = batch['query_label'].to('cuda')
+        
+    #     print("\nShapes dos prompts:")
+    #     print(f"Query: {query_img.shape}")
+    #     print(f"Positives: {pos_prompts.shape}")
+    #     print(f"Negatives: {neg_prompts.shape}")
+    #     logits = model(query_img, pos_prompts, neg_prompts)
+    #     print("Logits:", logits.shape)
+    #     print("Logits:", logits)
+    #     print("Labels:", labels)
+    #     break
