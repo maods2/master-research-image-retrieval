@@ -10,8 +10,8 @@ def main(args):
         train.train_wrapper(config)
     elif args.pipeline == 'test':
         test.test_wrapper(config)
-    elif args.pipeline == 'inference':
-        inference.inference_wrapper(config)
+    # elif args.pipeline == 'inference':
+    #     inference.inference_wrapper(config)
     else:
         raise ValueError(f'Unsupported pipeline: {args.pipeline}')
 
