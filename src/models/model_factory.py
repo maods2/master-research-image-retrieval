@@ -1,8 +1,11 @@
 from torchvision import models
 import torch.nn as nn
 
-from models.triplet_resnet import TripletResNet
+from models.clip import CLIP
+from models.triplet_resnet import TripletResNet, ResNet50
 from models.triplet_vit import TripletViT
+from models.dino import DINO
+from models.vit import ViT
 from utils.checkpoint_utils import load_checkpoint
 
 
@@ -11,14 +14,16 @@ def get_model(model_config):
     num_classes = model_config['num_classes']
 
     if model_name == 'resnet50':
-        model = models.resnet50(pretrained=True)
-        model.fc = nn.Linear(
-            model.fc.in_features, num_classes
-        )  # Adjust for the custom output layer
-    elif model_name == 'alexnet':
-        model = models.alexnet(pretrained=True)
-        model.classifier[6] = nn.Linear(
-            model.classifier[6].in_features, num_classes
+        model = ResNet50()  
+        
+    elif model_name == 'dino':
+        model = DINO(
+            model_name=model_config['model_name']
+        )
+        
+    elif model_name == 'clip':
+        model = CLIP(
+            model_name=model_config['model_name']
         )
 
     elif model_name == 'triplet_resnet':
@@ -26,6 +31,11 @@ def get_model(model_config):
 
     elif model_name == 'triplet_vit':
         model = TripletViT(embedding_size=model_config['embedding_size'])
+        
+    elif model_name == 'vit':
+        
+        model = ViT(model_name=model_config['vit_model_name'], pretrained=True)
+        model.model.head = nn.Identity()
 
     else:
         raise ValueError(f'Model {model_name} is not supported')

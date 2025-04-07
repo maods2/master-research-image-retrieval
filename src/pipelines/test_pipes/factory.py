@@ -1,10 +1,14 @@
 from typing import Dict
 
+import numpy as np
+
 from metrics.factory import get_metrics
 from metrics.metric_base import MetricBase, MetricLoggerBase
 from typing import Any, List
 import torch
 from torch.utils.data import DataLoader
+
+from utils.embedding_utils import create_embeddings_dict
 
 
 def default_test_fn(
@@ -27,12 +31,32 @@ def default_test_fn(
         metric_logger: MetricLoggerBase instance for logging metrics.
     """
     metrics_list: List[MetricBase] = get_metrics(config['testing'])
+    device = config['device'] if config.get('device') else ('cuda' if torch.cuda.is_available() else 'cpu')
 
+    if config['testing'].get('load_embeddings', False):
+        embeddings = np.load(config['testing']['embeddings_path'], allow_pickle=True)
+    else:
+        embeddings = create_embeddings_dict(
+            model,
+            train_loader,
+            test_loader,
+            device,
+            logger,
+            config
+        )
+
+    
     for metric in metrics_list:
-        results = metric(model, train_loader, test_loader, config, logger)
+        results = metric(
+            model,
+            train_loader,
+            test_loader,
+            embeddings,
+            config,
+            logger
+         )
+        
         logger.info(f'Results for {metric.__class__.__name__}: {results}')
-
-        # Log metrics using the provided logger
         metric_logger.log_metrics(results)
 
 

@@ -17,6 +17,7 @@ class Accuracy:
         model: Any,
         train_loader: Any,
         test_loader: Any,
+        embeddings: Dict[str, Any],
         config: Dict[str, Any],
         logger: Any,
     ) -> Dict[str, float]:

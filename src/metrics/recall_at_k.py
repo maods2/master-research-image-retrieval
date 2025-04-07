@@ -31,42 +31,6 @@ class RecallAtK(MetricBase):
         self.k_values = k_values
         self.similarity_fn = similarity_fn
 
-    def create_embeddings(
-        self, model, data_loader, device, logger, desc='Extracting features'
-    ):
-        """
-        Generate embeddings and labels from a given data loader.
-
-        Args:
-            model: The model used for generating embeddings.
-            data_loader: The data loader containing the data.
-            device: The device to perform computations (e.g., 'cuda' or 'cpu').
-            logger: Logger object for logging information.
-            desc: Description for the progress bar.
-
-        Returns:
-            tuple: A tuple containing embeddings (np.ndarray) and labels (np.ndarray).
-        """
-        embeddings = []
-        labels = []
-        model.eval()
-        model.to(device)
-        data_loader = tqdm.tqdm(data_loader, desc=desc)
-
-        for img, label in data_loader:
-            with torch.no_grad():
-                embedding = model(img.to(device))
-            embeddings.append(embedding.cpu().numpy())
-            labels.append(label.argmax(dim=1).cpu().numpy())
-
-        embeddings = np.concatenate(embeddings, axis=0)
-        labels = np.concatenate(labels, axis=0)
-
-        logger.info(
-            f'Embeddings shape: {embeddings.shape}, Labels shape: {labels.shape}'
-        )
-        return embeddings, labels
-
     def compute_recall_at_k(
         self,
         query_embeddings,
@@ -94,9 +58,7 @@ class RecallAtK(MetricBase):
         )
 
         # If the similarity function computes distance, invert it for ranking
-        if (
-            np.min(similarity_matrix) >= 0
-        ):  # Assumption: similarity is always positive
+        if np.min(similarity_matrix) >= 0:  # Assumption: similarity is always positive
             similarity_matrix = -similarity_matrix
 
         num_queries = similarity_matrix.shape[0]
@@ -127,7 +89,7 @@ class RecallAtK(MetricBase):
 
         return np.mean(recalls)
 
-    def __call__(self, model, train_loader, test_loader, config, logger):
+    def __call__(self, model, train_loader, test_loader,embeddings, config, logger):
         """
         Compute the Recall@K for the given model and dataset.
 
@@ -141,31 +103,19 @@ class RecallAtK(MetricBase):
         Returns:
             dict: A dictionary containing Recall@K values for each k in self.k_values.
         """
-        device = 'cuda' if torch.cuda.is_available() else 'cpu'
-
-        # Create embeddings database from the training data
-        logger.info('Creating embeddings database from training data...')
-        database_embeddings, database_labels = self.create_embeddings(
-            model, train_loader, device, logger, desc='Creating database'
-        )
-
-        # Generate query embeddings and labels from the test data
-        logger.info('Generating query embeddings from test data...')
-        query_embeddings, query_labels = self.create_embeddings(
-            model, test_loader, device, logger, desc='Generating queries'
-        )
 
         # Compute Recall for all k values
         logger.info('Computing Recall@K...')
         recall_results = {}
         for k in self.k_values:
             recall_results[f'recallAt{k}'] = self.compute_recall_at_k(
-                query_embeddings,
-                query_labels,
-                database_embeddings,
-                database_labels,
+                embeddings['query_embeddings'],
+                embeddings['query_labels'],
+                embeddings['db_embeddings'],
+                embeddings['db_labels'],
                 k,
             )
+
             logger.info(f"Recall@{k}: {recall_results[f'recallAt{k}']}")
 
         return recall_results

@@ -132,7 +132,7 @@ class PrecisionAtK(MetricBase):
 
         return np.mean(precisions)
 
-    def __call__(self, model, train_loader, test_loader, config, logger):
+    def __call__(self, model, train_loader, test_loader, embeddings, config, logger):
         """
         Compute the Precision@K for the given model and dataset.
 
@@ -146,36 +146,17 @@ class PrecisionAtK(MetricBase):
         Returns:
             dict: A dictionary containing Precision@K values for each k in self.k_values.
         """
-        device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-        if not 'embeddings' in self.database:
-            # Create embeddings database from the training data
-            logger.info('Creating embeddings database from training data...')
-            (
-                self.database['embeddings'],
-                self.database['labels'],
-            ) = self.create_embeddings(
-                model, train_loader, device, logger, desc='Creating database'
-            )
-
-            # Generate query embeddings and labels from the test data
-            logger.info('Generating query embeddings from test data...')
-            (
-                self.query['embeddings'],
-                self.query['labels'],
-            ) = self.create_embeddings(
-                model, test_loader, device, logger, desc='Generating queries'
-            )
 
         # Compute Precision for all k values
         logger.info('Computing Precision@K...')
         precision_results = {}
         for k in self.k_values:
             precision_results[f'precisionAt{k}'] = self.compute_precision_at_k(
-                self.query['embeddings'],
-                self.query['labels'],
-                self.database['embeddings'],
-                self.database['labels'],
+                embeddings['query_embeddings'],
+                embeddings['query_labels'],
+                embeddings['db_embeddings'],
+                embeddings['db_labels'],
                 k,
             )
             logger.info(
