@@ -8,6 +8,7 @@ wandb/
 *.egg-info
 *.tar
 *.zip
+*.bin
 
 mlruns
 notebooks/*.jpg

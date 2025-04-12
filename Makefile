@@ -24,6 +24,12 @@ retrieval-dino:
 retrieval-clip:
 	python3 src/main.py --config configs/retrieval_test/default_clip_config.yaml --pipeline test
 
+retrieval-uni:
+	python3 src/main.py --config configs/retrieval_test/default_uni_foundation_config.yaml --pipeline test
+
+retrieval-virchow2:
+	python3 src/main.py --config configs/retrieval_test/default_virchow2_foundation_config.yaml --pipeline test
+
 
 app:
 	streamlit run demo/app.py

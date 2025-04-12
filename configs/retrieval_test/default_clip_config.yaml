@@ -45,8 +45,6 @@ testing:
     # - type: f1_score
     # - type: precision
     # - type: recall
-    - type: map@k2
-      k_values: [1, 3, 5, 10]
     - type: map@k
       k_values: [1, 3, 5, 10]
     - type: precision@k

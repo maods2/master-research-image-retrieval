@@ -132,6 +132,8 @@ class AccuracyAtK(MetricBase):
                 retrieved_item = {
                     "k": idx_k,
                     "retrieved_label": int(retrieved_label),
+                    "retrieved_class": retrieved_class,
+                    "retrieved_path": retrieved_path,
                     "is_relevant": is_relevant,
                     "similarity": float(similarities[idx])
                 }
@@ -147,6 +149,8 @@ class AccuracyAtK(MetricBase):
             # Create query detail entry
             query_detail = {
                 "query_label": int(query_label),
+                "query_class": query_class,
+                "query_path": query_path,
                 "found_correct": found_correct,
                 "retrieved": retrieved_items
             }

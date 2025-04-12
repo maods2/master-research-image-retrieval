@@ -14,39 +14,39 @@ data:
   num_workers: 3  # Number of workers to load the data
   suffle_test: false
   suffle_train: false
-  
+
 # Transformation configuration for image preprocessing
 transform:
   resize: [224, 224]  # Resize images to 224x224
   normalize:
-    mean: [0.5, 0.5, 0.5]  # Normalize mean
-    std: [0.5, 0.5, 0.5]   # Normalize std
+    mean: [0.485, 0.456, 0.406]  # Normalize mean
+    std: [0.229, 0.224, 0.225]   # Normalize std
   to_tensor: true  # Convert to tensor (default is true)
 
 # Model configuration
 model:
-  name: "dino"  # Example: You can set it to resnet18, resnet34, etc.
-  experiment_name: "dino"  # Name of the experiment
+  name: "uni"  # Example: You can set it to resnet18, resnet34, etc.
+  experiment_name: "uni_foundation_pathology"  # Name of the experiment
   pretrained: true  # Use pre-trained weights
   num_classes: 6  # Number of classes in the dataset
   load_checkpoint: false  # Load a pre-trained model checkpoint
   checkpoint_path: ""  # Path to the model checkpoint
-  model_name: "vit_small_patch16_224_dino"  # Specify the ViT model name
+  model_name: "vit_large_patch16_224"  # Specify the ViT model name
 
 
 testing:
   pipeline: "default"  # The pipeline to run (e.g., default, retrieval, etc.)
-  load_embeddings: true  # Load embeddings from disk
-  embeddings_path: "./artifacts/embeddings_dino_2025-04-12_02-56-06.npz"  # Path to load embeddings
-  save_embeddings: false  # Save embeddings to disk
-  embeddings_save_path: "./artifacts/embeddings_dino"  # Path to save embeddings
+  load_embeddings: false  # Load embeddings from disk
+  embeddings_path: "./artifacts/embeddings_clip"  # Path to load embeddings
+  save_embeddings: true  # Save embeddings to disk
+  embeddings_save_path: "./artifacts/embeddings_uni_foundation_pathology"  # Path to save embeddings
   list_of_metrics:
     # - type: accuracy
     # - type: f1_score
     # - type: precision
     # - type: recall
-    # - type: map@k
-    #   k_values: [1, 3, 5, 10]
+    - type: map@k
+      k_values: [1, 3, 5, 10]
     - type: precision@k
       k_values: [1, 3, 5, 10]
     - type: recall@k
