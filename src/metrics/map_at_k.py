@@ -1,4 +1,7 @@
+import time
+import json
 import os
+from pathlib import Path
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -8,112 +11,171 @@ import torch
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 
-from sklearn.metrics.pairwise import cosine_similarity
-import numpy as np
-import tqdm
 
 
 class MapAtK(MetricBase):
-    def __init__(
-        self, k_values=None, similarity_fn=cosine_similarity, **kwargs
-    ):
+    def __init__(self, k_values, similarity_fn=(cosine_similarity, "similarity"), **kwargs):
         """
         Initialize the MapAtK metric with a list of k values.
-
+        
         Args:
             k_values (list): List of integers representing the k values to compute Accuracy for.
-            similarity_fn (callable): A function to compute similarity or distance between embeddings.
-                                      Default is cosine similarity.
+            similarity_fn (tuple): A tuple containing:
+                - A function to compute similarity or distance between embeddings.
+                - A string indicating the type of function: "similarity" or "distance".
+                Default is (cosine_similarity, "similarity").
             **kwargs: Additional properties that are not explicitly required by this class.
         """
-        # Explicit required properties
-        if k_values is None:
-            raise ValueError('k_values must be provided.')
-        self.k_values = k_values
-        self.similarity_fn = similarity_fn
+        if not k_values:
+            raise ValueError("k_values must be provided.")
+        
+        self.k_values = sorted(k_values)
+        
+        if not isinstance(similarity_fn, tuple) or len(similarity_fn) != 2:
+            raise ValueError("similarity_fn must be a tuple of (function, type_string)")
+        
+        self.sim_function, self.sim_type = similarity_fn
+        if self.sim_type not in ["similarity", "distance"]:
+            raise ValueError("similarity_fn type must be either 'similarity' or 'distance'")
 
-    def compute_map_at_k(
-        self,
-        query_embeddings,
-        query_labels,
-        database_embeddings,
-        database_labels,
-        k,
-    ):
+    def map_at_k(self, embeddings_dict, k_total, is_last=False):
         """
-        Compute MAP@K for the given queries and database.
-
-        Args:
-            query_embeddings: Embeddings of query images.
-            query_labels: Labels of query images.
-            database_embeddings: Embeddings of the database.
-            database_labels: Labels of the database.
-            k: The value of K for MAP@K.
-
+        Calculate Mean Average Precision at k for image retrieval.
+        
+        Parameters:
+        -----------
+        embeddings_dict : dict
+            Dictionary containing the following keys:
+            - 'query_embeddings': Embeddings of query images
+            - 'query_labels': Labels of query images
+            - 'query_classes': Class names of query images
+            - 'query_paths': Paths to query images
+            - 'db_embeddings': Embeddings of database images
+            - 'db_labels': Labels of database images
+            - 'db_path': Paths to database images (new key)
+            - 'class_mapping': Dictionary mapping labels to class names
+        k_total : int
+            Number of retrievals to consider
+        is_last : bool, optional
+            Whether this is the last k value to evaluate (determines whether to return full results)
+            
         Returns:
-            float: The MAP@K score.
+        --------
+        float
+            MAP@k value
+        dict or None
+            Full retrieval results if is_last is True, None otherwise
         """
-        # Use the dynamically provided similarity/distance function
-        similarity_matrix = self.similarity_fn(
-            query_embeddings, database_embeddings
-        )
+        # Extract data from embeddings dictionary
+        query_embeddings = embeddings_dict['query_embeddings']
+        query_labels = embeddings_dict['query_labels']
+        query_classes = embeddings_dict['query_classes']
+        query_paths = embeddings_dict['query_paths']
+        database_embeddings = embeddings_dict['db_embeddings']
+        database_labels = embeddings_dict['db_labels']
+        database_paths = embeddings_dict['db_path']
+        class_mapping = embeddings_dict['class_mapping'] if isinstance(embeddings_dict['class_mapping'], dict) else embeddings_dict['class_mapping'].item()
 
+        # Calculate similarity matrix
+        similarity_matrix = self.sim_function(query_embeddings, database_embeddings)
+        
+        # Adjust sorting based on similarity or distance type
+        if self.sim_type == "distance":
+            # For distance metrics (lower is better), sort in ascending order
+            sorted_indices = np.argsort(similarity_matrix, axis=1)[:, :k_total]
+        else:  # similarity
+            # For similarity metrics (higher is better), sort in descending order
+            sorted_indices = np.argsort(-similarity_matrix, axis=1)[:, :k_total]
+            
         num_queries = similarity_matrix.shape[0]
-        average_precisions = []
+        query_retrievals = []
+        avg_precisions = []
+        map_results = None  # Results to be returned if is_last is True (k_total is the last k value)
 
-        for i in range(num_queries):
-            query_label = query_labels[i]
-            similarities = similarity_matrix[i]
-            sorted_indices = np.argsort(-similarities)  # Descending order
-
-            # Compute precision at K
+        for idx_query in range(num_queries):
+            q_label = query_labels[idx_query]
+            q_class = query_classes[idx_query]
+            q_path = str(query_paths[idx_query])
+            q_sims = similarity_matrix[idx_query]
+            sorted_indices_for_query = sorted_indices[idx_query]
+            
             relevant_count = 0
-            precision_at_k = 0.0
-            for rank, idx in enumerate(sorted_indices[:k], start=1):
-                if database_labels[idx] == query_label:
+            cum_precision = 0.0
+            retrieved = []
+            
+            for k, retrieved_idx in enumerate(sorted_indices_for_query, start=1):
+                retrieved_label = database_labels[retrieved_idx]
+                retrieved_path = str(database_paths[retrieved_idx]) if database_paths[retrieved_idx] else None
+                is_relevant = int(retrieved_label == q_label)
+                
+                if is_relevant:
                     relevant_count += 1
-                    precision_at_k += relevant_count / rank
+                    cum_precision += relevant_count / k
+                    
+                retrieved.append({
+                    "k": k,
+                    "retrieved_label": int(retrieved_label),
+                    "retrieved_class": class_mapping[retrieved_label] if class_mapping else None,
+                    "retrieved_path": retrieved_path,
+                    "is_relevant": is_relevant,
+                    "similarity": float(q_sims[retrieved_idx])
+                })
+                
+            average_precision = cum_precision / relevant_count if relevant_count > 0 else 0.0
+            avg_precisions.append(average_precision)
+            
+            query_retrievals.append({
+                "average_precision": average_precision,
+                "query_label": int(q_label),
+                "query_class": q_class,
+                "query_path": q_path,
+                "retrieved": retrieved,
+            })
+            
+            print(f"Query {idx_query}: Average Precision = {average_precision:.4f}")
+            
+        mapk = float(np.mean(avg_precisions))
+        
+        if is_last:
+            map_results = {"mapk": mapk, "k": k_total, "query_retrievals": query_retrievals}
+            
+        return mapk, map_results
 
-            if relevant_count > 0:
-                average_precisions.append(
-                    precision_at_k / min(k, relevant_count)
-                )
-            else:
-                average_precisions.append(0.0)
-
-        return np.mean(average_precisions)
-
-    def __call__(self, model, train_loader, test_loader, embeddings, config, logger):
+    def __call__(self, model=None, train_loader=None, test_loader=None, embeddings=None, config=None, logger=None):
         """
-        Compute the MAP@K for the given model and dataset.
-
-        Args:
-            model: The model to evaluate.
-            train_loader: The data loader for training data (used for creating the database).
-            test_loader: The data loader for test data (used for queries).
-            config: Configuration object.
-            logger: Logger object for logging information.
-
-        Returns:
-            dict: A dictionary containing MAP@K values for each k in self.k_values.
+        - model: The trained model to use for generating embeddings
+        - train_loader: DataLoader for the training dataset
+        - test_loader: DataLoader for the testing dataset
+        - embeddings: Precomputed embeddings for evaluation
+        - config: Configuration object (optional)
+        - logger: Logger instance for logging messages
         """
-
-
-        # Compute MAP for all k values
-        logger.info('Computing MAP@K...')
+        if embeddings is None:
+            raise ValueError("Embeddings must be provided.")
+            
+        logger.info("Computing MAP@K...")
         map_results = {}
+        query_retrievals = None
+
+        # Calculate MAP@k for each k value
         for k in self.k_values:
-            map_results[f'mapAt{k}'] = self.compute_map_at_k(
-                embeddings['query_embeddings'],
-                embeddings['query_labels'],
-                embeddings['db_embeddings'],
-                embeddings['db_labels'],
-                k,
+            is_last = k == max(self.k_values)
+            map_results[f'mapAt{k}'], query_retrievals_at_k = self.map_at_k(
+                embeddings, k, is_last
             )
-            logger.info(f"MAP@{k}: {map_results[f'mapAt{k}']}")
-
-        return map_results
-
+            _map_at_k = map_results[f'mapAt{k}']
+            logger.info(f"MAP@{k}: {_map_at_k:.4f}")
+            
+        # Store the last query retrievals
+        if query_retrievals_at_k:
+            query_retrievals = query_retrievals_at_k
+            
+        return {
+            "map_at_k_results": map_results,
+            "map_at_k_query_details": query_retrievals
+        }
+        
+        
 
 if __name__ == '__main__':
     import albumentations as A
@@ -133,7 +195,7 @@ if __name__ == '__main__':
     model = models.resnet50(pretrained=True)
     model.fc = nn.Identity()
 
-    root_dir = '../../datasets/final/terumo/train'
+    root_dir = './datasets/final/terumo/train'
     custom_mapping = {
         'Crescent': 0,
         'Hypercellularity': 1,
@@ -167,7 +229,7 @@ if __name__ == '__main__':
     train_loader = DataLoader(
         dataset,
         batch_size=32,
-        shuffle=True,
+        shuffle=False,
         num_workers=3,
         pin_memory=True,
     )
@@ -175,7 +237,7 @@ if __name__ == '__main__':
     test_loader = DataLoader(
         dataset_test,
         batch_size=32,
-        shuffle=True,
+        shuffle=False,
         num_workers=3,
         pin_memory=True,
     )
@@ -186,5 +248,6 @@ if __name__ == '__main__':
     #     print(metrics)
 
     map_at_k = MapAtK([1, 5, 10])
-    metrics = map_at_k(model, train_loader, test_loader, None, SimpleLogger())
+    embeddings = np.load('artifacts/embeddings_dino_2025-04-12_02-56-06.npz', allow_pickle=True)
+    metrics = map_at_k(model, train_loader, test_loader, embeddings, None, SimpleLogger())
     print(metrics)

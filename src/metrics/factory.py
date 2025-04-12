@@ -39,7 +39,6 @@ def create_metric_instance(metric_type: str, metric_config: Dict):
         'f1_score': 'metrics.f1_score.F1Score',
         "multilabel_accuracy": "metrics.accuracy.MultilabelAccuracy",
         'map@k': 'metrics.map_at_k.MapAtK',
-        'map@k2': 'metrics.map_at_k.MapAtK2',
         'precision@k': 'metrics.precision_at_k.PrecisionAtK',
         'recall@k': 'metrics.recall_at_k.RecallAtK',
         'accuracy@k': 'metrics.accuracy_at_k.AccuracyAtK',

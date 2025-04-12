@@ -12,6 +12,8 @@ data:
     Sclerosis: 5
   batch_size: 32
   num_workers: 3  # Number of workers to load the data
+  suffle_test: false
+  suffle_train: false
 
 # Transformation configuration for image preprocessing
 transform:
@@ -24,7 +26,7 @@ transform:
 # Model configuration
 model:
   name: "resnet50"  # Example: You can set it to resnet18, resnet34, etc.
-  experiment_name: "test"  # Name of the experiment
+  experiment_name: "resnet50"  # Name of the experiment
   pretrained: true  # Use pre-trained weights
   num_classes: 6  # Number of classes in the dataset
   load_checkpoint: false  # Load a pre-trained model checkpoint

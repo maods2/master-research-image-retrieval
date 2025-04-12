@@ -6,6 +6,12 @@ import numpy as np
 import torch
 from tqdm import tqdm
 
+def invert_dict(d):
+    """Convert a dictionary to an inverted dictionary where keys become values and values become keys."""
+    if isinstance(d, np.ndarray):
+        d = d.item()  # Convert numpy array to dictionary
+    return {v: k for k, v in d.items()}
+
 def create_embeddings(
     model, data_loader, device, logger, desc='Extracting features'
 ):
@@ -78,8 +84,12 @@ def create_embeddings_dict(
     embeddings = {
         'db_embeddings': db_embeddings,
         'db_labels': db_labels,
+        'db_path': train_loader.dataset.image_paths,
         'query_embeddings': query_embeddings,
         'query_labels': query_labels,
+        'query_classes': test_loader.dataset.labels,
+        'query_paths': test_loader.dataset.image_paths,
+        'class_mapping': invert_dict(train_loader.dataset.class_mapping),
     }
     
     if config['testing']['save_embeddings']:
@@ -87,12 +97,9 @@ def create_embeddings_dict(
         path = config['testing']['embeddings_save_path'] + f'_{timestamp}.npz'
         np.savez(
            path,
-            db_embeddings=db_embeddings,
-            db_labels=db_labels,
-            query_embeddings=query_embeddings,
-            query_labels=query_labels,
+           **embeddings
         )
         logger.info(f'Embeddings saved to {path}')
 
         
-    return embeddings
+    return embeddings, path

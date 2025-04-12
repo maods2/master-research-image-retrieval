@@ -36,7 +36,7 @@ def default_test_fn(
     if config['testing'].get('load_embeddings', False):
         embeddings = np.load(config['testing']['embeddings_path'], allow_pickle=True)
     else:
-        embeddings = create_embeddings_dict(
+        embeddings, file_path = create_embeddings_dict(
             model,
             train_loader,
             test_loader,
@@ -44,6 +44,8 @@ def default_test_fn(
             logger,
             config
         )
+        config['testing']['embeddings_path'] = file_path
+
 
     
     for metric in metrics_list:

@@ -57,3 +57,10 @@ class MetricLoggerBase(ABC):
         Log an artifact.
         """
         raise NotImplementedError('Subclasses must implement this method.')
+
+    @abstractmethod
+    def log_json(self, artifact_path: str):
+        """
+        Log an artifact.
+        """
+        raise NotImplementedError('Subclasses must implement this method.')
