@@ -4,8 +4,11 @@ import os
 from pathlib import Path
 import sys
 
+
+
+
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from pipelines.train_pipes.multilabel_train import load_pretrained_model
+
 from metrics.metric_base import MetricBase
 import torch
 import numpy as np
@@ -132,7 +135,7 @@ class MapAtK(MetricBase):
                 "retrieved": retrieved,
             })
             
-            print(f"Query {idx_query}: Average Precision = {average_precision:.4f}")
+            # print(f"Query {idx_query}: Average Precision = {average_precision:.4f}")
             
         mapk = float(np.mean(avg_precisions))
         
@@ -241,13 +244,14 @@ if __name__ == '__main__':
         num_workers=3,
         pin_memory=True,
     )
+    
 
     # for k in [1, 5, 10]:
     #     map_at_k = MapAtK(k)
     #     metrics = map_at_k(model, train_loader, train_loader, None, simple_logger)
     #     print(metrics)
 
-    map_at_k = MapAtK([1, 5, 10])
-    embeddings = np.load('artifacts/embeddings_dino_2025-04-12_02-56-06.npz', allow_pickle=True)
-    metrics = map_at_k(model, train_loader, test_loader, embeddings, None, SimpleLogger())
-    print(metrics)
+    # map_at_k = MapAtK([1, 5, 10])
+    # embeddings = np.load('artifacts/embeddings_dino_2025-04-12_02-56-06.npz', allow_pickle=True)
+    # metrics = map_at_k(model, train_loader, test_loader, embeddings, None, SimpleLogger())
+    # print(metrics)

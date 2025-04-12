@@ -3,189 +3,134 @@ from metrics.metric_base import MetricLoggerBase
 import mlflow
 import os
 from datetime import datetime
-
-def save_json_with_timestamp(data, base_filename, config, subfolder="results"):
-    """
-    Save JSON data to a file in a timestamped folder, and save config if not already saved.
-    
-    Parameters:
-    -----------
-    data : dict
-        Data to save as JSON
-    base_filename : str
-        Base name for the file (without extension)
-    config : dict
-        Configuration dictionary containing model.experiment_name
-    subfolder : str, optional
-        Name of the subfolder to create within the results directory
-        
-    Returns:
-    --------
-    str
-        Path to the saved file
-    """
-
-    result_dir = subfolder
-    os.makedirs(result_dir, exist_ok=True)
-    
-    # Check if config has already been saved
-    config_filepath = os.path.join(result_dir, "config.json")
-    if not os.path.exists(config_filepath):
-        # Save config
-        with open(config_filepath, 'w') as f:
-            json.dump(config, f, indent=2)
-        print(f"Config saved to {config_filepath}")
-    
-    # Create full filepath for the main data
-    filepath = os.path.join(result_dir, f"{base_filename}.json")
-    
-    # Save JSON
-    with open(filepath, 'w') as f:
-        json.dump(data, f, indent=2)
-    
-    print(f"Results saved to {filepath}")
-    return filepath
+from typing import Dict, Optional
 
 class MLFlowMetricLogger(MetricLoggerBase):
-    def __init__(self, config: dict):
-        """
-        Initializes the MLFlowMetricLogger with experiment settings.
-
-        :param config: Dictionary containing the experiment settings.
-        """
+    def __init__(self, config: Dict):
         self.model_name = config.get('model', {}).get('name', 'default_model')
-        self.experiment_name = config.get('model', {}).get(
-            'experiment_name', 'default_experiment'
-        )
+        self.experiment_name = config.get('model', {}).get('experiment_name', 'default_experiment')
         self.timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-        self.run_id = None  # To store the unique identifier of the run
+        self.run_id: Optional[str] = None
 
-        self._setup_mlflow()
+        self._initialize_mlflow()
 
-    def _setup_mlflow(self):
-        """
-        Configures MLflow with the experiment name and starts a new run.
-        """
-        mlflow.set_experiment(self.experiment_name)  # Sets the experiment name
-        with mlflow.start_run(
-            run_name=f'{self.model_name}_{self.timestamp}'
-        ) as run:
-            self.run_id = (
-                run.info.run_id
-            )  # Stores the run ID for future reference
-            mlflow.log_param(
-                'model_name', self.model_name
-            )  # Logs the model name
-            mlflow.log_param(
-                'experiment_name', self.experiment_name
-            )  # Logs the experiment name
-            mlflow.log_param('timestamp', self.timestamp)  # Logs the timestamp
+    def _initialize_mlflow(self):
+        """Sets MLflow experiment and starts a new run with basic parameters."""
+        mlflow.set_experiment(self.experiment_name)
+        run_name = f'{self.model_name}_{self.timestamp}'
+        run = mlflow.start_run(run_name=run_name)
+        self.run_id = run.info.run_id
 
-    def log_metric(self, metric_name: str, value: float, step: int = None):
-        """
-        Logs a single metric to MLflow.
+        self._log_basic_params()
 
-        :param metric_name: Name of the metric.
-        :param value: Value of the metric.
-        :param step: Optional step/epoch number to associate with the metric.
-        """
+    def _log_basic_params(self):
+        """Logs initial experiment parameters."""
+        mlflow.log_params({
+            'model_name': self.model_name,
+            'experiment_name': self.experiment_name,
+            'timestamp': self.timestamp
+        })
+
+    def _ensure_run_started(self):
+        """Raises an error if no MLflow run is active."""
         if not self.run_id:
-            raise ValueError(
-                'MLflow is not properly configured, or the run was not started.'
-            )
-        if step is not None:
-            mlflow.log_metric(metric_name, value, step=step)
-        else:
-            mlflow.log_metric(metric_name, value)
+            raise RuntimeError("MLflow run is not active or was not initialized properly.")
 
-    def log_metrics(self, metrics: dict, step: int = None):
-        """
-        Logs multiple metrics to MLflow.
+    def log_metric(self, metric_name: str, value: float, step: Optional[int] = None):
+        self._ensure_run_started()
+        mlflow.log_metric(metric_name, value, step=step) if step is not None else mlflow.log_metric(metric_name, value)
 
-        :param metrics: Dictionary of metrics, where keys are metric names and values are their respective values.
-        :param step: Optional step/epoch number to associate with the metrics.
-        """
-        for metric_name, value in metrics.items():
-            self.log_metric(metric_name, value, step=step)
+    def log_metrics(self, metrics: Dict[str, float], step: Optional[int] = None):
+        for name, value in metrics.items():
+            self.log_metric(name, value, step=step)
 
-    def log_params(self, params: dict):
-        """
-        Logs parameters to MLflow.
-
-        :param params: Dictionary of parameters, where keys are parameter names and values are their respective values.
-        """
-        if not self.run_id:
-            raise ValueError(
-                'MLflow is not properly configured, or the run was not started.'
-            )
+    def log_params(self, params: Dict):
+        self._ensure_run_started()
         mlflow.log_params(params)
 
     def log_artifact(self, artifact_path: str):
-        """
-        Logs an artifact to MLflow.
-
-        :param artifact_path: Path to the artifact file (e.g., model weights or configuration file).
-        """
-        if not self.run_id:
-            raise ValueError(
-                'MLflow is not properly configured, or the run was not started.'
-            )
+        self._ensure_run_started()
         mlflow.log_artifact(artifact_path)
+
+    def log_json(self, params: dict, base_filename: str = "params.json"):
+        """
+        Logs a dictionary as a JSON artifact to MLflow.
         
-    def log_json(self, params: dict):
+        :param params: Dictionary to log.
+        :param artifact_file_name: Name to give to the JSON file in MLflow.
         """
-        Logs a JSON file to MLflow.
+        self._ensure_run_started()
+        mlflow.log_dict(params, base_filename)
 
-        :param params: Dictionary of parameters to log as JSON.
-        """
-        if not self.run_id:
-            raise ValueError(
-                'MLflow is not properly configured, or the run was not started.'
-            )
+class FileUtils:
+    @staticmethod
+    def ensure_dir_exists(path: str):
+        os.makedirs(path, exist_ok=True)
 
-        mlflow.log_dict(params)
+    @staticmethod
+    def save_json(data: dict, filepath: str):
+        with open(filepath, 'w') as f:
+            json.dump(data, f, indent=2)
+
+    @staticmethod
+    def save_config_once(config: dict, save_dir: str, filename: str = "config.json"):
+        filepath = os.path.join(save_dir, filename)
+        if not os.path.exists(filepath):
+            FileUtils.save_json(config, filepath)
+            print(f"Config saved to {filepath}")
+
+    @staticmethod
+    def save_json_with_timestamp(data: dict, base_filename: str, config: dict, subfolder: str = "results") -> str:
+        FileUtils.ensure_dir_exists(subfolder)
+        FileUtils.save_config_once(config, subfolder)
+
+        filepath = os.path.join(subfolder, f"{base_filename}.json")
+        FileUtils.save_json(data, filepath)
+        print(f"Results saved to {filepath}")
+        return filepath
 
 
 class TxtMetricLogger(MetricLoggerBase):
-    def __init__(self, config: dict):
+    def __init__(self, config: Dict):
         self.config = config
-        workspace_dir = config.get('workspace_dir', './')
-        model_name = config.get('model', {}).get('name', 'default_model')
-        experiment_name = config.get('model', {}).get(
-            'experiment_name', 'default_experiment'
-        )
-        timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+        self.folder_name = self._generate_experiment_folder()
+        self.workspace_dir = config.get('workspace_dir', f"./local_experiments/{self.folder_name}")
+        FileUtils.ensure_dir_exists(self.workspace_dir)
 
-        self.folder_name = f'{experiment_name}_{timestamp}'
         file_name = f'{self.folder_name}_metrics.txt'
-        
-        self.file_path = os.path.join(workspace_dir, file_name)
+        self.metric_file_path = os.path.join(self.workspace_dir, file_name)
 
-    def log_metric(self, metric_name: str, value: float, step: int = None):
-        with open(self.file_path, 'a') as f:
-            f.write(f'{metric_name}: {value}\n')
+    def _generate_experiment_folder(self) -> str:
+        # model_name = self.config.get('model', {}).get('name', 'default_model')
+        experiment_name = self.config.get('model', {}).get('experiment_name', 'default_experiment')
+        timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+        return f"{experiment_name}_{timestamp}"
 
-    def log_metrics(self, metrics: dict, step: int = None):
-        with open(self.file_path, 'a') as f:
-            for metric_name, value in metrics.items():
-                self.log_json(value, metric_name)
-   
+    def _append_line(self, line: str):
+        with open(self.metric_file_path, 'a') as f:
+            f.write(f"{line}\n")
+
+    def log_metric(self, metric_name: str, value: float, step: Optional[int] = None):
+        self._append_line(f"{metric_name}: {value}")
+
+    def log_metrics(self, metrics: Dict[str, float], step: Optional[int] = None):
+        for metric_name, value in metrics.items():
+            self.log_json(metric_name, value)
+
     def log_json(self, params: dict, base_filename: str):
-        save_json_with_timestamp(
-            params,
-            base_filename,
+        FileUtils.save_json_with_timestamp(
+            data=params,
+            base_filename=base_filename,
             config=self.config,
-            subfolder=f"local_experiments/{self.folder_name}"
+            subfolder=self.workspace_dir
         )
-        
-    def log_params(self, params: dict):
-        with open(self.file_path, 'a') as f:
-            for param_name, value in params.items():
-                f.write(f'{param_name}: {value}\n')
+
+    def log_params(self, params: Dict[str, str]):
+        for param_name, value in params.items():
+            self._append_line(f"{param_name}: {value}")
 
     def log_artifact(self, artifact_path: str):
-        with open(self.file_path, 'a') as f:
-            f.write(f'Artifact: {artifact_path}\n')
+        self._append_line(f"Artifact: {artifact_path}")
 
 ########## Factory Function ##########
 

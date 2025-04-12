@@ -4,7 +4,7 @@ import torch.nn as nn
 from models.clip import CLIP
 from models.triplet_resnet import TripletResNet, ResNet50
 from models.triplet_vit import TripletViT
-from models.dino import DINO
+from models.dino import DINO, DINOv2
 from models.uni import UNI
 from models.virchow2 import Virchow2
 from models.vit import ViT
@@ -20,6 +20,9 @@ def get_model(model_config):
         
     elif model_name == 'dino':
         model = DINO(model_name=model_config['model_name'])
+
+    elif model_name == 'dinov2':
+        model = DINOv2(model_name=model_config['model_name'])
         
     elif model_name == 'clip':
         model = CLIP(  model_name=model_config['model_name'])

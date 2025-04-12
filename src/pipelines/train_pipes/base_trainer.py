@@ -4,6 +4,10 @@ from typing import Any, Callable, Dict, List, Optional, Union
 import torch
 from torch.utils.data import DataLoader
 
+from metrics.metric_base import MetricLoggerBase
+from utils.checkpoint_utils import save_model_and_log_artifact
+from utils.dataloader_utils import create_balanced_db_and_query
+from utils.embedding_utils import load_or_create_embeddings
 
 
 class BaseTrainer(ABC):
@@ -21,7 +25,13 @@ class BaseTrainer(ABC):
         self.retrieval_at_k_metrics = []
 
     
-    def _initialize_sample_dataloader(self, data_loader: DataLoader) -> None:
+    def _initialize_sample_dataloader(
+            self, 
+            data_loader: DataLoader, 
+            total_db_samples=400, 
+            total_query_samples=60, 
+            seed=42
+            ) -> None:
         """Initialize sample dataloaders for database and query samples.
         
         Args:
@@ -29,9 +39,9 @@ class BaseTrainer(ABC):
         """
         db_subset, query_subset = create_balanced_db_and_query(
             dataset=data_loader.dataset,
-            total_db_samples=400,
-            total_query_samples=60,
-            seed=42
+            total_db_samples=total_db_samples,
+            total_query_samples=total_query_samples,
+            seed=seed
         )
         
         db_loader = torch.utils.data.DataLoader(
@@ -75,7 +85,12 @@ class BaseTrainer(ABC):
         """
         # Initialize sample dataloader if not already created
         if self.sample_dataloader is None:
-            self._initialize_sample_dataloader(train_loader)
+            self._initialize_sample_dataloader(
+                train_loader,
+                total_db_samples=config['training']['val_retrieval']['total_db_samples'],
+                total_query_samples=config['training']['val_retrieval']['total_query_samples'],
+                seed=config['training']['val_retrieval']['seed']
+                )
         
         embeddings = load_or_create_embeddings(
             model,
@@ -99,7 +114,30 @@ class BaseTrainer(ABC):
             results[metric.__class__.__name__] = res
             
         return results
-    
+
+    def save_model_if_best(self, model, metric, best_metric, model_path, metric_logger, mode='loss'):
+        """
+        Save the model if the current metric is better than the best metric.
+
+        Args:
+        epoch (int): Current epoch number.
+        model (torch.nn.Module): The model to be saved.
+        optimizer (torch.optim.Optimizer): The optimizer used for training.
+        metric (float): The current metric value (loss or accuracy).
+        best_metric (float): The best metric value so far.
+        model_path (str): Path to save the model.
+        config (dict): Configuration dictionary.
+        metric_logger (object): Logger to log the metrics.
+        mode (str): Mode to determine whether to save based on 'loss' or 'accuracy'. Default is 'loss'.
+
+        Returns:
+        str: Path to the saved model checkpoint if the model is saved, otherwise None.
+        """
+        if (mode == 'loss' and metric < best_metric) or (mode == 'accuracy' and metric > best_metric):
+            best_metric = metric
+            model_path = save_model_and_log_artifact(
+                metric_logger, self.config , model, filepath=model_path
+            )
 
     @abstractmethod
     def __call__(

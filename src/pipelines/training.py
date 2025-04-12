@@ -1,7 +1,7 @@
 from dataloaders.transform_factory import get_transforms
 from dataloaders.dataset_factory import get_dataloader
 from optimizers.optimizer_factory import get_optimizer
-from pipelines.test_pipes.factory import get_test_function
+from pipelines.test_pipes.test_pipeline_factory import get_test_function
 from pipelines.train_pipes.train_factory import get_train_function
 from models.model_factory import get_model
 from losses.loss_factory import get_loss
@@ -27,7 +27,7 @@ def train_wrapper(config):
     train_loader, test_loader = get_dataloader(config['data'], transforms)
 
     # Custom training function
-    train_fn = get_train_function(config['training']['pipeline'])
+    train_fn = get_train_function(config)
     test_fn = get_test_function(config['testing'])
 
     # Training

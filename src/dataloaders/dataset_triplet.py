@@ -9,54 +9,17 @@ import cv2
 import numpy as np
 import albumentations as A
 
+from dataloaders.dataset import StandardImageDataset
 from dataloaders.dataset_terumo import TerumoImageDataset
 
 
-class TripletDataset(Dataset):
+class TripletDataset(StandardImageDataset):
     def __init__(self, root_dir, transform=None, class_mapping=None):
         self.root_dir = Path(root_dir)
         self.transform = transform if transform else A.Compose([A.ToFloat()])
-        self.image_paths = []
-        self.labels = []
+        super().__init__(root_dir, transform, class_mapping)
 
-        # Identify classes from directories
-        classes = sorted(
-            [
-                folder.name
-                for folder in self.root_dir.iterdir()
-                if folder.is_dir()
-            ]
-        )
-        self.class_mapping = class_mapping or {
-            class_name: idx for idx, class_name in enumerate(classes)
-        }
-
-        if any(class_name not in self.class_mapping for class_name in classes):
-            raise ValueError(
-                'Some classes in the directory are not in the provided mapping.'
-            )
-
-        # Organize image paths by class
-        self.image_dict = {class_name: [] for class_name in classes}
-        for class_name in classes:
-            class_dir = self.root_dir / class_name
-            image_extensions = ('.jpg', '.jpeg', '.png', '.tif', '.tiff')
-
-            images = [
-                file
-                for file in class_dir.rglob('*')
-                if file.suffix.lower() in image_extensions
-            ]
-            if len(images) < 2:
-                raise ValueError(
-                    f'The class {class_name} has less than two images, which makes it impossible to form positive pairs.'
-                )
-
-            self.image_dict[class_name].extend(images)
-            self.image_paths.extend(images)
-            self.labels.extend([class_name] * len(images))
-
-        self.num_classes = len(classes)
+        self.num_classes = len(self.class_mapping)
 
     def __len__(self):
         return len(self.image_paths)
@@ -105,6 +68,10 @@ class MixedTripletDataset(Dataset):
         self._triplet_dataset = TripletDataset(
             root_dir, transform, class_mapping
         )
+        self.labels = self._multiclass_dataset.labels
+        self.image_paths = self._multiclass_dataset.image_paths
+        self.class_mapping = self._multiclass_dataset.class_mapping
+        self.labels_str = self._multiclass_dataset.labels_str
 
     def __len__(self):
         if self.triplet_active:
@@ -119,6 +86,8 @@ class MixedTripletDataset(Dataset):
     def switch_to_classifcation_dataset(self):
         self.triplet_active = False
 
+    def switch_to_triplet_dataset(self):
+        self.triplet_active = True
 
 # Example usage
 if __name__ == '__main__':

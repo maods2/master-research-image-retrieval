@@ -1,13 +1,14 @@
-def get_train_function(pipeline_config):
-    if pipeline_config == 'train_multilabel':
+def get_train_function(config):
+    
+    if config['training']['pipeline'] == 'train_multilabel':
         from pipelines.train_pipes.multilabel_train import train_multilabel
-
         return train_multilabel
-    elif pipeline_config == 'train_triplet':
+    
+    elif config['training']['pipeline'] == 'train_triplet':
         from pipelines.train_pipes.triplet_train import TripletTrain
-
-        return TripletTrain()
+        return TripletTrain(config)
+    
     else:
         raise ValueError(
-            f'Training pipeline {pipeline_config} is not supported'
+            f'Training pipeline {config["training"]["pipeline"]} is not supported'
         )

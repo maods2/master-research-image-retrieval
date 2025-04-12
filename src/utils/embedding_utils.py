@@ -1,7 +1,7 @@
 import time
 from typing import Dict, Tuple, Any
 import torch
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Subset
 import numpy as np
 import torch
 from tqdm import tqdm
@@ -38,7 +38,11 @@ def create_embeddings(
         with torch.no_grad():
             embedding = model(img.to(device))
         embeddings.append(embedding.cpu().numpy())
-        labels.append(label.argmax(dim=1).cpu().numpy())
+        # Handle both one-hot and standard labels
+        if len(label.shape) > 1:  # one-hot encoded
+            label = label.argmax(dim=1)
+        labels.append(label.cpu().numpy())
+        # labels.append(label.argmax(dim=1).cpu().numpy())
 
     embeddings = np.concatenate(embeddings, axis=0)
     labels = np.concatenate(labels, axis=0)
@@ -47,8 +51,33 @@ def create_embeddings(
         f'Embeddings shape: {embeddings.shape}, Labels shape: {labels.shape}'
     )
     return embeddings, labels
+
+def get_dataset_attribute(dataset, attribute_name: str):
+    """
+    Helper function to get attributes from either regular or subset dataset.
     
+    Args:
+        dataset: Dataset object (can be either regular dataset or subset)
+        attribute_name: Name of the attribute to retrieve (e.g., 'labels', 'image_paths', 'class_mapping')
     
+    Returns:
+        The requested attribute value
+    """
+    if hasattr(dataset, 'dataset') and isinstance(dataset, Subset):  # Subset dataset
+        indices = dataset.indices
+        original_dataset = dataset.dataset
+        
+        if attribute_name in ['image_paths', 'labels', 'labels_str']:
+            # Handle list-type attributes that need to be subset
+            original_attr = getattr(original_dataset, attribute_name)
+            return [original_attr[i] for i in indices]
+        else:
+            # Handle other attributes (like class_mapping) that should be returned as-is
+            return getattr(original_dataset, attribute_name)
+    else:
+        # Regular dataset - return attribute directly
+        return getattr(dataset, attribute_name)
+
 def create_embeddings_dict(
     model: torch.nn.Module,
     train_loader: DataLoader,
@@ -81,15 +110,16 @@ def create_embeddings_dict(
         model, test_loader, device, logger, desc='Generating queries'
     )
 
+    # Use the generalist function to get attributes
     embeddings = {
         'db_embeddings': db_embeddings,
         'db_labels': db_labels,
-        'db_path': train_loader.dataset.image_paths,
+        'db_path': get_dataset_attribute(train_loader.dataset, 'image_paths'),
         'query_embeddings': query_embeddings,
         'query_labels': query_labels,
-        'query_classes': test_loader.dataset.labels,
-        'query_paths': test_loader.dataset.image_paths,
-        'class_mapping': invert_dict(train_loader.dataset.class_mapping),
+        'query_classes': get_dataset_attribute(test_loader.dataset, 'labels_str'),
+        'query_paths': get_dataset_attribute(test_loader.dataset, 'image_paths'),
+        'class_mapping': invert_dict(get_dataset_attribute(train_loader.dataset, 'class_mapping')),
     }
     
     if config['testing']['save_embeddings']:
@@ -100,6 +130,52 @@ def create_embeddings_dict(
            **embeddings
         )
         logger.info(f'Embeddings saved to {path}')
+        return embeddings, path
 
         
-    return embeddings, path
+    return embeddings, None
+
+
+def load_or_create_embeddings(
+    model: torch.nn.Module,
+    train_loader: DataLoader,
+    test_loader: DataLoader,
+    config: Dict[str, Any],
+    logger: Any,
+    device: str = None
+) -> Tuple[Dict, str]:
+    """
+    Load existing embeddings or create new ones based on configuration.
+    
+    Args:
+        model: PyTorch model to use for creating embeddings
+        train_loader: DataLoader for training data
+        test_loader: DataLoader for test data
+        config: Configuration dictionary containing testing settings
+        logger: Logger instance for logging information
+        device: Device to use for computation (default: None, will use cuda if available)
+        
+    Returns:
+        Tuple containing:
+            - Dictionary of embeddings
+            - String path where embeddings were saved (if created)
+    """
+    if device is None:
+        device = config.get('device', 'cuda' if torch.cuda.is_available() else 'cpu')
+
+    if config['testing'].get('load_embeddings', False):
+        logger.info(f"Loading embeddings from {config['testing']['embeddings_path']}")
+        embeddings = np.load(config['testing']['embeddings_path'], allow_pickle=True)
+        return embeddings, config['testing']['embeddings_path']
+    
+    logger.info("Creating new embeddings...")
+    embeddings, file_path = create_embeddings_dict(
+        model,
+        train_loader,
+        test_loader,
+        device,
+        logger,
+        config
+    )
+    config['testing']['embeddings_path'] = file_path
+    return embeddings

@@ -7,7 +7,7 @@ from torch.utils.data import Dataset
 
 
 class StandardImageDataset(Dataset):
-    def __init__(self, root_dir, transform=None, class_mapping=None):
+    def __init__(self, root_dir, transform=None, class_mapping=None, return_one_hot=False):
         """
         Initializes the dataset.
 
@@ -19,9 +19,11 @@ class StandardImageDataset(Dataset):
         """
         self.root_dir = Path(root_dir)
         self.transform = transform
-        self.image_paths = []  # List of full paths to images
-        self.labels = []       # List of text labels
-        self.one_hot_labels = []   # List of one-hot encoded labels
+        self.image_paths = []       # List of full paths to images
+        self.labels = []            # List of integer labels      
+        self.one_hot_labels = []    # List of one-hot encoded labels
+        self.labels_str = []        # List of text labels
+        self.return_one_hot = return_one_hot
 
         # Get class names from folder names
         classes = sorted(
@@ -45,7 +47,8 @@ class StandardImageDataset(Dataset):
                 )
 
         self.class_mapping = class_mapping
-
+        self.image_dict = {self.class_mapping[class_name]: [] for class_name in classes}
+        
         for class_name in classes:
             class_dir = self.root_dir / class_name
             image_extensions = ['*.jpg', '*.jpeg', '*.png', '*.tif', '*.tiff']
@@ -55,6 +58,9 @@ class StandardImageDataset(Dataset):
             for ext in image_extensions:
                 images.extend(class_dir.rglob(ext))
 
+            #
+            self.image_dict[self.class_mapping[class_name]].extend(images)
+            
             # Register images and labels
             for file_path in images:
 
@@ -65,8 +71,9 @@ class StandardImageDataset(Dataset):
                 one_hot_label[self.class_mapping[class_name]] = 1.0
 
                 self.image_paths.append(file_path)
-                self.labels.append(class_name)
+                self.labels.append(self.class_mapping[class_name])
                 self.one_hot_labels.append(one_hot_label)
+                self.labels_str.append(class_name)
 
     def __len__(self):
         # Return the total number of samples in the dataset
@@ -83,9 +90,11 @@ class StandardImageDataset(Dataset):
             tuple: (transformed image, one-hot encoded label)
         """
         img_path = str(self.image_paths[idx])
-        one_hot_label = torch.tensor(
-            self.one_hot_labels[idx], dtype=torch.float32
-        )
+        
+        if self.return_one_hot:
+            label = torch.tensor(self.one_hot_labels[idx], dtype=torch.float32)
+        else:
+            label = self.labels[idx]
 
         # Load the image using OpenCV
         image = cv2.imread(img_path)
@@ -99,4 +108,4 @@ class StandardImageDataset(Dataset):
         if self.transform:
             image = self.transform(image=image)['image']
 
-        return image, one_hot_label
+        return image, label

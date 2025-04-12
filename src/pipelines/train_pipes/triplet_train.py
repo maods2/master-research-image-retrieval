@@ -1,29 +1,21 @@
-from abc import ABC, abstractmethod
 
 import torch
 from tqdm import tqdm
-import copy
-
+from torch.utils.data import DataLoader
 from metrics.metric_base import MetricLoggerBase
-from metrics.precision_at_k import PrecisionAtK
+from metrics.metric_factory import get_metrics
+from pipelines.train_pipes.base_trainer import BaseTrainer
 from utils.checkpoint_utils import save_model_and_log_artifact
 
 
-class BaseTrain(ABC):
-    @abstractmethod
-    def __call__(
-        self,
-        model: torch.nn.Module,
-        loss_fn: callable,
-        optimizer: torch.optim.Optimizer,
-        train_loader: torch.utils.data.DataLoader,
-        config: dict,
-        logger: callable,
-        metric_logger: MetricLoggerBase,
-    ) -> torch.nn.Module:
-        raise NotImplementedError('Subclasses must implement this method.')
 
-    @abstractmethod
+
+class TripletTrain(BaseTrainer):
+    def __init__(self, config: dict):
+        self.config = config
+        super().__init__()
+        self.retrieval_at_k_metrics = get_metrics(config['training'])
+    
     def train_one_epoch(
         self,
         model,
@@ -31,38 +23,6 @@ class BaseTrain(ABC):
         optimizer,
         train_loader,
         device,
-        log_interval,
-        epoch,
-    ):
-        raise NotImplementedError('Subclasses must implement this method.')
-
-
-class TripletTrain(BaseTrain):
-    def __init__(self):
-        self.precision_at_k = PrecisionAtK([1, 5, 10])
-        self._dataset_already_cloned = False
-
-    def compute_precisiont_at_k(self, model, train_loader, config, logger):
-        if not self._dataset_already_cloned:
-            copy_loader = copy.deepcopy(train_loader)
-            copy_loader.dataset.switch_to_classifcation_dataset()
-            self.precision_at_k(
-                model, copy_loader, copy_loader, config, logger
-            )
-            self._dataset_already_cloned = True
-
-        return self.precision_at_k(
-            model, train_loader, train_loader, config, logger
-        )
-
-    def train_one_epoch(
-        self,
-        model,
-        loss_fn,
-        optimizer,
-        train_loader,
-        device,
-        log_interval,
         epoch,
     ):
         model.train()
@@ -101,6 +61,7 @@ class TripletTrain(BaseTrain):
         loss_fn: callable,
         optimizer: torch.optim.Optimizer,
         train_loader: torch.utils.data.DataLoader,
+        test_loader: torch.utils.data.DataLoader,
         config: dict,
         logger: callable,
         metric_logger: MetricLoggerBase,
@@ -123,7 +84,7 @@ class TripletTrain(BaseTrain):
         device = config.get(
             'device', 'cuda' if torch.cuda.is_available() else 'cpu'
         )
-        log_interval = config.get('log_interval', 10)
+
         epochs = config['training']['epochs']
 
         model.to(device)
@@ -139,22 +100,37 @@ class TripletTrain(BaseTrain):
                 optimizer,
                 train_loader,
                 device,
-                log_interval,
                 epoch,
             )
 
-            precision_at_k = self.compute_precisiont_at_k(
+            train_loader.dataset.switch_to_classifcation_dataset() ## applied to MixTripletDataset
+            retrieval_at_k_metrics = self.eval_retrieval_at_k(
                 model, train_loader, config, logger
             )
-
+            train_loader.dataset.switch_to_triplet_dataset() ## applied to MixTripletDataset
+            
+            mapatk = retrieval_at_k_metrics['MapAtK']['map_at_k_results']
+            logger.info(f"Epoch {epoch + 1}/{epochs}, Loss: {epoch_loss:.4f}, MapAt10: {mapatk['mapAt10']:.4f}")
+            print(f"Epoch {epoch + 1}/{epochs}, Loss: {epoch_loss:.4f}, MapAt10: {mapatk['mapAt10']:.4f}")
+  
             # Log metrics
             metric_logger.log_metric('epoch_loss', epoch_loss, step=epoch)
-            metric_logger.log_metrics(precision_at_k, step=epoch)
+            metric_logger.log_metric('mapAt10', mapatk['mapAt10'], step=epoch)
+
+            
             # Save the model if the validation F1 score is the best so far
-            if epoch_loss < min_val_loss:
-                min_val_loss = epoch_loss
-                checkpoint_path = save_model_and_log_artifact(
-                    metric_logger, config, model, filepath=checkpoint_path
-                )
+            self.save_model_if_best(
+                model,
+                epoch_loss,
+                min_val_loss,
+                checkpoint_path,
+                metric_logger,
+                mode='loss'
+            )
+            # if epoch_loss < min_val_loss:
+            #     min_val_loss = epoch_loss
+            #     checkpoint_path = save_model_and_log_artifact(
+            #         metric_logger, config, model, filepath=checkpoint_path
+            #     )
 
         return model

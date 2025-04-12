@@ -1,15 +1,15 @@
 import argparse
 from utils.config_loader import load_config
-from pipelines import train, test, inference
+from pipelines import testing, training
 
 
 def main(args):
     config = load_config(args.config)
 
     if args.pipeline == 'train':
-        train.train_wrapper(config)
+        training.train_wrapper(config)
     elif args.pipeline == 'test':
-        test.test_wrapper(config)
+        testing.test_wrapper(config)
 
     else:
         raise ValueError(f'Unsupported pipeline: {args.pipeline}')
@@ -26,7 +26,7 @@ if __name__ == '__main__':
         '--pipeline',
         type=str,
         required=True,
-        help='Pipeline to run: train, test, inference',
+        help='Pipeline to run: train, test',
     )
     args = parser.parse_args()
     main(args)
