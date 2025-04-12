@@ -37,7 +37,7 @@ testing:
   pipeline: "default"  # The pipeline to run (e.g., default, retrieval, etc.)
   load_embeddings: false  # Load embeddings from disk
   embeddings_path: "./artifacts/embeddings_"  # Path to load embeddings
-  save_embeddings: false  # Save embeddings to disk
+  save_embeddings: true  # Save embeddings to disk
   embeddings_save_path: "./artifacts/embeddings_resnet50"  # Path to save embeddings
   list_of_metrics:
     # - type: accuracy

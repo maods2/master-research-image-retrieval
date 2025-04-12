@@ -36,9 +36,9 @@ model:
 
 testing:
   pipeline: "default"  # The pipeline to run (e.g., default, retrieval, etc.)
-  load_embeddings: true  # Load embeddings from disk
+  load_embeddings: false  # Load embeddings from disk
   embeddings_path: "./artifacts/embeddings_vit_2025-04-07_00-28-29.npz"  # Path to load embeddings
-  save_embeddings: false  # Save embeddings to disk
+  save_embeddings: true  # Save embeddings to disk
   embeddings_save_path: "./artifacts/embeddings_vit"  # Path to save embeddings
   list_of_metrics:
     # - type: accuracy
@@ -47,12 +47,12 @@ testing:
     # - type: recall
     - type: map@k
       k_values: [1, 3, 5, 10]
-    # - type: precision@k
-    #   k_values: [1, 3, 5, 10]
-    # - type: recall@k
-    #   k_values: [1, 3, 5, 10]
-    # - type: accuracy@k
-    #   k_values: [1, 3, 5, 10]
+    - type: precision@k
+      k_values: [1, 3, 5, 10]
+    - type: recall@k
+      k_values: [1, 3, 5, 10]
+    - type: accuracy@k
+      k_values: [1, 3, 5, 10]
 
 # Logging configuration
 logging:

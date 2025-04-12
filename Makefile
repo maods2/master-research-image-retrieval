@@ -30,6 +30,13 @@ retrieval-uni:
 retrieval-virchow2:
 	python3 src/main.py --config configs/retrieval_test/default_virchow2_foundation_config.yaml --pipeline test
 
+retrival-all:
+	make retrieval-vit
+	make retrieval-resnet
+	make retrieval-dino
+	make retrieval-clip
+	make retrieval-uni
+	make retrieval-virchow2
 
 app:
 	streamlit run demo/app.py
