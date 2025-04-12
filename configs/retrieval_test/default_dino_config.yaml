@@ -36,9 +36,9 @@ model:
 
 testing:
   pipeline: "default"  # The pipeline to run (e.g., default, retrieval, etc.)
-  load_embeddings: false  # Load embeddings from disk
-  embeddings_path: "./artifacts/embeddings_dino_2025-04-12_02-56-06.npz"  # Path to load embeddings
-  save_embeddings: true  # Save embeddings to disk
+  load_embeddings: true  # Load embeddings from disk
+  embeddings_path: "./artifacts/embeddings_dino_2025-04-12_06-51-14.npz"  # Path to load embeddings
+  save_embeddings: false  # Save embeddings to disk
   embeddings_save_path: "./artifacts/embeddings_dino"  # Path to save embeddings
   list_of_metrics:
     # - type: accuracy
