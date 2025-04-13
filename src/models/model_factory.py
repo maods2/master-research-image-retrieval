@@ -3,11 +3,10 @@ import torch.nn as nn
 
 from models.clip import CLIP
 from models.triplet_resnet import TripletResNet, ResNet50
-from models.triplet_vit import TripletViT
 from models.dino import DINO, DINOv2
 from models.uni import UNI
 from models.virchow2 import Virchow2
-from models.vit import ViT
+from models.vit import ViT, TripletViT
 from utils.checkpoint_utils import load_checkpoint
 
 
@@ -45,6 +44,8 @@ def get_model(model_config):
 
     else:
         raise ValueError(f'Model {model_name} is not supported')
+    
+    print(model_config['load_checkpoint'])
 
     if model_config['load_checkpoint']:
         load_checkpoint(model_config['checkpoint_path'], model)

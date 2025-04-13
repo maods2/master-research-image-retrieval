@@ -9,7 +9,10 @@ train:
 train-m:
 	python3 src/main.py --config configs/multilabel/train_config.yaml --pipeline train
 
-train-t:
+train-tri-vit-b:
+	python3 src/main.py --config configs/triplet/train_vit_config.yaml --pipeline train
+
+train-tri-res:
 	python3 src/main.py --config configs/triplet/train_resnet_config.yaml --pipeline train
 
 retrieval-vit:

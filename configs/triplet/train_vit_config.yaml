@@ -23,8 +23,8 @@ transform:
 
 # Model configuration
 model:
-  name: "triplet_resnet"  # Example: You can set it to resnet18, resnet34, etc.
-  experiment_name: "triplet_resnet"  # Name of the experiment
+  name: "triplet_vit"  # Example: You can set it to resnet18, resnet34, etc.
+  experiment_name: "triplet_vit"  # Name of the experiment
   embedding_size: 512  # Size of the embedding vector
   pretrained: true  # Use pre-trained weights
   num_classes: 6  # Number of classes in the dataset
@@ -72,9 +72,9 @@ testing:
     - type: accuracy@k
       k_values: [1, 3, 5, 10]
   load_embeddings: false  # Load embeddings from disk
-  embeddings_path: "./artifacts/embeddings_triplet_resnet"  # Path to load embeddings
+  embeddings_path: "./artifacts/embeddings_triplet_vit"  # Path to load embeddings
   save_embeddings: true  # Save embeddings to disk
-  embeddings_save_path: "./artifacts/embeddings_triplet_resnet"  # Path to save embeddings
+  embeddings_save_path: "./artifacts/embeddings_triplet_vit"  # Path to save embeddings
 
 # Logging configuration
 logging:
