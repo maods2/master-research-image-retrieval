@@ -92,6 +92,9 @@ class TripletTrain(BaseTrainer):
         checkpoint_path = None
         min_val_loss = float('inf')
 
+        training_loss = []
+        training_mapatk = []
+        
         for epoch in range(epochs):
             # Train the model for one epoch
             epoch_loss = self.train_one_epoch(
@@ -112,25 +115,25 @@ class TripletTrain(BaseTrainer):
             mapatk = retrieval_at_k_metrics['MapAtK']['map_at_k_results']
             logger.info(f"Epoch {epoch + 1}/{epochs}, Loss: {epoch_loss:.4f}, MapAt10: {mapatk['mapAt10']:.4f}")
             print(f"Epoch {epoch + 1}/{epochs}, Loss: {epoch_loss:.4f}, MapAt10: {mapatk['mapAt10']:.4f}")
-  
-            # Log metrics
-            metric_logger.log_metric('epoch_loss', epoch_loss, step=epoch)
-            metric_logger.log_metric('mapAt10', mapatk['mapAt10'], step=epoch)
 
+
+            training_loss.append(epoch_loss)
+            training_mapatk.append(mapatk['mapAt10'])
             
-            # Save the model if the validation F1 score is the best so far
-            self.save_model_if_best(
-                model,
-                epoch_loss,
-                min_val_loss,
-                checkpoint_path,
-                metric_logger,
-                mode='loss'
-            )
-            # if epoch_loss < min_val_loss:
-            #     min_val_loss = epoch_loss
-            #     checkpoint_path = save_model_and_log_artifact(
-            #         metric_logger, config, model, filepath=checkpoint_path
-            #     )
 
+            if epoch_loss < min_val_loss:
+                min_val_loss = epoch_loss
+                checkpoint_path = save_model_and_log_artifact(
+                    metric_logger, config, model, filepath=checkpoint_path
+                )
+
+        train_loader.dataset.switch_to_classifcation_dataset()
+        test_loader.dataset.switch_to_classifcation_dataset()
+        
+        metrics = {
+            'epoch_loss': training_loss,
+            'epoch_mapAt10': training_mapatk,
+        }
+        metric_logger.log_json(metrics, 'train_metrics')
+        
         return model

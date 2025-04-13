@@ -44,7 +44,7 @@ optimizer:
 # Training configuration
 training:
   pipeline: "train_triplet"  # The pipeline to run (e.g., train, finetune, etc.)
-  epochs: 60  # Number of epochs to train
+  epochs: 5  # Number of epochs to train
   lr_scheduler:
     name: "step_lr"  # Learning rate scheduler (step_lr, cosine_annealing, etc.)
     step_size: 10  # Step size for scheduler (for step_lr)

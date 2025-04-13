@@ -115,7 +115,7 @@ class TxtMetricLogger(MetricLoggerBase):
 
     def log_metrics(self, metrics: Dict[str, float], step: Optional[int] = None):
         for metric_name, value in metrics.items():
-            self.log_json(metric_name, value)
+            self.log_json(value, metric_name)
 
     def log_json(self, params: dict, base_filename: str):
         FileUtils.save_json_with_timestamp(
@@ -130,7 +130,11 @@ class TxtMetricLogger(MetricLoggerBase):
             self._append_line(f"{param_name}: {value}")
 
     def log_artifact(self, artifact_path: str):
-        self._append_line(f"Artifact: {artifact_path}")
+        artifact_save_path = os.path.join(self.workspace_dir, os.path.basename("artifact_path.txt" ))
+        with open(artifact_save_path, 'w') as f:
+            f.write(f"Artifact path: {artifact_path}\n")
+
+
 
 ########## Factory Function ##########
 
