@@ -45,8 +45,6 @@ def get_model(model_config):
     else:
         raise ValueError(f'Model {model_name} is not supported')
     
-    print(model_config['load_checkpoint'])
-
     if model_config['load_checkpoint']:
         load_checkpoint(model_config['checkpoint_path'], model)
 
