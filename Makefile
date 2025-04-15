@@ -52,7 +52,7 @@ retrival-all:
 	make retrieval-virchow2 DATASET=$(DATASET)
 
 # example: make retrival-all DATASET=ovarian-cancer
-# example: make retrival-all DATASET=ovarian-cancer
+# example: make retrival-all DATASET=bracs-resized
 
 
 app:
