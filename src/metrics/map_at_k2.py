@@ -5,7 +5,7 @@ from pathlib import Path
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from pipelines.train_pipes.multilabel_train import load_pretrained_model
+from pipelines.training_pipes.multilabel_train import load_pretrained_model
 from metrics.metric_base import MetricBase
 import torch
 import numpy as np

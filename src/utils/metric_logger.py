@@ -94,7 +94,7 @@ class TxtMetricLogger(MetricLoggerBase):
     def __init__(self, config: Dict):
         self.config = config
         self.folder_name = self._generate_experiment_folder()
-        self.workspace_dir = config.get('workspace_dir', f"./local_experiments/{self.folder_name}")
+        self.workspace_dir = config.get('workspace_dir', f"{config.get('output').get('results_dir')}/{self.folder_name}")
         FileUtils.ensure_dir_exists(self.workspace_dir)
 
         file_name = f'{self.folder_name}_metrics.txt'

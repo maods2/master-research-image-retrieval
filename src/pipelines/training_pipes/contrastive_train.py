@@ -3,7 +3,7 @@ from tqdm import tqdm
 from torch.utils.data import DataLoader
 from metrics.metric_base import MetricLoggerBase
 from metrics.metric_factory import get_metrics
-from pipelines.train_pipes.base_trainer import BaseTrainer
+from pipelines.training_pipes.base_trainer import BaseTrainer
 from utils.checkpoint_utils import save_model_and_log_artifact
 
 class ContrastiveTrain(BaseTrainer):

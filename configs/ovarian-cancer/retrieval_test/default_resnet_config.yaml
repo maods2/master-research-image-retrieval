@@ -1,20 +1,19 @@
 # Paths and directories for training and testing data
 data:
-  dataset_type: "TerumoImageDataset"  # Specify the dataset type (e.g., terumo, etc.)
-  train_dir: "datasets/final/terumo/train"
-  test_dir: "datasets/final/terumo/test"
+  dataset_type: "StandardImageDataset"  # Specify the dataset type (e.g., terumo, etc.)
+  train_dir: "datasets/final/ovarian-cancer-splitted/train"
+  test_dir: "datasets/final/ovarian-cancer-splitted/test"
   class_mapping:
-    Crescent: 0
-    Hypercellularity: 1
-    Membranous: 2
-    Normal: 3
-    Podocytopathy: 4
-    Sclerosis: 5
+    Clear_Cell: 0
+    Endometri: 1
+    Mucinous: 2
+    Non_Cancerous: 3
+    Serous: 4
   batch_size: 32
   num_workers: 3  # Number of workers to load the data
   suffle_test: false
   suffle_train: false
-  
+
 # Transformation configuration for image preprocessing
 transform:
   resize: [224, 224]  # Resize images to 224x224
@@ -25,21 +24,20 @@ transform:
 
 # Model configuration
 model:
-  name: "dinov2"  # Example: You can set it to resnet18, resnet34, etc.
-  experiment_name: "dinov2_glomerulo"  # Name of the experiment
+  name: "resnet50"  # Example: You can set it to resnet18, resnet34, etc.
+  experiment_name: "resnet50_ovarian_cancer"  # Name of the experiment
   pretrained: true  # Use pre-trained weights
   num_classes: 6  # Number of classes in the dataset
   load_checkpoint: false  # Load a pre-trained model checkpoint
   checkpoint_path: ""  # Path to the model checkpoint
-  model_name: "dinov2_vitl14"  # Specify the ViT model name
 
 
 testing:
   pipeline: "default"  # The pipeline to run (e.g., default, retrieval, etc.)
   load_embeddings: false  # Load embeddings from disk
-  embeddings_path: "./artifacts/glomerulo/embeddings_dinov2_2025-04-12_06-51-14.npz"  # Path to load embeddings
-  save_embeddings: false  # Save embeddings to disk
-  embeddings_save_path: "./artifacts/glomerulo/embeddings_dinov2"  # Path to save embeddings
+  embeddings_path: "./artifacts/ovarian_cancer/embeddings_"  # Path to load embeddings
+  save_embeddings: true  # Save embeddings to disk
+  embeddings_save_path: "./artifacts/ovarian_cancer/embeddings_resnet50"  # Path to save embeddings
   list_of_metrics:
     # - type: accuracy
     # - type: f1_score
@@ -64,7 +62,7 @@ metric_logging:
   
 # Output configuration
 output:
-  model_dir: "./artifacts/glomerulo"  # Directory to save model artifacts
-  results_dir: "./local_experiments/glomerulo"  # Directory to save results
+  model_dir: "./artifacts/ovarian_cancer"  # Directory to save model artifacts
+  results_dir: "./local_experiments/ovarian_cancer"  # Directory to save results
 
 

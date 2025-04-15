@@ -36,9 +36,9 @@ model:
 
 testing:
   pipeline: "default"  # The pipeline to run (e.g., default, retrieval, etc.)
-  load_embeddings: true  # Load embeddings from disk
+  load_embeddings: false  # Load embeddings from disk
   embeddings_path: "./artifacts/glomerulo/embeddings_dino_2025-04-12_06-51-14.npz"  # Path to load embeddings
-  save_embeddings: false  # Save embeddings to disk
+  save_embeddings: true  # Save embeddings to disk
   embeddings_save_path: "./artifacts/glomerulo/embeddings_dino"  # Path to save embeddings
   list_of_metrics:
     # - type: accuracy
@@ -65,6 +65,6 @@ metric_logging:
 # Output configuration
 output:
   model_dir: "./artifacts/glomerulo"  # Directory to save model artifacts
-  results_dir: "."  # Directory to save results
+  results_dir: "./local_experiments/glomerulo"  # Directory to save results
 
 

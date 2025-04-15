@@ -1,15 +1,14 @@
 # Paths and directories for training and testing data
 data:
-  dataset_type: "TerumoImageDataset"  # Specify the dataset type (e.g., terumo, etc.)
-  train_dir: "datasets/final/terumo/train"
-  test_dir: "datasets/final/terumo/test"
+  dataset_type: "StandardImageDataset"  # Specify the dataset type (e.g., terumo, etc.)
+  train_dir: "datasets/final/ovarian-cancer-splitted/train"
+  test_dir: "datasets/final/ovarian-cancer-splitted/test"
   class_mapping:
-    Crescent: 0
-    Hypercellularity: 1
-    Membranous: 2
-    Normal: 3
-    Podocytopathy: 4
-    Sclerosis: 5
+    Clear_Cell: 0
+    Endometri: 1
+    Mucinous: 2
+    Non_Cancerous: 3
+    Serous: 4
   batch_size: 32
   num_workers: 3  # Number of workers to load the data
   suffle_test: false
@@ -65,6 +64,6 @@ metric_logging:
 # Output configuration
 output:
   model_dir: "./artifacts/glomerulo"  # Directory to save model artifacts
-  results_dir: "."  # Directory to save results
+  results_dir: "./local_experiments/glomerulo"  # Directory to save results
 
 

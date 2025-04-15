@@ -1,7 +1,7 @@
 from dataloaders.dataset_factory import get_dataloader
 from dataloaders.transform_factory import get_transforms
 from models.model_factory import get_model
-from pipelines.test_pipes.test_pipeline_factory import get_test_function
+from pipelines.testing_pipes.test_pipeline_factory import get_test_function
 from utils.logger import setup_logger
 from utils.metric_logger import setup_metric_logger
 

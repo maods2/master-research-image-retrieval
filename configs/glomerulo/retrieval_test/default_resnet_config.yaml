@@ -64,6 +64,6 @@ metric_logging:
 # Output configuration
 output:
   model_dir: "./artifacts/glomerulo"  # Directory to save model artifacts
-  results_dir: "."  # Directory to save results
+  results_dir: "./local_experiments/glomerulo"  # Directory to save results
 
 

@@ -1,11 +1,11 @@
 def get_train_function(config):
     
     if config['training']['pipeline'] == 'train_multilabel':
-        from pipelines.train_pipes.multilabel_train import train_multilabel
+        from pipelines.training_pipes.multilabel_train import train_multilabel
         return train_multilabel
     
     elif config['training']['pipeline'] == 'train_triplet':
-        from pipelines.train_pipes.triplet_train import TripletTrain
+        from pipelines.training_pipes.triplet_train import TripletTrain
         return TripletTrain(config)
     
     else:

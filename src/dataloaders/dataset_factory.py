@@ -1,4 +1,5 @@
 from torch.utils.data import DataLoader
+from dataloaders.dataset import StandardImageDataset
 from dataloaders.dataset_terumo import TerumoImageDataset
 from dataloaders.dataset_triplet import MixedTripletDataset, TripletDataset
 
@@ -22,7 +23,9 @@ def get_dataloader(data_config, transform):
     )  # Default to TerumoImageDataset
 
     # Select dataset class dynamically based on config
-    if dataset_name == 'TerumoImageDataset':
+    if dataset_name == 'StandardImageDataset':
+        dataset_class = StandardImageDataset
+    elif dataset_name == 'TerumoImageDataset':
         dataset_class = TerumoImageDataset
     elif dataset_name == 'TripletDataset':
         dataset_class = TripletDataset

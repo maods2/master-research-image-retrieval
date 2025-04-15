@@ -5,6 +5,7 @@ from torch.utils.data import DataLoader, Subset
 import numpy as np
 import torch
 from tqdm import tqdm
+import os
 
 def invert_dict(d):
     """Convert a dictionary to an inverted dictionary where keys become values and values become keys."""
@@ -123,8 +124,11 @@ def create_embeddings_dict(
     }
     
     if config['testing']['save_embeddings']:
+        # Ensure the directory exists
+        os.makedirs(config['testing']['embeddings_save_path'], exist_ok=True)
+        
         timestamp = time.strftime('%Y-%m-%d_%H-%M-%S')
-        path = config['testing']['embeddings_save_path'] + f'_{timestamp}.npz'
+        path = os.path.join(config['testing']['embeddings_save_path'], f'embeddings_{timestamp}.npz')
         np.savez(
            path,
            **embeddings
