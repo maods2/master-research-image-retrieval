@@ -28,11 +28,11 @@ model:
   num_classes: 7
   pretrained: true
 output:
-  model_dir: ./artifacts/CRC-VAL-HE-7K-splitted
-  results_dir: ./local_experiments/CRC-VAL-HE-7K-splitted
+  model_dir: ./artifacts/bracs-resized
+  results_dir: ./local_experiments/bracs-resized
 testing:
-  embeddings_path: ./artifacts/CRC-VAL-HE-7K-splitted/embeddings_resnet50
-  embeddings_save_path: ./artifacts/CRC-VAL-HE-7K-splitted/embeddings_resnet50
+  embeddings_path: ./artifacts/bracs-resized/embeddings_clip
+  embeddings_save_path: ./artifacts/bracs-resized/embeddings_clip
   list_of_metrics:
   - k_values:
     - 1

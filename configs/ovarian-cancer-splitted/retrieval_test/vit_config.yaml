@@ -26,11 +26,11 @@ model:
   num_classes: 5
   pretrained: true
 output:
-  model_dir: ./artifacts/CRC-VAL-HE-7K-splitted
-  results_dir: ./local_experiments/CRC-VAL-HE-7K-splitted
+  model_dir: ./artifacts/ovarian-cancer-splitted
+  results_dir: ./local_experiments/ovarian-cancer-splitted
 testing:
-  embeddings_path: ./artifacts/CRC-VAL-HE-7K-splitted/embeddings_resnet50
-  embeddings_save_path: ./artifacts/CRC-VAL-HE-7K-splitted/embeddings_resnet50
+  embeddings_path: ./artifacts/ovarian-cancer-splitted/embeddings_vit
+  embeddings_save_path: ./artifacts/ovarian-cancer-splitted/embeddings_vit
   list_of_metrics:
   - k_values:
     - 1

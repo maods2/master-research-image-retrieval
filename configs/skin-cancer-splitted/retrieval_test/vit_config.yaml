@@ -28,11 +28,11 @@ model:
   num_classes: 7
   pretrained: true
 output:
-  model_dir: ./artifacts/CRC-VAL-HE-7K-splitted
-  results_dir: ./local_experiments/CRC-VAL-HE-7K-splitted
+  model_dir: ./artifacts/skin-cancer-splitted
+  results_dir: ./local_experiments/skin-cancer-splitted
 testing:
-  embeddings_path: ./artifacts/CRC-VAL-HE-7K-splitted/embeddings_resnet50
-  embeddings_save_path: ./artifacts/CRC-VAL-HE-7K-splitted/embeddings_resnet50
+  embeddings_path: ./artifacts/skin-cancer-splitted/embeddings_vit
+  embeddings_save_path: ./artifacts/skin-cancer-splitted/embeddings_vit
   list_of_metrics:
   - k_values:
     - 1

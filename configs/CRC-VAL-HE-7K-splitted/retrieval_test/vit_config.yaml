@@ -33,8 +33,8 @@ output:
   model_dir: ./artifacts/CRC-VAL-HE-7K-splitted
   results_dir: ./local_experiments/CRC-VAL-HE-7K-splitted
 testing:
-  embeddings_path: ./artifacts/CRC-VAL-HE-7K-splitted/embeddings_resnet50
-  embeddings_save_path: ./artifacts/CRC-VAL-HE-7K-splitted/embeddings_resnet50
+  embeddings_path: ./artifacts/CRC-VAL-HE-7K-splitted/embeddings_vit
+  embeddings_save_path: ./artifacts/CRC-VAL-HE-7K-splitted/embeddings_vit
   list_of_metrics:
   - k_values:
     - 1

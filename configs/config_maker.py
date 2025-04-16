@@ -30,19 +30,14 @@ def create_config(
     config['model']['num_classes'] = len(dataset_config['class-mapping'])
     config['model']['model_name'] = model_config["model_pretreined"]
     
-    config['testing']['embeddings_path'] = config['testing']['embeddings_path'] \
-        .replace("<dataset>",dataset_name) \
-            .replace("<model_name>", model_config['model_name'])
+    config['testing']['embeddings_path'] = f'./artifacts/{dataset_name}/embeddings_{model_config["model_name"]}'
             
-    config['testing']['embeddings_save_path'] = config['testing']['embeddings_save_path'] \
-        .replace("<dataset>",dataset_name) \
-        .replace("<model_name>", model_config['model_name'])
-
-    config['output']['model_dir'] =  config['output']['model_dir'] \
-        .replace("<dataset>",dataset_name) 
+    config['testing']['embeddings_save_path'] = f'./artifacts/{dataset_name}/embeddings_{model_config["model_name"]}'
+    
+    
+    config['output']['model_dir'] =  f'./artifacts/{dataset_name}'
         
-    config['output']['results_dir'] =  config['output']['results_dir'] \
-        .replace("<dataset>",dataset_name) \
+    config['output']['results_dir'] =  f'./local_experiments/{dataset_name}'
 
 
     
