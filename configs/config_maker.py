@@ -1,0 +1,124 @@
+import yaml
+import os
+from pathlib import Path
+from typing import Dict, List
+
+def load_template(template_path: str) -> dict:
+    """Load the YAML template file."""
+    with open(template_path, 'r') as f:
+        return yaml.safe_load(f)
+
+def create_config(
+        template: dict, 
+        dataset_name: str, 
+        model_config: str, 
+        dataset_config: Dict[str, str], 
+        output_dir: str,
+        config_type_folder: str = "retrieval_test"
+        ):
+    """Create a new config file with customized parameters."""
+    config = template.copy()
+    
+    # Update paths
+    config['data']['train_dir'] = dataset_config['train_dir']
+    config['data']['test_dir'] = dataset_config['test_dir']
+    config['data']['class_mapping'] = dataset_config['class-mapping']
+    
+    # Update model configuration
+    config['model']['name'] = model_config['model_name']
+    config['model']['experiment_name'] = f"{model_config['model_name']}_{dataset_name}"
+    config['model']['num_classes'] = len(dataset_config['class-mapping'])
+    config['model']['model_name'] = model_config["model_pretreined"]
+    
+    config['testing']['embeddings_path'] = config['testing']['embeddings_path'] \
+        .replace("<dataset>",dataset_name) \
+            .replace("<model_name>", model_config['model_name'])
+            
+    config['testing']['embeddings_save_path'] = config['testing']['embeddings_save_path'] \
+        .replace("<dataset>",dataset_name) \
+        .replace("<model_name>", model_config['model_name'])
+
+    config['output']['model_dir'] =  config['output']['model_dir'] \
+        .replace("<dataset>",dataset_name) 
+        
+    config['output']['results_dir'] =  config['output']['results_dir'] \
+        .replace("<dataset>",dataset_name) \
+
+
+    
+    # Create output directory if it doesn't exist
+    dataset_config_dir = os.path.join(output_dir, dataset_name+config_type_folder)
+    # dataset_config_dir = os.path.join(dataset_config_dir, config_type_folder)
+
+    os.makedirs(dataset_config_dir, exist_ok=True)
+    
+    # Save the config
+    output_path = os.path.join(dataset_config_dir, f"{model_config['model_name']}_config.yaml")
+    with open(output_path, 'w') as f:
+        yaml.dump(config, f, default_flow_style=False)
+    
+    print(f"Created config: {output_path}")
+
+def main():
+    # Define the template path
+    template_path = "./configs/templates/retrieval_test/default_model_config.yaml"
+    
+    # Define output directory for configs
+    output_dir = "./configs/"
+    
+    # Define datasets and their class mappings
+    datasets = {
+        "CRC-VAL-HE-7K-splitted": {
+            "class-mapping": {"ADI": 0, "BACK": 1, "DEB": 2, "LYM": 3,"MUC": 4, "MUS": 5, "NORM": 6, "STR": 7, "TUM": 8},
+            "train_dir": "datasets/final/CRC-VAL-HE-7K-splitted/train",
+            "test_dir": "datasets/final/CRC-VAL-HE-7K-splitted/test"
+        },
+        "skin-cancer-splitted": {
+            "class-mapping": {"akiec": 0, "bcc": 1, "bkl": 2, "df": 3,"mel": 4, "nv": 5, "vasc": 6 },
+            "train_dir": "datasets/final/skin-cancer-splitted/train",
+            "test_dir": "datasets/final/skin-cancer-splitted/test"
+        },
+        "bracs-resized": {
+            "class-mapping": {"0_N": 0, "1_PB": 1, "2_UDH": 2, "3_FEA": 3,"4_ADH": 4, "5_DCIS": 5, "6_IC": 6},
+            "train_dir": "datasets/final/bracs-resized/train",
+            "test_dir": "datasets/final/bracs-resized/retriv_test"
+        },
+        "ovarian-cancer-splitted": {
+            "class-mapping": {"Clear_Cell": 0, "Endometri": 1, "Mucinous": 2, "Non_Cancerous": 3,"Serous": 4},
+            "train_dir": "datasets/final/ovarian-cancer-splitted/train",
+            "test_dir": "datasets/final/ovarian-cancer-splitted/test"
+        },
+        "glomerulo":{
+            "class-mapping": {"Crescent": 0, "Hypercellularity": 1, "Membranous": 2, "Normal": 3,"Podocytopathy": 4, "Sclerosis": 5},
+            "train_dir": "datasets/final/glomerulo/train",
+            "test_dir": "datasets/final/glomerulo/test"
+        },
+        # Add more datasets as needed
+    }
+    
+    # Define models to test
+    models = [
+        {"model_name": "resnet50", "model_pretreined": ""},
+        {"model_name": "dino", "model_pretreined": "vit_small_patch16_224_dino"},
+        {"model_name": "dinov2", "model_pretreined": "dinov2_vitl14"},
+        {"model_name": "uni", "model_pretreined": "vit_large_patch16_224"},
+        {"model_name": "clip", "model_pretreined": "openai/clip-vit-base-patch32"},
+    ]
+    
+    # Load template
+    template = load_template(template_path)
+    
+    # Generate configs for each dataset and model combination
+    for dataset_name, dataset_config in datasets.items():
+        for model_config in models:
+            create_config(
+                template=template,
+                dataset_name=dataset_name,
+                model_config=model_config,
+                dataset_config=dataset_config,
+                output_dir=output_dir,
+                config_type_folder="/retrieval_test/"
+            )
+
+if __name__ == "__main__":
+    main()
