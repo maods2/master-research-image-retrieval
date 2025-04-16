@@ -103,6 +103,8 @@ def main():
         {"model_name": "dinov2", "model_pretreined": "dinov2_vitl14"},
         {"model_name": "uni", "model_pretreined": "vit_large_patch16_224"},
         {"model_name": "clip", "model_pretreined": "openai/clip-vit-base-patch32"},
+        {"model_name": "virchow2", "model_pretreined": "hf-hub:paige-ai/Virchow2"},
+        {"model_name": "vit", "model_pretreined": "vit_base_patch16_224"},
     ]
     
     # Load template

@@ -33,7 +33,7 @@ def get_model(model_config):
         model = TripletViT(embedding_size=model_config['embedding_size'])
         
     elif model_name == 'vit':        
-        model = ViT(model_name=model_config['vit_model_name'])
+        model = ViT(model_name=model_config['model_name'])
 
     elif model_name == 'uni': # Pathology Foundation Model
         model = UNI(model_name=model_config['model_name'])

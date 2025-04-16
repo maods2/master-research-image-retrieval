@@ -1,0 +1,76 @@
+data:
+  batch_size: 32
+  class_mapping:
+    Crescent: 0
+    Hypercellularity: 1
+    Membranous: 2
+    Normal: 3
+    Podocytopathy: 4
+    Sclerosis: 5
+  dataset_type: StandardImageDataset
+  num_workers: 3
+  suffle_test: false
+  suffle_train: false
+  test_dir: datasets/final/glomerulo/test
+  train_dir: datasets/final/glomerulo/train
+logging:
+  log_file: ./logs.txt
+  log_level: INFO
+metric_logging:
+  tool: txt
+model:
+  checkpoint_path: ''
+  experiment_name: resnet50_glomerulo
+  load_checkpoint: false
+  model_name: ''
+  name: resnet50
+  num_classes: 6
+  pretrained: true
+output:
+  model_dir: ./artifacts/CRC-VAL-HE-7K-splitted
+  results_dir: ./local_experiments/CRC-VAL-HE-7K-splitted
+testing:
+  embeddings_path: ./artifacts/CRC-VAL-HE-7K-splitted/embeddings_resnet50
+  embeddings_save_path: ./artifacts/CRC-VAL-HE-7K-splitted/embeddings_resnet50
+  list_of_metrics:
+  - k_values:
+    - 1
+    - 3
+    - 5
+    - 10
+    type: map@k
+  - k_values:
+    - 1
+    - 3
+    - 5
+    - 10
+    type: precision@k
+  - k_values:
+    - 1
+    - 3
+    - 5
+    - 10
+    type: recall@k
+  - k_values:
+    - 1
+    - 3
+    - 5
+    - 10
+    type: accuracy@k
+  load_embeddings: false
+  pipeline: default
+  save_embeddings: true
+transform:
+  normalize:
+    mean:
+    - 0.485
+    - 0.456
+    - 0.406
+    std:
+    - 0.229
+    - 0.224
+    - 0.225
+  resize:
+  - 224
+  - 224
+  to_tensor: true

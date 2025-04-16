@@ -22,27 +22,27 @@ train-tri-res:
 
 
 retrieval-vit:
-	python3 src/main.py --config configs/$(DATASET)/retrieval_test/default_vit_config.yaml --pipeline test
+	python3 src/main.py --config configs/$(DATASET)/retrieval_test/vit_config.yaml --pipeline test
 	
 retrieval-resnet:
-	python3 src/main.py --config configs/$(DATASET)/retrieval_test/default_resnet_config.yaml --pipeline test
+	python3 src/main.py --config configs/$(DATASET)/retrieval_test/resnet50_config.yaml --pipeline test
 
 retrieval-dino:
-	python3 src/main.py --config configs/$(DATASET)/retrieval_test/default_dino_config.yaml --pipeline test
+	python3 src/main.py --config configs/$(DATASET)/retrieval_test/dino_config.yaml --pipeline test
 
 retrieval-dinov2:
-	python3 src/main.py --config configs/$(DATASET)/retrieval_test/default_dinov2_config.yaml --pipeline test
+	python3 src/main.py --config configs/$(DATASET)/retrieval_test/dinov2_config.yaml --pipeline test
 
 retrieval-clip:
-	python3 src/main.py --config configs/$(DATASET)/retrieval_test/default_clip_config.yaml --pipeline test
+	python3 src/main.py --config configs/$(DATASET)/retrieval_test/clip_config.yaml --pipeline test
 
 retrieval-uni:
-	python3 src/main.py --config configs/$(DATASET)/retrieval_test/default_uni_foundation_config.yaml --pipeline test
+	python3 src/main.py --config configs/$(DATASET)/retrieval_test/uni_config.yaml --pipeline test
 
 retrieval-virchow2:
-	python3 src/main.py --config configs/$(DATASET)/retrieval_test/default_virchow2_foundation_config.yaml --pipeline test
+	python3 src/main.py --config configs/$(DATASET)/retrieval_test/virchow2_config.yaml --pipeline test
 
-retrival-all:
+retrival-all-models:
 	make retrieval-vit DATASET=$(DATASET)
 	make retrieval-resnet DATASET=$(DATASET)
 	make retrieval-dino DATASET=$(DATASET)
@@ -53,6 +53,11 @@ retrival-all:
 
 # example: make retrival-all DATASET=ovarian-cancer
 # example: make retrival-all DATASET=bracs-resized
+
+retrival-all-datasets-models:
+	for dataset in bracs-resized CRC-VAL-HE-7K-splitted glomerulo ovarian-cancer-splitted skin-cancer-splitted; do \
+		make retrival-all-models DATASET=$$dataset; \
+	done
 
 
 app:
