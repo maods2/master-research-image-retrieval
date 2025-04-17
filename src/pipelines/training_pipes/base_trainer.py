@@ -3,11 +3,14 @@ from typing import Any, Callable, Dict, List, Optional, Union
 
 import torch
 from torch.utils.data import DataLoader
+import numpy as np
+from tqdm import tqdm
 
 from metrics.metric_base import MetricLoggerBase
 from utils.checkpoint_utils import save_model_and_log_artifact
 from utils.dataloader_utils import create_balanced_db_and_query
 from utils.embedding_utils import load_or_create_embeddings
+from utils.metrics_utils import compute_metrics
 
 
 class BaseTrainer(ABC):
@@ -114,6 +117,46 @@ class BaseTrainer(ABC):
             results[metric.__class__.__name__] = res
             
         return results
+
+    def eval_classification(
+        self,
+        model: torch.nn.Module,
+        test_loader: DataLoader,
+        config: Dict[str, Any],
+        logger: Callable
+    ) -> Dict[str, Any]:
+        """
+        Evaluate traditional classification (direct prediction).
+        
+        Args:
+            model: PyTorch model with classification head.
+            test_loader: Dataloader providing (inputs, labels) pairs.
+            config: Dictionary with configuration parameters. Expected: device.
+            logger: Logging function.
+            
+        Returns:
+            Dictionary with evaluation metrics.
+        """
+        
+        all_preds = []
+        all_labels = []
+        
+        with torch.no_grad():
+            for inputs, labels in tqdm(test_loader, desc='Evaluating'):
+                inputs = inputs.to(model.device)
+                labels = labels.to(model.device)
+                
+                outputs = model(inputs)
+                _, preds = torch.max(outputs, 1)
+                
+                all_preds.append(preds.cpu().numpy())
+                all_labels.append(labels.cpu().numpy())
+        
+        y_true = np.concatenate(all_labels)
+        y_pred = np.concatenate(all_preds)
+        
+        return compute_metrics(y_true, y_pred, logger)
+
 
     def save_model_if_best(self, model, metric, best_metric, model_path, metric_logger, mode='loss'):
         """

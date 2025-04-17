@@ -5,6 +5,13 @@ from pipelines.training_pipes.base_trainer import BaseTrainer
 from utils.checkpoint_utils import save_model_and_log_artifact
 from metrics.metric_base import MetricLoggerBase
 
+from typing import Dict, Any, Callable
+from torch.utils.data import DataLoader
+import numpy as np
+from tqdm import tqdm
+
+from utils.metrics_utils import compute_metrics
+
 
 class FewShotTrain(BaseTrainer):
     def __init__(self, config: dict):
@@ -21,6 +28,74 @@ class FewShotTrain(BaseTrainer):
         loss = F.nll_loss(log_p, query_labels)
         acc = (log_p.argmax(1) == query_labels).float().mean().item()
         return loss, acc
+    
+    def compute_prototypes(self, embeddings: torch.Tensor, labels: torch.Tensor) -> torch.Tensor:
+        """
+        Compute class prototypes from embeddings and labels.
+        
+        Args:
+            embeddings: Feature embeddings.
+            labels: Corresponding labels.
+            
+        Returns:
+            Tensor of class prototypes.
+        """
+        prototypes = []
+        for c in torch.unique(labels):
+            class_mask = labels == c
+            class_proto = embeddings[class_mask].mean(0)
+            prototypes.append(class_proto)
+        return torch.stack(prototypes)  # [n_classes, embedding_dim]
+    def eval_few_shot_classification(
+        self,
+        model: torch.nn.Module,
+        test_loader: DataLoader,
+        config: Dict[str, Any],
+        logger: Callable
+    ) -> Dict[str, Any]:
+        """
+        Evaluate few-shot learning classification using support and query sets.
+        
+        Args:
+            model: Model with feature embedding capability.
+            test_loader: Dataloader providing (support, s_lbls, query, q_lbls) tuples.
+            config: Dictionary with configuration parameters. Expected: device.
+            logger: Logging function.
+            
+        Returns:
+            Dictionary with evaluation metrics.
+        """
+
+        
+        all_preds = []
+        all_labels = []
+        
+        with torch.no_grad():
+            for support, s_lbls, query, q_lbls in tqdm(test_loader, desc='Evaluating'):
+                # Remove batch dim [1, N, ...] -> [N, ...]
+                support = support.squeeze(0).to(model.device)
+                s_lbls = s_lbls.squeeze(0).to(model.device)
+                query = query.squeeze(0).to(model.device)
+                q_lbls = q_lbls.squeeze(0).to(model.device)
+                
+                # Embed support and query
+                emb_s = model(support)  # [n_support, D]
+                emb_q = model(query)    # [n_query, D]
+                
+                # Compute class prototypes
+                prototypes = self.compute_prototypes(emb_s, s_lbls)  # [n_way, D]
+                
+                # Calculate euclidean distance between query and prototypes
+                dists = torch.cdist(emb_q, prototypes)  # [n_query, n_way]
+                preds = torch.argmin(dists, dim=1)
+                
+                all_preds.append(preds.cpu().numpy())
+                all_labels.append(q_lbls.cpu().numpy())
+        
+        y_true = np.concatenate(all_labels)
+        y_pred = np.concatenate(all_preds)
+        
+        return compute_metrics(y_true, y_pred, logger)
 
     def train_one_epoch(self, model, optimizer, dataloader, device, epoch):
         model.train()
@@ -76,6 +151,7 @@ class FewShotTrain(BaseTrainer):
 
         for epoch in range(epochs):
             avg_loss, avg_acc = self.train_one_epoch(model, optimizer, train_loader, device, epoch)
+            self.eval_few_shot_classification(model, test_loader, config, logger)
 
             logger.info(f"[Epoch {epoch+1}/{epochs}] Loss: {avg_loss:.4f} | Acc: {avg_acc:.4f}")
             print(f"[Epoch {epoch+1}/{epochs}] Loss: {avg_loss:.4f} | Acc: {avg_acc:.4f}")

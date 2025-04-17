@@ -1,6 +1,8 @@
 import os
 import sys
 
+from models.fsl_models import UNIFsl
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
 
 from torchvision import models
@@ -42,6 +44,9 @@ def get_model(model_config):
 
     elif model_name == 'uni': # Pathology Foundation Model
         model = UNI(model_name=model_config['model_name'])
+
+    elif model_name == 'uni': # Pathology Foundation Model
+        model = UNIFsl(model_name=model_config['model_name'])
 
     elif model_name == 'virchow2': # Pathology Foundation Model
         model = Virchow2(model_name=model_config['model_name'])
