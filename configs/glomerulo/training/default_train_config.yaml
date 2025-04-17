@@ -67,7 +67,7 @@ transform:
 # Model configuration
 model:
   name: "resnet50"  # Example: You can set it to resnet18, resnet34, etc.
-  experiment_name: "terumo"  # Name of the experiment
+  experiment_name: "fsl_glomerulo"  # Name of the experiment
   pretrained: true  # Use pre-trained weights
   num_classes: 6  # Number of classes in the dataset
   load_checkpoint: false  # Load a pre-trained model checkpoint
