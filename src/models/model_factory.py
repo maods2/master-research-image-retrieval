@@ -1,13 +1,18 @@
+import os
+import sys
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+
 from torchvision import models
 import torch.nn as nn
 
-from models.clip import CLIP
-from models.triplet_resnet import TripletResNet, ResNet50
-from models.dino import DINO, DINOv2
-from models.uni import UNI
-from models.virchow2 import Virchow2
-from models.vit import ViT, TripletViT
-from utils.checkpoint_utils import load_checkpoint
+from src.models.clip import CLIP
+from src.models.triplet_resnet import TripletResNet, ResNet50
+from src.models.dino import DINO, DINOv2
+from src.models.uni import UNI
+from src.models.virchow2 import Virchow2
+from src.models.vit import ViT, TripletViT
+from src.utils.checkpoint_utils import load_checkpoint
 
 
 def get_model(model_config):
