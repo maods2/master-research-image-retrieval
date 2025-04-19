@@ -1,5 +1,6 @@
 from torch.utils.data import DataLoader
 from dataloaders.dataset import StandardImageDataset
+from dataloaders.dataset_fewshot import FewShotFolderDataset
 from dataloaders.dataset_terumo import TerumoImageDataset
 from dataloaders.dataset_triplet import MixedTripletDataset, TripletDataset
 
@@ -32,6 +33,8 @@ def get_dataloader(config, transform):
         dataset_class = TripletDataset
     elif dataset_name == 'MixedTripletDataset':
         dataset_class = MixedTripletDataset
+    elif dataset_name == 'FewShotFolderDataset':
+        dataset_class = FewShotFolderDataset
     else:
         raise ValueError(f'Dataset {dataset_name} is not supported.')
     # Create dataset instances for training and testing

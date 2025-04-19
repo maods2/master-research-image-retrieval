@@ -1,14 +1,35 @@
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
-
-import albumentations as A
-from albumentations.pytorch import ToTensorV2
-
+import cv2
 
 def get_transforms(transform_config):
     """
     Factory function to get transformations based on the provided configuration.
+
+    Args:
+        transform_config (dict): A dictionary containing the configuration for various transformations.
+
+    Supported Transformations:
+        - resize: Resizes the image to the specified height and width.
+        - horizontal_flip: Randomly flips the image horizontally with a probability of 0.5.
+        - vertical_flip: Randomly flips the image vertically with a probability of 0.5.
+        - rotation: Rotates the image by a random angle within the specified range.
+        - color_jitter: Randomly changes the brightness, contrast, saturation, and hue of the image.
+        - gaussian_noise: Adds random Gaussian noise to the image.
+        - gaussian_blur: Applies Gaussian blur to the image with a specified blur limit.
+        - coarse_dropout: Randomly drops rectangular regions of the image (used for data augmentation).
+        - distortion: Applies one of the following distortions:
+            - OpticalDistortion: Distorts the image using optical distortion.
+            - GridDistortion: Distorts the image using a grid pattern.
+            - ElasticTransform: Applies elastic transformations to the image.
+        - shift_scale_rotate: Randomly shifts, scales, and rotates the image.
+        - normalize: Normalizes the image using the specified mean and standard deviation.
+        - to_tensor: Converts the image to a PyTorch tensor.
+
+    Returns:
+        albumentations.Compose: A composition of the specified transformations.
     """
+    
     transform_list = []
 
     if 'resize' in transform_config:
@@ -61,6 +82,7 @@ def get_transforms(transform_config):
             )
         )
 
+    # Fix CoarseDropout
     if 'coarse_dropout' in transform_config:
         transform_list.append(
             A.CoarseDropout(
@@ -70,23 +92,28 @@ def get_transforms(transform_config):
                 min_holes=transform_config['coarse_dropout']['min_holes'],
                 min_height=transform_config['coarse_dropout']['min_height'],
                 min_width=transform_config['coarse_dropout']['min_width'],
-                fill_value=0,
-                mask_fill_value=0,
                 p=transform_config['coarse_dropout']['probability'],
             )
         )
 
+    # Replace PiecewiseAffine with ElasticTransform
     if 'distortion' in transform_config:
         transform_list.append(
             A.OneOf(
                 [
                     A.OpticalDistortion(
+                        distort_limit=0.05,
+                        shift_limit=0.05,
                         p=transform_config['distortion']['optical_distortion']
                     ),
                     A.GridDistortion(
+                        distort_limit=0.05,
                         p=transform_config['distortion']['grid_distortion']
                     ),
-                    A.PiecewiseAffine(
+                    A.ElasticTransform(
+                        alpha=1,
+                        sigma=50,
+                        alpha_affine=50,
                         p=transform_config['distortion']['piecewise_affine']
                     ),
                 ],
@@ -108,7 +135,6 @@ def get_transforms(transform_config):
                 ],
                 interpolation=1,
                 border_mode=0,
-                value=(0, 0, 0),
                 p=transform_config['shift_scale_rotate']['probability'],
             )
         )
