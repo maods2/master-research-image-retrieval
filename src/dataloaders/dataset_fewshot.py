@@ -24,7 +24,7 @@ class FewShotFolderDataset(StandardImageDataset):
         super(FewShotFolderDataset, self).__init__(
             root_dir, transform, class_mapping, config
         )
-
+        self.validation_dataset = None
         self.root_dir = Path(root_dir)
         self.n_way = config['model'].get(
             'n_way', 2
@@ -43,6 +43,9 @@ class FewShotFolderDataset(StandardImageDataset):
 
     def __len__(self):
         # Return the total number of samples divided by the number of queries per index
+        if self.validation_dataset is not None:
+            return len(self.labels)
+        return 50
         return len(self.image_paths) // self.q_queries
 
     def _open_image(self, path):
@@ -54,8 +57,25 @@ class FewShotFolderDataset(StandardImageDataset):
             raise ValueError(f'Failed to load image at {path}')
         return cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
+    def _validation__getitem__(self, idx):
+        """
+        Fetch a single image and its label for validation purposes.
+        """
+        image_path = self.image_paths[idx]
+        label = self.labels[idx]
+
+        # Open and transform the image
+        image = self._open_image(image_path)
+        if self.transform:
+            image = self.transform(image=image)['image']
+
+        return image, label
+
     def __getitem__(self, idx):
-        # Seleciona n_way classes
+        if self.validation_dataset is not None:
+            return self._validation__getitem__(idx)
+        
+        # Randomly select n_way classes
         selected = random.sample(self.classes, self.n_way)
         support_imgs, support_lbls = [], []
         query_imgs, query_lbls = [], []
@@ -110,7 +130,7 @@ if __name__ == '__main__':
         'Podocytopathy': 4,
         'Sclerosis': 5,
     }
-    config = {'model': {'n_way': 2, 'k_shot': 5, 'q_queries': 6}}
+    config = {'model': {'n_way': 6, 'k_shot': 5, 'q_queries': 32}}
 
     # Define transformations using Albumentations
     data_transforms = A.Compose(

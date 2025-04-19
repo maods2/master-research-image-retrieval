@@ -158,37 +158,49 @@ class BaseTrainer(ABC):
 
     def save_model_if_best(
         self,
-        model,
-        metric,
-        best_metric,
-        model_path,
+        model: torch.nn.Module,
+        metric: float,
+        best_metric: float,
+        epochs_without_improvement: int,
+        checkpoint_path: str,
+        config: Dict[str, Any],
         metric_logger,
-        mode='loss',
-    ):
+        mode: str = 'loss'
+    ) -> tuple[bool, float, int, str]:
         """
-        Save the model if the current metric is better than the best metric.
+        Save the model if the current metric is better than the best metric so far,
+        and apply early stopping logic.
 
         Args:
-        epoch (int): Current epoch number.
-        model (torch.nn.Module): The model to be saved.
-        optimizer (torch.optim.Optimizer): The optimizer used for training.
-        metric (float): The current metric value (loss or accuracy).
-        best_metric (float): The best metric value so far.
-        model_path (str): Path to save the model.
-        config (dict): Configuration dictionary.
-        metric_logger (object): Logger to log the metrics.
-        mode (str): Mode to determine whether to save based on 'loss' or 'accuracy'. Default is 'loss'.
+            model (torch.nn.Module): The model being trained.
+            metric (float): The current metric value (e.g., loss or accuracy).
+            best_metric (float): The best metric value so far.
+            epochs_without_improvement (int): Counter for early stopping.
+            checkpoint_path (str): Path to the current model checkpoint (may be None).
+            config (dict): Configuration dictionary.
+            metric_logger (MetricLoggerBase): Logger to register saved model artifacts.
+            mode (str): Metric mode: 'loss' (lower is better) or 'accuracy' (higher is better).
 
         Returns:
-        str: Path to the saved model checkpoint if the model is saved, otherwise None.
+            should_stop (bool): Whether early stopping should be triggered.
+            best_metric (float): Updated best metric.
+            epochs_without_improvement (int): Updated early stopping counter.
+            checkpoint_path (str): Updated path to the saved model.
         """
-        if (mode == 'loss' and metric < best_metric) or (
-            mode == 'accuracy' and metric > best_metric
-        ):
+        patience = config['training'].get('early_stopping_patience', 10)
+
+        if (mode == 'loss' and metric < best_metric) or (mode == 'accuracy' and metric > best_metric):
             best_metric = metric
-            model_path = save_model_and_log_artifact(
-                metric_logger, self.config, model, filepath=model_path
+            epochs_without_improvement = 0
+            checkpoint_path = save_model_and_log_artifact(
+                metric_logger, config, model, filepath=checkpoint_path
             )
+        else:
+            epochs_without_improvement += 1
+
+        should_stop = epochs_without_improvement >= patience
+        return should_stop, best_metric, epochs_without_improvement, checkpoint_path
+
 
     @abstractmethod
     def __call__(

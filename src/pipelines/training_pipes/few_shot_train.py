@@ -5,11 +5,12 @@ from pipelines.training_pipes.base_trainer import BaseTrainer
 from utils.checkpoint_utils import save_model_and_log_artifact
 from metrics.metric_base import MetricLoggerBase
 
-from typing import Dict, Any, Callable
+from typing import Dict, Any, Callable, Tuple
 from torch.utils.data import DataLoader
 import numpy as np
 from tqdm import tqdm
 
+from utils.dataloader_utils import create_balanced_db_and_query
 from utils.metrics_utils import compute_metrics
 
 
@@ -62,6 +63,8 @@ class FewShotTrain(BaseTrainer):
         self,
         model: torch.nn.Module,
         test_loader: DataLoader,
+        support_set: Tuple[torch.Tensor, torch.Tensor],
+        device: str,
         config: Dict[str, Any],
         logger: Callable,
     ) -> Dict[str, Any]:
@@ -71,6 +74,7 @@ class FewShotTrain(BaseTrainer):
         Args:
             model: Model with feature embedding capability.
             test_loader: Dataloader providing (support, s_lbls, query, q_lbls) tuples.
+            support_set: Tuple containing support embeddings and labels.
             config: Dictionary with configuration parameters. Expected: device.
             logger: Logging function.
 
@@ -80,16 +84,17 @@ class FewShotTrain(BaseTrainer):
 
         all_preds = []
         all_labels = []
+        model.eval()
 
         with torch.no_grad():
-            for support, s_lbls, query, q_lbls in tqdm(
+            for query, q_lbls in tqdm(
                 test_loader, desc='Evaluating'
             ):
                 # Remove batch dim [1, N, ...] -> [N, ...]
-                support = support.squeeze(0).to(model.device)
-                s_lbls = s_lbls.squeeze(0).to(model.device)
-                query = query.squeeze(0).to(model.device)
-                q_lbls = q_lbls.squeeze(0).to(model.device)
+                support = support_set[0].to(device)
+                s_lbls = support_set[1].to(device)
+                query = query.squeeze(0).to(device)
+                q_lbls = q_lbls.squeeze(0).to(device)
 
                 # Embed support and query
                 emb_s = model(support)  # [n_support, D]
@@ -145,7 +150,7 @@ class FewShotTrain(BaseTrainer):
         avg_loss = running_loss / len(dataloader)
         avg_acc = running_acc / len(dataloader)
 
-        return avg_loss, avg_acc
+        return avg_loss, avg_acc, (support, s_lbls)
 
     def __call__(
         self,
@@ -166,15 +171,20 @@ class FewShotTrain(BaseTrainer):
         patience = config['training'].get('early_stopping_patience', 10)
 
         min_loss = float('inf')
+        epochs_without_improvement = 0
         checkpoint_path = None
-        train_history = {'loss': [], 'acc': []}
+        train_history = {'loss': [], 'acc': [], 'acc_val': [], 'f1_score_val': []}
+    
+        test_loader.dataset.k_shot = 1
+        test_loader.dataset.validation_dataset = True     
 
         for epoch in range(epochs):
-            avg_loss, avg_acc = self.train_one_epoch(
+            avg_loss, avg_acc, support_set = self.train_one_epoch(
                 model, optimizer, train_loader, device, epoch
             )
-            self.eval_few_shot_classification(
-                model, test_loader, config, logger
+            
+            metrics = self.eval_few_shot_classification(
+                model, test_loader, support_set, device, config, logger
             )
 
             logger.info(
@@ -186,24 +196,25 @@ class FewShotTrain(BaseTrainer):
 
             train_history['loss'].append(avg_loss)
             train_history['acc'].append(avg_acc)
+            train_history['acc_val'].append(metrics['accuracy'])
+            train_history['f1_score_val'].append(metrics['f1_score'])
 
-            if avg_loss < min_loss:
-                min_loss = avg_loss
-                checkpoint_path = save_model_and_log_artifact(
-                    metric_logger, config, model, filepath=checkpoint_path
-                )
-            else:
-                epochs_without_improvement += 1
+            should_stop, min_loss, epochs_without_improvement, checkpoint_path = self.save_model_if_best(
+                model=model,
+                metric=avg_loss,
+                best_metric=min_loss,
+                epochs_without_improvement=epochs_without_improvement,
+                checkpoint_path=checkpoint_path,
+                metric_logger=metric_logger,
+                mode='loss'
+            )
 
-            if epochs_without_improvement >= patience:
-                logger.info(
-                    f'Early stopping triggered after {epoch+1} epochs with no improvement.'
-                )
-                print(
-                    f'Early stopping triggered after {epoch+1} epochs with no improvement.'
-                )
+            if should_stop:
+                logger.info(f"Early stopping triggered after {epoch+1} epochs with no improvement.")
+                print(f"Early stopping triggered after {epoch+1} epochs with no improvement.")
                 break
 
+        train_history['last_epoch_metrics'] = metrics
         metric_logger.log_json(train_history, 'train_metrics')
 
         return model

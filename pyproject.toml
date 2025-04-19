@@ -1,4 +1,4 @@
 [tool.isort]
-profile = "black"
+profile = "plone"
 line_length = 79
 

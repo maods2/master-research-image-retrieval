@@ -19,9 +19,14 @@ model:
   load_checkpoint: false  # Load a pre-trained model checkpoint
   checkpoint_path: ''  # Path to the model checkpoint
   model_name: vit_large_patch16_224      # Specify the ViT model name
-  n_way: 6
-  q_shot: 5
-  k_queries: 32 # For few-shot learning, this will be the batch size
+  n_way: 6 # Number of classes for few-shot learning
+  k_shot: 5 # Suport set size per class
+  q_queries: 6 # For few-shot learning, this will be the batch size
+# total suport set size = n_way * q_shot
+# total query set sizer (batch size) = n_way * k_queries
+  # For example, if n_way=5 and q_shot=5, then total support set size = 5 * 5 = 25
+  # For example, if n_way=5 and k_queries=6, then total query set size = 5 * 6 = 30
+
 
 # Loss function configuration
 loss:
