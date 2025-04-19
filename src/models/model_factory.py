@@ -45,7 +45,7 @@ def get_model(model_config):
     elif model_name == 'uni': # Pathology Foundation Model
         model = UNI(model_name=model_config['model_name'])
 
-    elif model_name == 'uni': # Pathology Foundation Model
+    elif model_name == 'uni_fsl': # Pathology Foundation Model
         model = UNIFsl(model_name=model_config['model_name'])
 
     elif model_name == 'virchow2': # Pathology Foundation Model

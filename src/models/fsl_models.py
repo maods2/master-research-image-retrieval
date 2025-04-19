@@ -34,7 +34,7 @@ class UNIFsl(nn.Module):
         # Projection head (non-linear)
         self.projection = nn.Sequential(
             nn.Linear(out_dim, 512),
-            nn.ReLU(),
+            nn.GELU(),
             nn.Linear(512, 128)
         )
         

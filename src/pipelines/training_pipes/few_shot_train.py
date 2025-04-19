@@ -46,6 +46,7 @@ class FewShotTrain(BaseTrainer):
             class_proto = embeddings[class_mask].mean(0)
             prototypes.append(class_proto)
         return torch.stack(prototypes)  # [n_classes, embedding_dim]
+    
     def eval_few_shot_classification(
         self,
         model: torch.nn.Module,
