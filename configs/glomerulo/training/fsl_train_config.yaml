@@ -5,7 +5,7 @@ data:
   test_dir: datasets/final/glomerulo/test
   class_mapping: {Crescent: 0, Hypercellularity: 1, Membranous: 2, Normal: 3, Podocytopathy: 4,
     Sclerosis: 5}
-  batch_size: 32
+  batch_size: 1 # Batch size for few-shot learning = 1
   num_workers: 3  # Number of workers to load the data
   suffle_train: true  # Shuffle the training data
   suffle_test: false
@@ -19,6 +19,9 @@ model:
   load_checkpoint: false  # Load a pre-trained model checkpoint
   checkpoint_path: ''  # Path to the model checkpoint
   model_name: vit_large_patch16_224      # Specify the ViT model name
+  n_way: 6
+  q_shot: 5
+  k_queries: 32 # For few-shot learning, this will be the batch size
 
 # Loss function configuration
 loss:
@@ -27,12 +30,12 @@ loss:
 # Optimizer configuration
 optimizer:
   name: "adam"  # Specify the optimizer (adam, sgd, etc.)
-  lr: 0.001  # Learning rate
+  lr: 1e-3  # Learning rate
   weight_decay: 1e-4  # Weight decay for regularization
 
 # Training configuration
 training:
-  pipeline: "train_multilabel"  # The pipeline to run (e.g., train, finetune, etc.)
+  pipeline: "train_few_shot_leaning"  # The pipeline to run (e.g., train, finetune, etc.)
   epochs: 2  # Number of epochs to train
   lr_scheduler:
     name: "step_lr"  # Learning rate scheduler (step_lr, cosine_annealing, etc.)

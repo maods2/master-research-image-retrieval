@@ -24,7 +24,7 @@ def train_wrapper(config):
     transforms = get_transforms(config['transform'])
 
     # Load data loaders
-    train_loader, test_loader = get_dataloader(config['data'], transforms)
+    train_loader, test_loader = get_dataloader(config, transforms)
 
     # Custom training function
     train_fn = get_train_function(config)
@@ -37,8 +37,6 @@ def train_wrapper(config):
     )
 
     # Teste padrão
-    logger.info('Running standard testing...')
-    test_fn(model, train_loader, test_loader, config, logger, metric_logger)
-
-    # Retrieval testing
-    logger.info('Running retrieval testing...')
+    if config['testing']['enabled']:
+        logger.info('Running testing...')
+        test_fn(model, train_loader, test_loader, config, logger, metric_logger)

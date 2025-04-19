@@ -116,7 +116,7 @@ class FewShotTrain(BaseTrainer):
             emb_s = model(support)
             emb_q = model(query)
 
-            loss, acc = self.prototypical_loss(emb_s, s_lbls, emb_q, q_lbls, self.config['n_way'])
+            loss, acc = self.prototypical_loss(emb_s, s_lbls, emb_q, q_lbls, self.config['model']['n_way'])
 
             loss.backward()
             optimizer.step()

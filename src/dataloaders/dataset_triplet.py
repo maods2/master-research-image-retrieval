@@ -14,7 +14,7 @@ from dataloaders.dataset_terumo import TerumoImageDataset
 
 
 class TripletDataset(StandardImageDataset):
-    def __init__(self, root_dir, transform=None, class_mapping=None):
+    def __init__(self, root_dir, transform=None, class_mapping=None, config=None):
         self.root_dir = Path(root_dir)
         self.transform = transform if transform else A.Compose([A.ToFloat()])
         super().__init__(root_dir, transform, class_mapping)
@@ -60,7 +60,7 @@ class TripletDataset(StandardImageDataset):
 
 
 class MixedTripletDataset(Dataset):
-    def __init__(self, root_dir, transform=None, class_mapping=None):
+    def __init__(self, root_dir, transform=None, class_mapping=None, config=None):
         self.triplet_active = True
         self._multiclass_dataset = TerumoImageDataset(
             root_dir, transform, class_mapping

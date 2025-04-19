@@ -14,7 +14,7 @@ def test_wrapper(config):
     transforms = get_transforms(config['transform'])
     model = get_model(config['model'])
 
-    train_loader, test_loader = get_dataloader(config['data'], transforms)
+    train_loader, test_loader = get_dataloader(config, transforms)
 
     # Função de teste
     test_fn = get_test_function(config['testing'])

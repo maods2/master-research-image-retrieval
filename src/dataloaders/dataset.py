@@ -7,7 +7,7 @@ from torch.utils.data import Dataset
 
 
 class StandardImageDataset(Dataset):
-    def __init__(self, root_dir, transform=None, class_mapping=None, return_one_hot=False):
+    def __init__(self, root_dir, transform=None, class_mapping=None, config=None, return_one_hot=False):
         """
         Initializes the dataset.
 
@@ -74,6 +74,7 @@ class StandardImageDataset(Dataset):
                 self.labels.append(self.class_mapping[class_name])
                 self.one_hot_labels.append(one_hot_label)
                 self.labels_str.append(class_name)
+                
 
     def __len__(self):
         # Return the total number of samples in the dataset
@@ -109,3 +110,49 @@ class StandardImageDataset(Dataset):
             image = self.transform(image=image)['image']
 
         return image, label
+
+if __name__ == "__main__":
+    import os
+    import sys
+    sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+    import albumentations as A
+    from albumentations.pytorch import ToTensorV2
+    from torch.utils.data import DataLoader
+    
+    root_dir = './datasets/final/glomerulo/train'
+    custom_mapping = {
+        'Crescent': 0,
+        'Hypercellularity': 1,
+        'Membranous': 2,
+        'Normal': 3,
+        'Podocytopathy': 4,
+        'Sclerosis': 5,
+    }
+
+    # Define transformations using Albumentations
+    data_transforms = A.Compose(
+        [
+            A.Resize(224, 224),
+            A.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
+            ToTensorV2(),
+        ]
+    )
+
+    # Create the dataset
+    dataset = StandardImageDataset(
+        root_dir=root_dir,
+        transform=data_transforms,
+        class_mapping=custom_mapping,
+    )
+    train_loader = DataLoader(
+        dataset,
+        batch_size=32,
+        shuffle=False,
+        num_workers=3,
+        pin_memory=True,
+    )
+
+    # Test the dataset
+    for images, labels in train_loader:
+        print(images.shape, labels.shape)
+        break  

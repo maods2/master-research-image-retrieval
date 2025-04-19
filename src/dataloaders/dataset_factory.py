@@ -4,12 +4,12 @@ from dataloaders.dataset_terumo import TerumoImageDataset
 from dataloaders.dataset_triplet import MixedTripletDataset, TripletDataset
 
 
-def get_dataloader(data_config, transform):
+def get_dataloader(config, transform):
     """
     Factory function to get data loaders for train and test sets.
 
     Args:
-        data_config (dict): Configuration dict containing information on data directories,
+        config (dict): Configuration dict containing information on data directories,
                              transformations, and other parameters.
         transform (A.Compose): Composed Albumentations transformation pipeline.
 
@@ -17,6 +17,7 @@ def get_dataloader(data_config, transform):
         train_loader (DataLoader): PyTorch DataLoader for the training set
         test_loader (DataLoader): PyTorch DataLoader for the test set
     """
+    data_config = config['data']  # Extract data config from the main config
     # Get transformations based on config
     dataset_name = data_config.get(
         'dataset_type', 'TerumoImageDataset'
@@ -38,6 +39,7 @@ def get_dataloader(data_config, transform):
         root_dir=data_config['train_dir'],  # Directory for training data
         transform=transform,  # Transformations to apply
         class_mapping=data_config['class_mapping'],  # Custom class mappings
+        config=config,  # Additional config for dataset
     )
 
     # TODO: add support for different transformations for test set
@@ -45,6 +47,7 @@ def get_dataloader(data_config, transform):
         root_dir=data_config['test_dir'],  # Directory for testing data
         transform=transform,  # Transformations to apply
         class_mapping=data_config['class_mapping'],  # Custom class mappings
+        config=config,  # Additional config for dataset
     )
 
     # Create DataLoader instances for both datasets

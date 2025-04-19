@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 
 
 class TerumoImageDataset(StandardImageDataset):
-    def __init__(self, root_dir, transform=None, class_mapping=None):
+    def __init__(self, root_dir, transform=None, class_mapping=None, config=None):
         """
         Initializes the dataset.
 

@@ -8,6 +8,10 @@ def get_train_function(config):
         from pipelines.training_pipes.triplet_train import TripletTrain
         return TripletTrain(config)
     
+    elif config['training']['pipeline'] == 'train_few_shot_leaning':
+        from pipelines.training_pipes.few_shot_train import FewShotTrain
+        return FewShotTrain(config)
+    
     else:
         raise ValueError(
             f'Training pipeline {config["training"]["pipeline"]} is not supported'

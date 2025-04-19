@@ -198,7 +198,7 @@ if __name__ == '__main__':
     model = models.resnet50(pretrained=True)
     model.fc = nn.Identity()
 
-    root_dir = './datasets/final/terumo/train'
+    root_dir = './datasets/final/glomerulo/train'
     custom_mapping = {
         'Crescent': 0,
         'Hypercellularity': 1,

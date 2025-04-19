@@ -1,56 +1,55 @@
-import yaml
 import os
 from pathlib import Path
 from typing import Dict, List
+from ruamel.yaml import YAML
 
 def load_template(template_path: str) -> dict:
     """Load the YAML template file."""
+    yaml = YAML()
     with open(template_path, 'r') as f:
-        return yaml.safe_load(f)
+        return yaml.load(f)
 
 def create_config(
         template: dict, 
         dataset_name: str, 
-        model_config: str, 
+        model_config: Dict[str, str], 
         dataset_config: Dict[str, str], 
         output_dir: str,
         config_type_folder: str = "retrieval_test"
         ):
     """Create a new config file with customized parameters."""
+    # Copy the template to preserve its structure
     config = template.copy()
     
-    # Update paths
+    # Update paths in the 'data' section
     config['data']['train_dir'] = dataset_config['train_dir']
     config['data']['test_dir'] = dataset_config['test_dir']
     config['data']['class_mapping'] = dataset_config['class-mapping']
     
-    # Update model configuration
+    # Update fields in the 'model' section
     config['model']['name'] = model_config['model_name']
     config['model']['experiment_name'] = f"{model_config['model_name']}_{dataset_name}"
     config['model']['num_classes'] = len(dataset_config['class-mapping'])
     config['model']['model_name'] = model_config["model_pretreined"]
     
+    # Update fields in the 'testing' section
     config['testing']['embeddings_path'] = f'./artifacts/{dataset_name}/embeddings_{model_config["model_name"]}'
-            
     config['testing']['embeddings_save_path'] = f'./artifacts/{dataset_name}/embeddings_{model_config["model_name"]}'
     
-    
-    config['output']['model_dir'] =  f'./artifacts/{dataset_name}'
-        
-    config['output']['results_dir'] =  f'./local_experiments/{dataset_name}'
-
-
+    # Update fields in the 'output' section
+    config['output']['model_dir'] = f'./artifacts/{dataset_name}'
+    config['output']['results_dir'] = f'./local_experiments/{dataset_name}'
     
     # Create output directory if it doesn't exist
-    dataset_config_dir = os.path.join(output_dir, dataset_name+config_type_folder)
-    # dataset_config_dir = os.path.join(dataset_config_dir, config_type_folder)
-
+    dataset_config_dir = os.path.join(output_dir, dataset_name + config_type_folder)
     os.makedirs(dataset_config_dir, exist_ok=True)
     
-    # Save the config
+    # Save the config while preserving the structure and using inline arrays
     output_path = os.path.join(dataset_config_dir, f"{model_config['model_name']}_config.yaml")
+    yaml = YAML()
+    yaml.default_flow_style = None  # Use block style for objects but inline style for arrays
     with open(output_path, 'w') as f:
-        yaml.dump(config, f, default_flow_style=False)
+        yaml.dump(config, f)
     
     print(f"Created config: {output_path}")
 
