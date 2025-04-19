@@ -9,41 +9,50 @@ import torch.nn as nn
 import timm
 import os
 
-local_dir = "./assets/ckpts/vit_large_patch16_224.dinov2.uni_mass100k/"
+local_dir = './assets/ckpts/vit_large_patch16_224.dinov2.uni_mass100k/'
+
 
 class UNIFsl(nn.Module):
     def __init__(self, model_name='vit_large_patch16_224', pretrained=True):
-        """
-
-        """
+        """ """
         super(UNIFsl, self).__init__()
 
         # Load pretrained DINO model from timm
         self.backbone = model = timm.create_model(
-           model_name, img_size=224, patch_size=16, init_values=1e-5, num_classes=0, dynamic_img_size=True
+            model_name,
+            img_size=224,
+            patch_size=16,
+            init_values=1e-5,
+            num_classes=0,
+            dynamic_img_size=True,
         )
-        model.load_state_dict(torch.load(os.path.join(local_dir, "pytorch_model.bin"), map_location="cpu"), strict=True)
-        
+        model.load_state_dict(
+            torch.load(
+                os.path.join(local_dir, 'pytorch_model.bin'),
+                map_location='cpu',
+            ),
+            strict=True,
+        )
+
         for param in self.backbone.parameters():
             param.requires_grad = False
-            
+
         test_tensor = torch.randn(1, 3, 224, 224)
         with torch.no_grad():
             out_dim = self.backbone(test_tensor).shape[-1]
 
         # Projection head (non-linear)
         self.projection = nn.Sequential(
-            nn.Linear(out_dim, 512),
-            nn.GELU(),
-            nn.Linear(512, 128)
+            nn.Linear(out_dim, 512), nn.GELU(), nn.Linear(512, 128)
         )
-        
+
     def forward(self, x):
         x = self.backbone(x)
         x = self.projection(x)
         return x
 
-if __name__ == "__main__":
+
+if __name__ == '__main__':
     model = UNIFsl()
     model = model.to('cuda')
     model.eval()
@@ -51,5 +60,5 @@ if __name__ == "__main__":
         # Dummy input tensor
         x = torch.randn(32, 3, 224, 224).to('cuda')
         output = model(x)
-        print(output.shape)  
-        print(output)  
+        print(output.shape)
+        print(output)

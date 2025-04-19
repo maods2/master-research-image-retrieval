@@ -1,4 +1,3 @@
-
 import torch
 from tqdm import tqdm
 from torch.utils.data import DataLoader
@@ -8,14 +7,12 @@ from pipelines.training_pipes.base_trainer import BaseTrainer
 from utils.checkpoint_utils import save_model_and_log_artifact
 
 
-
-
 class TripletTrain(BaseTrainer):
     def __init__(self, config: dict):
         self.config = config
         super().__init__()
         self.retrieval_at_k_metrics = get_metrics(config['training'])
-    
+
     def train_one_epoch(
         self,
         model,
@@ -94,7 +91,7 @@ class TripletTrain(BaseTrainer):
 
         training_loss = []
         training_mapatk = []
-        
+
         for epoch in range(epochs):
             # Train the model for one epoch
             epoch_loss = self.train_one_epoch(
@@ -106,20 +103,22 @@ class TripletTrain(BaseTrainer):
                 epoch,
             )
 
-            train_loader.dataset.switch_to_classifcation_dataset() ## applied to MixTripletDataset
+            train_loader.dataset.switch_to_classifcation_dataset()   ## applied to MixTripletDataset
             retrieval_at_k_metrics = self.eval_retrieval_at_k(
                 model, train_loader, config, logger
             )
-            train_loader.dataset.switch_to_triplet_dataset() ## applied to MixTripletDataset
-            
-            mapatk = retrieval_at_k_metrics['MapAtK']['map_at_k_results']
-            logger.info(f"Epoch {epoch + 1}/{epochs}, Loss: {epoch_loss:.4f}, MapAt10: {mapatk['mapAt10']:.4f}")
-            print(f"Epoch {epoch + 1}/{epochs}, Loss: {epoch_loss:.4f}, MapAt10: {mapatk['mapAt10']:.4f}")
+            train_loader.dataset.switch_to_triplet_dataset()   ## applied to MixTripletDataset
 
+            mapatk = retrieval_at_k_metrics['MapAtK']['map_at_k_results']
+            logger.info(
+                f"Epoch {epoch + 1}/{epochs}, Loss: {epoch_loss:.4f}, MapAt10: {mapatk['mapAt10']:.4f}"
+            )
+            print(
+                f"Epoch {epoch + 1}/{epochs}, Loss: {epoch_loss:.4f}, MapAt10: {mapatk['mapAt10']:.4f}"
+            )
 
             training_loss.append(epoch_loss)
             training_mapatk.append(mapatk['mapAt10'])
-            
 
             if epoch_loss < min_val_loss:
                 min_val_loss = epoch_loss
@@ -129,11 +128,11 @@ class TripletTrain(BaseTrainer):
 
         train_loader.dataset.switch_to_classifcation_dataset()
         test_loader.dataset.switch_to_classifcation_dataset()
-        
+
         metrics = {
             'epoch_loss': training_loss,
             'epoch_mapAt10': training_mapatk,
         }
         metric_logger.log_json(metrics, 'train_metrics')
-        
+
         return model

@@ -1,12 +1,15 @@
 from abc import ABC, abstractmethod
 
+
 class MetricBase(ABC):
     """
     Base interface for all metrics. All metrics must inherit from this class and implement the required methods.
     """
 
     @abstractmethod
-    def __call__(self, model, train_loader, test_loader, embeddings, config, logger):
+    def __call__(
+        self, model, train_loader, test_loader, embeddings, config, logger
+    ):
         """
         Method to compute the metric.
 
@@ -23,7 +26,6 @@ class MetricBase(ABC):
         """
         raise NotImplementedError('Subclasses must implement this method.')
 
-    
 
 class MetricLoggerBase(ABC):
     """

@@ -41,8 +41,6 @@ class Accuracy:
         return {'accuracy': accuracy}
 
 
-
-
 class MultilabelAccuracy:
     def __init__(self, **kwargs):
         """
@@ -63,7 +61,7 @@ class MultilabelAccuracy:
         )
         model.to(device)
         model.eval()
-        
+
         correct = 0
         total = 0
 
@@ -71,15 +69,16 @@ class MultilabelAccuracy:
             for images, labels in test_loader:
                 images, labels = images.to(device), labels.to(device)
                 outputs = model(images)
-                
+
                 # Aplicando sigmoid para obter probabilidades e um limiar para converter em 0/1
                 predicted = (torch.sigmoid(outputs) > 0.5).int()
-                
+
                 # Comparação elemento a elemento para multilabel
                 correct += (predicted == labels).sum().item()
-                total += labels.numel()  # Número total de elementos na matriz de labels
-        
+                total += (
+                    labels.numel()
+                )  # Número total de elementos na matriz de labels
+
         accuracy = correct / total
         logger.info(f'Accuracy: {accuracy:.4f}')
         return {'accuracy': accuracy}
-

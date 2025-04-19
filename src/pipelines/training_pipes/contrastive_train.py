@@ -6,12 +6,13 @@ from metrics.metric_factory import get_metrics
 from pipelines.training_pipes.base_trainer import BaseTrainer
 from utils.checkpoint_utils import save_model_and_log_artifact
 
+
 class ContrastiveTrain(BaseTrainer):
     def __init__(self, config: dict):
         self.config = config
         super().__init__()
         self.retrieval_at_k_metrics = get_metrics(config['training'])
-    
+
     def train_one_epoch(
         self,
         model,
@@ -34,13 +35,13 @@ class ContrastiveTrain(BaseTrainer):
             # Generate two augmented views for each image
             images = torch.cat(images, dim=0).to(device)
             labels = labels.to(device)
-            
+
             # Forward pass
             embeddings = model(images)
-            
+
             # Normalize embeddings for contrastive learning
             embeddings = torch.nn.functional.normalize(embeddings, dim=1)
-            
+
             # Calculate loss (expects unnormalized embeddings)
             loss = loss_fn(embeddings, labels)
 
@@ -85,19 +86,21 @@ class ContrastiveTrain(BaseTrainer):
                 epoch,
             )
 
-
             retrieval_at_k_metrics = self.eval_retrieval_at_k(
                 model, train_loader, config, logger
             )
-            
+
             mapatk = retrieval_at_k_metrics['MapAtK']['map_at_k_results']
-            logger.info(f"Epoch {epoch + 1}/{epochs}, Loss: {epoch_loss:.4f}, MapAt10: {mapatk['mapAt10']:.4f}")
-            print(f"Epoch {epoch + 1}/{epochs}, Loss: {epoch_loss:.4f}, MapAt10: {mapatk['mapAt10']:.4f}")
+            logger.info(
+                f"Epoch {epoch + 1}/{epochs}, Loss: {epoch_loss:.4f}, MapAt10: {mapatk['mapAt10']:.4f}"
+            )
+            print(
+                f"Epoch {epoch + 1}/{epochs}, Loss: {epoch_loss:.4f}, MapAt10: {mapatk['mapAt10']:.4f}"
+            )
 
             training_loss.append(epoch_loss)
             training_mapatk.append(mapatk['mapAt10'])
-            
-            
+
             if epoch_loss < min_val_loss:
                 min_val_loss = epoch_loss
                 checkpoint_path = save_model_and_log_artifact(
@@ -106,11 +109,11 @@ class ContrastiveTrain(BaseTrainer):
 
         train_loader.dataset.switch_to_classifcation_dataset()
         test_loader.dataset.switch_to_classifcation_dataset()
-        
+
         metrics = {
             'epoch_loss': training_loss,
             'epoch_mapAt10': training_mapatk,
         }
         metric_logger.log_json(metrics, 'train_metrics')
-        
+
         return model

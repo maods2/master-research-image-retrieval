@@ -33,10 +33,19 @@ def train_wrapper(config):
     # Training
     logger.info('Starting training...')
     train_fn(
-        model, loss_fn, optimizer, train_loader, test_loader, config, logger, metric_logger
+        model,
+        loss_fn,
+        optimizer,
+        train_loader,
+        test_loader,
+        config,
+        logger,
+        metric_logger,
     )
 
     # Teste padrão
     if config['testing']['enabled']:
         logger.info('Running testing...')
-        test_fn(model, train_loader, test_loader, config, logger, metric_logger)
+        test_fn(
+            model, train_loader, test_loader, config, logger, metric_logger
+        )

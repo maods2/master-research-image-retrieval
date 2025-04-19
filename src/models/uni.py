@@ -9,25 +9,36 @@ import torch.nn as nn
 import timm
 import os
 
-local_dir = "./assets/ckpts/vit_large_patch16_224.dinov2.uni_mass100k/"
+local_dir = './assets/ckpts/vit_large_patch16_224.dinov2.uni_mass100k/'
+
+
 class UNI(nn.Module):
     def __init__(self, model_name='vit_large_patch16_224', pretrained=True):
-        """
-
-        """
+        """ """
         super(UNI, self).__init__()
 
         # Load pretrained DINO model from timm
         self.backbone = model = timm.create_model(
-           model_name, img_size=224, patch_size=16, init_values=1e-5, num_classes=0, dynamic_img_size=True
+            model_name,
+            img_size=224,
+            patch_size=16,
+            init_values=1e-5,
+            num_classes=0,
+            dynamic_img_size=True,
         )
-        model.load_state_dict(torch.load(os.path.join(local_dir, "pytorch_model.bin"), map_location="cpu"), strict=True)
+        model.load_state_dict(
+            torch.load(
+                os.path.join(local_dir, 'pytorch_model.bin'),
+                map_location='cpu',
+            ),
+            strict=True,
+        )
+
     def forward(self, x):
         return self.backbone(x)  # Already returns flattened embeddings
-    
-    
 
-if __name__ == "__main__":
+
+if __name__ == '__main__':
     model = UNI()
     model = model.to('cuda')
     model.eval()
@@ -35,5 +46,5 @@ if __name__ == "__main__":
         # Dummy input tensor
         x = torch.randn(32, 3, 224, 224).to('cuda')
         output = model(x)
-        print(output.shape)  
-        print(output)  
+        print(output.shape)
+        print(output)

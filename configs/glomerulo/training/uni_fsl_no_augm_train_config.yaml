@@ -36,11 +36,11 @@ optimizer:
 # Training configuration
 training:
   pipeline: "train_few_shot_leaning"  # The pipeline to run (e.g., train, finetune, etc.)
-  epochs: 1  # Number of epochs to train
+  epochs: 100  # Number of epochs to train
   lr_scheduler:
     name: "step_lr"  # Learning rate scheduler (step_lr, cosine_annealing, etc.)
     step_size: 10  # Step size for scheduler (for step_lr)
-
+  early_stopping_patience: 10
 # Transformation configuration for image preprocessing
 transform:
   resize: [224, 224]  # Resize images to 224x224

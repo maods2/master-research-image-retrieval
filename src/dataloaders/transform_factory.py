@@ -2,6 +2,7 @@ import albumentations as A
 from albumentations.pytorch import ToTensorV2
 import cv2
 
+
 def get_transforms(transform_config):
     """
     Factory function to get transformations based on the provided configuration.
@@ -29,7 +30,7 @@ def get_transforms(transform_config):
     Returns:
         albumentations.Compose: A composition of the specified transformations.
     """
-    
+
     transform_list = []
 
     if 'resize' in transform_config:
@@ -104,17 +105,17 @@ def get_transforms(transform_config):
                     A.OpticalDistortion(
                         distort_limit=0.05,
                         shift_limit=0.05,
-                        p=transform_config['distortion']['optical_distortion']
+                        p=transform_config['distortion']['optical_distortion'],
                     ),
                     A.GridDistortion(
                         distort_limit=0.05,
-                        p=transform_config['distortion']['grid_distortion']
+                        p=transform_config['distortion']['grid_distortion'],
                     ),
                     A.ElasticTransform(
                         alpha=1,
                         sigma=50,
                         alpha_affine=50,
-                        p=transform_config['distortion']['piecewise_affine']
+                        p=transform_config['distortion']['piecewise_affine'],
                     ),
                 ],
                 p=transform_config['distortion']['probability'],

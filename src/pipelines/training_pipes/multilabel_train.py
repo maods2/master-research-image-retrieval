@@ -99,10 +99,13 @@ def compute_metrics(
     all_preds = all_preds.numpy()
     all_targets = all_targets.numpy()
 
-    epoch_f1 = f1_score(all_targets, (all_preds > 0.5).astype(int), average='macro')
+    epoch_f1 = f1_score(
+        all_targets, (all_preds > 0.5).astype(int), average='macro'
+    )
     epoch_accuracy = accuracy_score(all_targets, (all_preds > 0.5).astype(int))
 
     return epoch_f1, epoch_accuracy
+
 
 def compute_val_metrics(model, val_loader, device):
     with torch.no_grad():
@@ -118,14 +121,17 @@ def compute_val_metrics(model, val_loader, device):
             predicted = (torch.sigmoid(outputs) > 0.5).int()
             all_preds.append(predicted.cpu().detach())
             all_targets.append(targets.cpu().detach())
-            
+
         all_preds = torch.cat(all_preds).numpy()
         all_targets = torch.cat(all_targets).numpy()
-        
-        f1score = f1_score(all_targets, (all_preds > 0.5).astype(int), average='macro')
+
+        f1score = f1_score(
+            all_targets, (all_preds > 0.5).astype(int), average='macro'
+        )
         accuracy = accuracy_score(all_targets, (all_preds > 0.5).astype(int))
         return accuracy, f1score
-    
+
+
 def train_multilabel(
     model: torch.nn.Module,
     loss_fn: callable,
@@ -176,8 +182,8 @@ def train_multilabel(
 
         # Compute metrics (F1 score and accuracy)
         epoch_f1, epoch_accuracy = compute_metrics(all_preds, all_targets)
-        
-        accuracy, f1score =  compute_val_metrics(model, test_loader, device)
+
+        accuracy, f1score = compute_val_metrics(model, test_loader, device)
 
         # Log metrics for the epoch
         metric_logger.log_metric('epoch_loss', epoch_loss, step=epoch)

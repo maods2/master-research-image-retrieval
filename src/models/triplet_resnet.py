@@ -17,6 +17,7 @@ class TripletResNet(nn.Module):
         x = self.backbone(x)
         return self.normalize(x)  # Embeddings normalizados
 
+
 class ResNet50(nn.Module):
     def __init__(self, embedding_size=512):
         super().__init__()
@@ -27,11 +28,10 @@ class ResNet50(nn.Module):
         x = self.backbone(x)
         x = torch.nn.functional.normalize(x, p=1, dim=1)
         return x.view(x.size(0), -1)
-    
+
+
 if __name__ == '__main__':
     model = ResNet50()
     out = model(torch.randn(2, 3, 224, 224))
     print(out)
     print(out.shape)
-
-

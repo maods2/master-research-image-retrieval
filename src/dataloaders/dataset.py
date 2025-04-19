@@ -7,7 +7,14 @@ from torch.utils.data import Dataset
 
 
 class StandardImageDataset(Dataset):
-    def __init__(self, root_dir, transform=None, class_mapping=None, config=None, return_one_hot=False):
+    def __init__(
+        self,
+        root_dir,
+        transform=None,
+        class_mapping=None,
+        config=None,
+        return_one_hot=False,
+    ):
         """
         Initializes the dataset.
 
@@ -20,7 +27,7 @@ class StandardImageDataset(Dataset):
         self.root_dir = Path(root_dir)
         self.transform = transform
         self.image_paths = []       # List of full paths to images
-        self.labels = []            # List of integer labels      
+        self.labels = []            # List of integer labels
         self.one_hot_labels = []    # List of one-hot encoded labels
         self.labels_str = []        # List of text labels
         self.return_one_hot = return_one_hot
@@ -47,8 +54,10 @@ class StandardImageDataset(Dataset):
                 )
 
         self.class_mapping = class_mapping
-        self.image_dict = {self.class_mapping[class_name]: [] for class_name in classes}
-        
+        self.image_dict = {
+            self.class_mapping[class_name]: [] for class_name in classes
+        }
+
         for class_name in classes:
             class_dir = self.root_dir / class_name
             image_extensions = ['*.jpg', '*.jpeg', '*.png', '*.tif', '*.tiff']
@@ -60,7 +69,7 @@ class StandardImageDataset(Dataset):
 
             #
             self.image_dict[self.class_mapping[class_name]].extend(images)
-            
+
             # Register images and labels
             for file_path in images:
 
@@ -74,7 +83,6 @@ class StandardImageDataset(Dataset):
                 self.labels.append(self.class_mapping[class_name])
                 self.one_hot_labels.append(one_hot_label)
                 self.labels_str.append(class_name)
-                
 
     def __len__(self):
         # Return the total number of samples in the dataset
@@ -91,7 +99,7 @@ class StandardImageDataset(Dataset):
             tuple: (transformed image, one-hot encoded label)
         """
         img_path = str(self.image_paths[idx])
-        
+
         if self.return_one_hot:
             label = torch.tensor(self.one_hot_labels[idx], dtype=torch.float32)
         else:
@@ -111,14 +119,16 @@ class StandardImageDataset(Dataset):
 
         return image, label
 
-if __name__ == "__main__":
+
+if __name__ == '__main__':
     import os
     import sys
+
     sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
     import albumentations as A
     from albumentations.pytorch import ToTensorV2
     from torch.utils.data import DataLoader
-    
+
     root_dir = './datasets/final/glomerulo/train'
     custom_mapping = {
         'Crescent': 0,
@@ -155,4 +165,4 @@ if __name__ == "__main__":
     # Test the dataset
     for images, labels in train_loader:
         print(images.shape, labels.shape)
-        break  
+        break

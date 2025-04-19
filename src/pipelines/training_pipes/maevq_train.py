@@ -20,12 +20,16 @@ MASK_RATIO = 0.4
 # ----------------------------
 # DATASET (CIFAR10 como exemplo)
 # ----------------------------
-transform = transforms.Compose([
-    transforms.Resize((IMG_SIZE, IMG_SIZE)),
-    transforms.ToTensor(),
-])
+transform = transforms.Compose(
+    [
+        transforms.Resize((IMG_SIZE, IMG_SIZE)),
+        transforms.ToTensor(),
+    ]
+)
 
-dataset = datasets.CIFAR10(root="./data", train=True, transform=transform, download=True)
+dataset = datasets.CIFAR10(
+    root='./data', train=True, transform=transform, download=True
+)
 dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
 
 # ----------------------------
@@ -37,24 +41,31 @@ class VectorQuantizer(nn.Module):
         self.embedding_dim = embedding_dim
         self.num_embeddings = num_embeddings
         self.codebook = nn.Embedding(num_embeddings, embedding_dim)
-        self.codebook.weight.data.uniform_(-1 / num_embeddings, 1 / num_embeddings)
+        self.codebook.weight.data.uniform_(
+            -1 / num_embeddings, 1 / num_embeddings
+        )
         self.commitment_cost = commitment_cost
 
     def forward(self, inputs):
         flat_inputs = inputs.view(-1, self.embedding_dim)
         distances = (
-            torch.sum(flat_inputs ** 2, dim=1, keepdim=True)
-            + torch.sum(self.codebook.weight ** 2, dim=1)
+            torch.sum(flat_inputs**2, dim=1, keepdim=True)
+            + torch.sum(self.codebook.weight**2, dim=1)
             - 2 * torch.matmul(flat_inputs, self.codebook.weight.t())
         )
         encoding_indices = torch.argmin(distances, dim=1)
-        encodings = F.one_hot(encoding_indices, self.num_embeddings).type(flat_inputs.dtype)
-        quantized = torch.matmul(encodings, self.codebook.weight).view_as(inputs)
+        encodings = F.one_hot(encoding_indices, self.num_embeddings).type(
+            flat_inputs.dtype
+        )
+        quantized = torch.matmul(encodings, self.codebook.weight).view_as(
+            inputs
+        )
         e_latent_loss = F.mse_loss(quantized.detach(), inputs)
         q_latent_loss = F.mse_loss(quantized, inputs.detach())
         loss = q_latent_loss + self.commitment_cost * e_latent_loss
         quantized = inputs + (quantized - inputs).detach()
         return quantized, loss, encoding_indices.view(inputs.shape[:-1])
+
 
 # ----------------------------
 # MAE-STYLE DECODER
@@ -65,13 +76,22 @@ class SimpleDecoder(nn.Module):
         self.embed_dim = embed_dim
         self.out_channels = out_channels
         self.patch_size = patch_size
-        self.linear = nn.Linear(embed_dim, patch_size * patch_size * out_channels)
+        self.linear = nn.Linear(
+            embed_dim, patch_size * patch_size * out_channels
+        )
 
     def forward(self, x, h, w):
         x = self.linear(x)
-        x = rearrange(x, 'b (h w) (p1 p2 c) -> b c (h p1) (w p2)', 
-                      p1=self.patch_size, p2=self.patch_size, h=h, w=w)
+        x = rearrange(
+            x,
+            'b (h w) (p1 p2 c) -> b c (h p1) (w p2)',
+            p1=self.patch_size,
+            p2=self.patch_size,
+            h=h,
+            w=w,
+        )
         return x
+
 
 # ----------------------------
 # MODELO COMPLETO
@@ -105,6 +125,7 @@ class MAEVQModel(nn.Module):
         quantized, _, _ = self.codebook(x)
         return quantized.mean(dim=1)
 
+
 # ----------------------------
 # TREINAMENTO
 # ----------------------------
@@ -114,13 +135,13 @@ decoder = SimpleDecoder(embed_dim=EMBED_DIM)
 
 model = MAEVQModel(vit, codebook, decoder)
 optimizer = torch.optim.Adam(model.parameters(), lr=3e-4)
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model.to(device)
 
 for epoch in range(10):
     model.train()
     total_loss = 0
-    for imgs, _ in tqdm(dataloader, desc=f"Epoch {epoch + 1}"):
+    for imgs, _ in tqdm(dataloader, desc=f'Epoch {epoch + 1}'):
         imgs = imgs.to(device)
         recon, vq_loss = model(imgs, mask_ratio=MASK_RATIO)
         recon_loss = F.mse_loss(recon, imgs)
@@ -132,7 +153,7 @@ for epoch in range(10):
 
         total_loss += loss.item()
 
-    print(f"Epoch {epoch + 1}, Loss: {total_loss / len(dataloader):.4f}")
+    print(f'Epoch {epoch + 1}, Loss: {total_loss / len(dataloader):.4f}')
 
 # ----------------------------
 # EMBEDDING EXTRACTION (EXEMPLO PARA RETRIEVAL)
@@ -146,6 +167,7 @@ def generate_embeddings(model, dataloader, device):
             emb = model.extract_embeddings(imgs)
             embeddings.append(emb.cpu())
     return torch.cat(embeddings, dim=0)
+
 
 # embeddings = generate_embeddings(model, dataloader, device)
 # print("Shape dos embeddings:", embeddings.shape)

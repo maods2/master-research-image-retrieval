@@ -31,27 +31,21 @@ def default_test_fn(
         metric_logger: MetricLoggerBase instance for logging metrics.
     """
     metrics_list: List[MetricBase] = get_metrics(config['testing'])
-    device = config['device'] if config.get('device') else ('cuda' if torch.cuda.is_available() else 'cpu')
+    device = (
+        config['device']
+        if config.get('device')
+        else ('cuda' if torch.cuda.is_available() else 'cpu')
+    )
 
     embeddings = load_or_create_embeddings(
-        model,
-        train_loader,
-        test_loader,
-        config,
-        logger,
-        device
+        model, train_loader, test_loader, config, logger, device
     )
 
     for metric in metrics_list:
         results = metric(
-            model,
-            train_loader,
-            test_loader,
-            embeddings,
-            config,
-            logger
-         )
-        
+            model, train_loader, test_loader, embeddings, config, logger
+        )
+
         logger.info(f'Results for {metric.__class__.__name__}: {results}')
         metric_logger.log_metrics(results)
 

@@ -57,7 +57,7 @@ def get_dataloader(config, transform):
     train_loader = DataLoader(
         train_dataset,
         batch_size=data_config['batch_size'],  # Define the batch size
-        shuffle=data_config.get("suffle_train", True),  # Shuffle for training
+        shuffle=data_config.get('suffle_train', True),  # Shuffle for training
         num_workers=data_config[
             'num_workers'
         ],  # Number of workers for data loading
@@ -67,7 +67,9 @@ def get_dataloader(config, transform):
     test_loader = DataLoader(
         test_dataset,
         batch_size=data_config['batch_size'],  # Define the batch size
-        shuffle=data_config.get("suffle_test", False),  # No need to shuffle test set
+        shuffle=data_config.get(
+            'suffle_test', False
+        ),  # No need to shuffle test set
         num_workers=data_config[
             'num_workers'
         ],  # Number of workers for data loading

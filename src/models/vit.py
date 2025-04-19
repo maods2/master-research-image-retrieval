@@ -5,13 +5,18 @@ from torch import nn
 import torch.nn.functional as F
 import timm
 
+
 class ViT(nn.Module):
     def __init__(self, model_name='vit_base_patch16_224', pretrained=True):
         super(ViT, self).__init__()
         # Creating the model without the classification layer
-        self.model = timm.create_model(model_name, pretrained=pretrained, num_classes=0)
-        self.model.forward_features = self._forward_features  # Overriding the forward function
-    
+        self.model = timm.create_model(
+            model_name, pretrained=pretrained, num_classes=0
+        )
+        self.model.forward_features = (
+            self._forward_features
+        )  # Overriding the forward function
+
     def _forward_features(self, x):
         # Obtaining embeddings for all tokens
         out = self.model.patch_embed(x)
@@ -20,14 +25,14 @@ class ViT(nn.Module):
         out = self.model.pos_drop(out)
         out = self.model.blocks(out)
         return out  # Returns all tokens
-    
+
     def forward(self, x, cls_token_only=True):
         out = self.model.forward_features(x)
         if cls_token_only:
             return out[:, 0, :]
         return out
-    
-    
+
+
 class TripletViT(nn.Module):
     def __init__(self, embedding_size=512):
         super().__init__()
@@ -47,8 +52,9 @@ class TripletViT(nn.Module):
         x = self.backbone(x)
         x = self.projection(x)
         return F.normalize(x, p=2, dim=0)
-    
-if __name__ == "__main__":
+
+
+if __name__ == '__main__':
     model = ViT()
     x = torch.randn(1, 3, 224, 224)
     output = model(x)

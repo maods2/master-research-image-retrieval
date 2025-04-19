@@ -6,10 +6,15 @@ import torch
 from torchvision import transforms
 
 
-
 class PromptDataset(Dataset):
-    def __init__(self, root, num_prompts=10, query_pos_ratio=0.5, transform=None, 
-                 image_extensions={'.jpg', '.jpeg', '.png', '.bmp'}):
+    def __init__(
+        self,
+        root,
+        num_prompts=10,
+        query_pos_ratio=0.5,
+        transform=None,
+        image_extensions={'.jpg', '.jpeg', '.png', '.bmp'},
+    ):
         self.root = root
         self.num_prompts = num_prompts
         self.query_pos_ratio = query_pos_ratio
@@ -28,13 +33,17 @@ class PromptDataset(Dataset):
                 if os.path.splitext(fname)[1].lower() in self.image_extensions:
                     rel_path = os.path.relpath(dirpath, self.root)
                     class_name = os.path.normpath(rel_path).split(os.sep)[0]
-                    
+
                     img_path = os.path.join(dirpath, fname)
                     self.samples.append((img_path, class_name))
-                    self.class_to_images.setdefault(class_name, []).append(img_path)
+                    self.class_to_images.setdefault(class_name, []).append(
+                        img_path
+                    )
 
         self.classes = list(self.class_to_images.keys())
-        print(f"Dataset carregado com {len(self.samples)} amostras e {len(self.classes)} classes.")
+        print(
+            f'Dataset carregado com {len(self.samples)} amostras e {len(self.classes)} classes.'
+        )
 
     def __len__(self):
         return len(self.samples)
@@ -42,59 +51,67 @@ class PromptDataset(Dataset):
     def __getitem__(self, idx):
         query_path, query_label = self.samples[idx]
         query = self._load_image(query_path)
-        
+
         is_positive = random.random() < self.query_pos_ratio
-        
+
         # Lógica de amostragem corrigida
         if is_positive:
             # Positivos: mesma classe
             pos_imgs, pos_labels = self._sample_images_with_labels(
-                target_class=query_label, 
+                target_class=query_label,
                 is_negative=False,
-                exclude_path=query_path
+                exclude_path=query_path,
             )
             # Negativos: todas outras classes
             neg_imgs, neg_labels = self._sample_images_with_labels(
-                target_class=query_label,
-                is_negative=True,
-                exclude_path=None
+                target_class=query_label, is_negative=True, exclude_path=None
             )
         else:
             # Positivos: classe aleatória diferente
             other_classes = [c for c in self.classes if c != query_label]
-            random_class = random.choice(other_classes) if other_classes else query_label
-            
+            random_class = (
+                random.choice(other_classes) if other_classes else query_label
+            )
+
             pos_imgs, pos_labels = self._sample_images_with_labels(
-                target_class=random_class,
-                is_negative=False,
-                exclude_path=None
+                target_class=random_class, is_negative=False, exclude_path=None
             )
             # Negativos: mesma classe (mas exclui query)
             neg_imgs, neg_labels = self._sample_images_with_labels(
                 target_class=query_label,
                 is_negative=False,
-                exclude_path=query_path
+                exclude_path=query_path,
             )
 
         return {
             'query': query,
-            'query_label': torch.tensor(1 if is_positive else 0, dtype=torch.float32),
+            'query_label': torch.tensor(
+                1 if is_positive else 0, dtype=torch.float32
+            ),
             'class_name': query_label,
             'pos_imgs': torch.stack(pos_imgs),
             'pos_imgs_labels': pos_labels,
             'neg_imgs': torch.stack(neg_imgs),
-            'neg_imgs_labels': neg_labels
+            'neg_imgs_labels': neg_labels,
         }
 
     def _get_sampling_classes(self, query_label, is_positive):
         """Determina classes para amostragem baseado no tipo da query"""
         if is_positive:
-            return query_label, None  # Positivos: mesma classe, Negativos: outras
+            return (
+                query_label,
+                None,
+            )  # Positivos: mesma classe, Negativos: outras
         else:
             other_classes = [c for c in self.classes if c != query_label]
-            return random.choice(other_classes) if other_classes else query_label, query_label
+            return (
+                random.choice(other_classes) if other_classes else query_label,
+                query_label,
+            )
 
-    def _sample_images_with_labels(self, target_class, is_negative=False, exclude_path=None):
+    def _sample_images_with_labels(
+        self, target_class, is_negative=False, exclude_path=None
+    ):
         """Amostra imagens e retorna com seus labels reais
         Args:
             target_class: Classe alvo para positivos (ou classe a evitar para negativos se is_negative=True)
@@ -132,9 +149,9 @@ class PromptDataset(Dataset):
         # Completa com padding se necessário
         while len(images) < self.num_prompts:
             images.append(torch.zeros(3, 224, 224))
-            labels.append("padding")
+            labels.append('padding')
 
-        return images[:self.num_prompts], labels[:self.num_prompts]
+        return images[: self.num_prompts], labels[: self.num_prompts]
 
     def _get_class_from_path(self, path):
         """Obtém o nome da classe a partir do caminho da imagem"""
@@ -144,17 +161,22 @@ class PromptDataset(Dataset):
     def _load_image(self, path):
         """Carrega imagem ou retorna tensor zerado em caso de erro"""
         try:
-            img = Image.open(path).convert("RGB")
+            img = Image.open(path).convert('RGB')
             return self.transform(img)
         except:
             return torch.zeros(3, 224, 224)
 
     def default_transform(self):
-        return transforms.Compose([
-            transforms.Resize((224, 224)),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-        ])
+        return transforms.Compose(
+            [
+                transforms.Resize((224, 224)),
+                transforms.ToTensor(),
+                transforms.Normalize(
+                    mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
+                ),
+            ]
+        )
+
 
 # Função para collate personalizado
 def custom_collate(batch):
@@ -167,21 +189,24 @@ def custom_collate(batch):
         'pos_imgs_labels': [item['pos_imgs_labels'] for item in batch],
         'neg_imgs': torch.stack([item['neg_imgs'] for item in batch]),
         'neg_imgs_labels': [item['neg_imgs_labels'] for item in batch],
-        'class_name': [item['class_name'] for item in batch]
+        'class_name': [item['class_name'] for item in batch],
     }
+
 
 # Exemplo de uso
 if __name__ == '__main__':
-    dataset = PromptDataset("datasets/final/terumo/train", num_prompts=10)
-    dataloader = DataLoader(dataset, batch_size=10, shuffle=True, collate_fn=custom_collate)
-    
+    dataset = PromptDataset('datasets/final/terumo/train', num_prompts=10)
+    dataloader = DataLoader(
+        dataset, batch_size=10, shuffle=True, collate_fn=custom_collate
+    )
+
     for batch in dataloader:
-        print("\nBatch completo:")
+        print('\nBatch completo:')
         print(f"Query shape: {batch['query'].shape}")
         print(f"Query labels: {batch['query_label']}")
         print(f"Query is positive: {batch['query_is_positive']}")
-        
-        print("\nPrimeiro exemplo do batch:")
+
+        print('\nPrimeiro exemplo do batch:')
         print(f"Positives shape: {batch['pos_imgs'][0].shape}")
         print(f"Positives labels: {batch['pos_imgs_labels'][0]}")
         print(f"Negatives shape: {batch['neg_imgs'][0].shape}")

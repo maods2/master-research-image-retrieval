@@ -19,7 +19,7 @@ train-tri-res:
 	python3 src/main.py --config configs/triplet/train_resnet_config.yaml --pipeline train
 
 train-uni-fsl:
-	python3 src/main.py --config configs/glomerulo/training/uni_fsl_train_config.yaml --pipeline train
+	python3 src/main.py --config configs/glomerulo/training/uni_fsl_no_augm_train_config.yaml --pipeline train
 
 
 # ============================

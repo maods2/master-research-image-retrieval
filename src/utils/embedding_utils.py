@@ -7,11 +7,13 @@ import torch
 from tqdm import tqdm
 import os
 
+
 def invert_dict(d):
     """Convert a dictionary to an inverted dictionary where keys become values and values become keys."""
     if isinstance(d, np.ndarray):
         d = d.item()  # Convert numpy array to dictionary
     return {v: k for k, v in d.items()}
+
 
 def create_embeddings(
     model, data_loader, device, logger, desc='Extracting features'
@@ -53,21 +55,24 @@ def create_embeddings(
     )
     return embeddings, labels
 
+
 def get_dataset_attribute(dataset, attribute_name: str):
     """
     Helper function to get attributes from either regular or subset dataset.
-    
+
     Args:
         dataset: Dataset object (can be either regular dataset or subset)
         attribute_name: Name of the attribute to retrieve (e.g., 'labels', 'image_paths', 'class_mapping')
-    
+
     Returns:
         The requested attribute value
     """
-    if hasattr(dataset, 'dataset') and isinstance(dataset, Subset):  # Subset dataset
+    if hasattr(dataset, 'dataset') and isinstance(
+        dataset, Subset
+    ):  # Subset dataset
         indices = dataset.indices
         original_dataset = dataset.dataset
-        
+
         if attribute_name in ['image_paths', 'labels', 'labels_str']:
             # Handle list-type attributes that need to be subset
             original_attr = getattr(original_dataset, attribute_name)
@@ -78,6 +83,7 @@ def get_dataset_attribute(dataset, attribute_name: str):
     else:
         # Regular dataset - return attribute directly
         return getattr(dataset, attribute_name)
+
 
 def create_embeddings_dict(
     model: torch.nn.Module,
@@ -118,25 +124,30 @@ def create_embeddings_dict(
         'db_path': get_dataset_attribute(train_loader.dataset, 'image_paths'),
         'query_embeddings': query_embeddings,
         'query_labels': query_labels,
-        'query_classes': get_dataset_attribute(test_loader.dataset, 'labels_str'),
-        'query_paths': get_dataset_attribute(test_loader.dataset, 'image_paths'),
-        'class_mapping': invert_dict(get_dataset_attribute(train_loader.dataset, 'class_mapping')),
+        'query_classes': get_dataset_attribute(
+            test_loader.dataset, 'labels_str'
+        ),
+        'query_paths': get_dataset_attribute(
+            test_loader.dataset, 'image_paths'
+        ),
+        'class_mapping': invert_dict(
+            get_dataset_attribute(train_loader.dataset, 'class_mapping')
+        ),
     }
-    
+
     if config['testing']['save_embeddings']:
         # Ensure the directory exists
         os.makedirs(config['testing']['embeddings_save_path'], exist_ok=True)
-        
+
         timestamp = time.strftime('%Y-%m-%d_%H-%M-%S')
-        path = os.path.join(config['testing']['embeddings_save_path'], f'embeddings_{timestamp}.npz')
-        np.savez(
-           path,
-           **embeddings
+        path = os.path.join(
+            config['testing']['embeddings_save_path'],
+            f'embeddings_{timestamp}.npz',
         )
+        np.savez(path, **embeddings)
         logger.info(f'Embeddings saved to {path}')
         return embeddings, path
 
-        
     return embeddings, None
 
 
@@ -146,11 +157,11 @@ def load_or_create_embeddings(
     test_loader: DataLoader,
     config: Dict[str, Any],
     logger: Any,
-    device: str = None
+    device: str = None,
 ) -> Tuple[Dict, str]:
     """
     Load existing embeddings or create new ones based on configuration.
-    
+
     Args:
         model: PyTorch model to use for creating embeddings
         train_loader: DataLoader for training data
@@ -158,28 +169,29 @@ def load_or_create_embeddings(
         config: Configuration dictionary containing testing settings
         logger: Logger instance for logging information
         device: Device to use for computation (default: None, will use cuda if available)
-        
+
     Returns:
         Tuple containing:
             - Dictionary of embeddings
             - String path where embeddings were saved (if created)
     """
     if device is None:
-        device = config.get('device', 'cuda' if torch.cuda.is_available() else 'cpu')
+        device = config.get(
+            'device', 'cuda' if torch.cuda.is_available() else 'cpu'
+        )
 
     if config['testing'].get('load_embeddings', False):
-        logger.info(f"Loading embeddings from {config['testing']['embeddings_path']}")
-        embeddings = np.load(config['testing']['embeddings_path'], allow_pickle=True)
+        logger.info(
+            f"Loading embeddings from {config['testing']['embeddings_path']}"
+        )
+        embeddings = np.load(
+            config['testing']['embeddings_path'], allow_pickle=True
+        )
         return embeddings, config['testing']['embeddings_path']
-    
-    logger.info("Creating new embeddings...")
+
+    logger.info('Creating new embeddings...')
     embeddings, file_path = create_embeddings_dict(
-        model,
-        train_loader,
-        test_loader,
-        device,
-        logger,
-        config
+        model, train_loader, test_loader, device, logger, config
     )
     config['testing']['embeddings_path'] = file_path
     return embeddings
