@@ -50,7 +50,41 @@ class UNIFsl(nn.Module):
         x = self.backbone(x)
         x = self.projection(x)
         return x
+    
+    def compute_prototypes(
+        self, embeddings: torch.Tensor, labels: torch.Tensor
+    ) -> torch.Tensor:
+        """
+        Compute class prototypes from embeddings and labels.
 
+        Args:
+            embeddings: Feature embeddings.
+            labels: Corresponding labels.
+
+        Returns:
+            Tensor of class prototypes.
+        """
+        prototypes = []
+        for c in torch.unique(labels):
+            class_mask = labels == c
+            class_proto = embeddings[class_mask].mean(0)
+            prototypes.append(class_proto)
+        return torch.stack(prototypes)  # [n_classes, embedding_dim]
+
+    def predict_with_prototypes(self, query_embeddings: torch.Tensor, prototypes: torch.Tensor) -> torch.Tensor:
+        """
+        Predicts the class of query embeddings based on the closest prototype.
+
+        Args:
+            query_embeddings: Tensor of shape [n_query, D], query feature embeddings.
+            prototypes: Tensor of shape [n_way, D], class prototypes.
+
+        Returns:
+            Tensor of shape [n_query], predicted class indices.
+        """
+        dists = torch.cdist(query_embeddings, prototypes)  # [n_query, n_way]
+        preds = torch.argmin(dists, dim=1)  # [n_query]
+        return preds
 
 if __name__ == '__main__':
     model = UNIFsl()

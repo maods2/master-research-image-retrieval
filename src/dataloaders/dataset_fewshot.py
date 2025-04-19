@@ -45,7 +45,7 @@ class FewShotFolderDataset(StandardImageDataset):
         # Return the total number of samples divided by the number of queries per index
         if self.validation_dataset is not None:
             return len(self.labels)
-        return 50
+        return 10
         return len(self.image_paths) // self.q_queries
 
     def _open_image(self, path):
@@ -130,7 +130,7 @@ if __name__ == '__main__':
         'Podocytopathy': 4,
         'Sclerosis': 5,
     }
-    config = {'model': {'n_way': 6, 'k_shot': 5, 'q_queries': 32}}
+    config = {'model': {'n_way': 6, 'k_shot': 5, 'q_queries': 6}}
 
     # Define transformations using Albumentations
     data_transforms = A.Compose(
@@ -155,8 +155,22 @@ if __name__ == '__main__':
         num_workers=3,
         pin_memory=True,
     )
+    test_loader = DataLoader(
+        dataset,
+        batch_size=36,
+        shuffle=False,
+        num_workers=3,
+        pin_memory=True,
+    )
 
-    # Test the dataset
+    # Test the train loader
     support, s_lbls, query, q_lbls = next(iter(train_loader))
-    print(f'Support shape: {support.shape}, Labels: {s_lbls}')
-    print(f'Query shape: {query.shape}, Labels: {q_lbls}')
+    print(f'Support shape: {support.shape}, Labels: {s_lbls.shape}')
+    print(f'Query shape: {query.shape}, Labels: {q_lbls.shape}')
+
+    # test the test loader
+    test_loader.dataset.k_shot = 1
+    test_loader.dataset.validation_dataset = True  
+    query, q_lbls = next(iter(test_loader))
+    print(f'Query shape: {query.shape}, Labels: {q_lbls.shape}')
+    print()

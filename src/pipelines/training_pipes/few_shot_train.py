@@ -39,26 +39,6 @@ class FewShotTrain(BaseTrainer):
         acc = (log_p.argmax(1) == query_labels).float().mean().item()
         return loss, acc
 
-    def compute_prototypes(
-        self, embeddings: torch.Tensor, labels: torch.Tensor
-    ) -> torch.Tensor:
-        """
-        Compute class prototypes from embeddings and labels.
-
-        Args:
-            embeddings: Feature embeddings.
-            labels: Corresponding labels.
-
-        Returns:
-            Tensor of class prototypes.
-        """
-        prototypes = []
-        for c in torch.unique(labels):
-            class_mask = labels == c
-            class_proto = embeddings[class_mask].mean(0)
-            prototypes.append(class_proto)
-        return torch.stack(prototypes)  # [n_classes, embedding_dim]
-
     def eval_few_shot_classification(
         self,
         model: torch.nn.Module,
@@ -93,21 +73,22 @@ class FewShotTrain(BaseTrainer):
                 # Remove batch dim [1, N, ...] -> [N, ...]
                 support = support_set[0].to(device)
                 s_lbls = support_set[1].to(device)
-                query = query.squeeze(0).to(device)
-                q_lbls = q_lbls.squeeze(0).to(device)
+                query = query.to(device)
+                q_lbls = q_lbls.to(device)
 
                 # Embed support and query
                 emb_s = model(support)  # [n_support, D]
                 emb_q = model(query)    # [n_query, D]
 
                 # Compute class prototypes
-                prototypes = self.compute_prototypes(
+                prototypes = model.compute_prototypes(
                     emb_s, s_lbls
                 )  # [n_way, D]
 
                 # Calculate euclidean distance between query and prototypes
-                dists = torch.cdist(emb_q, prototypes)  # [n_query, n_way]
-                preds = torch.argmin(dists, dim=1)
+                preds = model.predict_with_prototypes(
+                    emb_q, prototypes
+                )
 
                 all_preds.append(preds.cpu().numpy())
                 all_labels.append(q_lbls.cpu().numpy())
@@ -205,6 +186,7 @@ class FewShotTrain(BaseTrainer):
                 best_metric=min_loss,
                 epochs_without_improvement=epochs_without_improvement,
                 checkpoint_path=checkpoint_path,
+                config=config,
                 metric_logger=metric_logger,
                 mode='loss'
             )

@@ -32,11 +32,11 @@ def compute_metrics(
     conf = confusion_matrix(y_true, y_pred)
 
     if logger:
-        logger(f'[Eval] Accuracy:  {acc:.4f}')
-        logger(f'[Eval] Precision: {prec:.4f}')
-        logger(f'[Eval] Recall:    {rec:.4f}')
-        logger(f'[Eval] F1-Score:  {f1:.4f}')
-        logger(f'[Eval] Confusion Matrix:\n{conf}')
+        logger.info(f'[Eval] Accuracy:  {acc:.4f}')
+        logger.info(f'[Eval] Precision: {prec:.4f}')
+        logger.info(f'[Eval] Recall:    {rec:.4f}')
+        logger.info(f'[Eval] F1-Score:  {f1:.4f}')
+        logger.info(f'[Eval] Confusion Matrix:\n{conf}')
 
     return {
         'accuracy': acc,
