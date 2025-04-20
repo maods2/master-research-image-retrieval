@@ -3,9 +3,12 @@ import random
 from pathlib import Path
 import cv2
 import torch
-
+import numpy as np
+from typing import List, Tuple
+from typing import Dict, Any
 from torch.utils.data import Dataset
-
+import albumentations as A
+from albumentations.pytorch import ToTensorV2
 from PIL import Image
 from tqdm import tqdm
 
@@ -45,7 +48,7 @@ class FewShotFolderDataset(StandardImageDataset):
         # Return the total number of samples divided by the number of queries per index
         if self.validation_dataset is not None:
             return len(self.labels)
-        return 10
+        # return 10
         return len(self.image_paths) // self.q_queries
 
     def _open_image(self, path):
@@ -110,6 +113,86 @@ class FewShotFolderDataset(StandardImageDataset):
             query,
             torch.tensor(query_lbls),
         )
+
+
+class SupportSetDataset(StandardImageDataset):
+    def __init__(self, root_dir, transform=None, class_mapping=None, config=None, n_per_class=None):
+        """
+        Dataset para carregar conjuntos de suporte para few-shot learning.
+        
+        Args:
+            root_dir (str): Caminho base onde estão as imagens.
+            transform (callable, optional): Transformações para aplicar nas imagens.
+            class_mapping (dict): Mapeamento de nomes de classe para índices.
+            config (dict): Dicionário com configurações, incluindo paths e transformações.
+            n_per_class (int): Número de imagens por classe a serem amostradas.
+        """
+        self.root_dir = root_dir
+        self.config = config
+        self.samples = []
+        self.n_per_class = n_per_class
+        self.class_mapping = class_mapping or {}
+
+        # Define transformações com Albumentations
+        self.transform = transform or self._build_transforms(config)
+
+        # Carrega dados se for um support set direto ou herda StandardImageDataset
+        if 'support_set' in self.config['data']:
+            self._load_support_set(self.config['data']['support_set'])
+        else:
+            super().__init__(
+                root_dir=self.config['data']['train_dir'],
+                transform=self.transform,
+                class_mapping=self.class_mapping,
+            )
+            class_to_path = {
+                cls: paths
+                for cls, paths in self.image_dict.items()
+            }
+            self._load_support_set(class_to_path)
+            
+            
+
+    def _build_transforms(self, config):
+        resize_height, resize_width = tuple(config['transform'].get('resize'))
+        normalize_mean = tuple(config['transform']['normalize'].get('mean'))
+        normalize_std = tuple(config['transform']['normalize'].get('std'))
+
+        return A.Compose([
+            A.Resize(resize_height, resize_width),
+            A.Normalize(mean=normalize_mean, std=normalize_std),
+            ToTensorV2(),
+        ])
+
+    def _load_support_set(self, support_set_config):
+        """
+        Lê e armazena os paths das imagens do support set.
+        """
+        for class_name, paths in support_set_config.items():
+            label = self.class_mapping[class_name] if isinstance(class_name, str) else class_name
+
+            # Seleciona N imagens aleatórias, se necessário
+            if self.n_per_class:
+                paths = random.sample(paths, min(self.n_per_class, len(paths)))
+
+            for img_path in paths:
+                self.samples.append((img_path, label))
+
+    def __len__(self):
+        return len(self.samples)
+
+    def __getitem__(self, idx):
+        img_path, label = self.samples[idx]
+        image = cv2.imread(img_path)
+        if image is None:
+            raise FileNotFoundError(f"Image not found at {img_path}")
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+        if self.transform:
+            image = self.transform(image=image)['image']
+
+        return image, label
+
 
 
 if __name__ == '__main__':

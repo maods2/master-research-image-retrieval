@@ -23,6 +23,12 @@ train-uni-fsl:
 
 
 # ============================
+# Classification Targets
+# ============================
+test-uni-fsl:
+	python3 src/main.py --config configs/glomerulo/fsl_test/uni_fsl_no_augm_train_config.yaml --pipeline test
+
+# ============================
 # Retrieval Targets
 # ============================
 retrieval-vit:

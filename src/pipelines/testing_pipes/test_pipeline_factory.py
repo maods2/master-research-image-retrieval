@@ -8,6 +8,7 @@ from typing import Any, List
 import torch
 from torch.utils.data import DataLoader
 
+from pipelines.testing_pipes.fsl_testing import fsl_test_fn
 from utils.embedding_utils import load_or_create_embeddings
 
 
@@ -54,6 +55,10 @@ def get_test_function(testing_config: Dict):
 
     if testing_config['pipeline'] == 'default':
         return default_test_fn
+    
+    if testing_config['pipeline'] == 'fsl':
+        return fsl_test_fn
+    
     else:
         raise ValueError(
             f"Testing pipeline {testing_config['pipeline']} is not supported"
