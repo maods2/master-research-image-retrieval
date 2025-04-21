@@ -1,7 +1,28 @@
 import torch
 import torch.nn.functional as F
 
+class NTXentLoss(nn.Module):
+    def __init__(self, temperature=0.07):
+        super().__init__()
+        self.temperature = temperature
 
+    def forward(self, z1, z2):
+        # z1, z2: (N, D)
+        N, _ = z1.shape
+        z = torch.cat([z1, z2], dim=0)  # (2N, D)
+        z = F.normalize(z, dim=1)
+        sim_matrix = torch.matmul(z, z.T) / self.temperature  # (2N,2N)
+        mask = torch.eye(2*N, device=sim_matrix.device).bool()
+        sim_matrix = sim_matrix.masked_fill(mask, -9e15)
+
+        # positives are diagonal offsets
+        positives = torch.cat([sim_matrix[i, i+N].unsqueeze(0) for i in range(N)] +
+                              [sim_matrix[i+N, i].unsqueeze(0) for i in range(N)], dim=0)
+        exp_sim = torch.exp(sim_matrix)
+        denom = exp_sim.sum(dim=1)
+        loss = -torch.log(torch.exp(positives) / denom)
+        return loss.mean()
+    
 class SupervisedContrastiveLoss(torch.nn.Module):
     def __init__(self, temperature=0.1):
         super().__init__()
@@ -137,3 +158,5 @@ class NPairLoss(torch.nn.Module):
             / torch.exp(sim_matrix * neg_mask).sum(dim=1)
         )
         return loss.mean()
+
+

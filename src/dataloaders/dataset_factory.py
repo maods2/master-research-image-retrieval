@@ -3,7 +3,7 @@ from dataloaders.dataset import StandardImageDataset
 from dataloaders.dataset_fewshot import FewShotFolderDataset
 from dataloaders.dataset_terumo import TerumoImageDataset
 from dataloaders.dataset_triplet import MixedTripletDataset, TripletDataset
-
+from dataloaders.dataset_contrastive import ContrastiveDataset
 
 def get_dataloader(config, transform):
     """
@@ -35,6 +35,8 @@ def get_dataloader(config, transform):
         dataset_class = MixedTripletDataset
     elif dataset_name == 'FewShotFolderDataset':
         dataset_class = FewShotFolderDataset
+    elif dataset_name == 'ContrastiveDataset':
+        dataset_class = ContrastiveDataset
     else:
         raise ValueError(f'Dataset {dataset_name} is not supported.')
     # Create dataset instances for training and testing
