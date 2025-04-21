@@ -31,19 +31,15 @@ class ContrastiveTrain(BaseTrainer):
             desc=f'Training Epoch {epoch + 1}',
         )
 
-        for batch_idx, (images, labels) in progress_bar:
+        for (x1, x2), _ in progress_bar:
             # Generate two augmented views for each image
-            images = torch.cat(images, dim=0).to(device)
-            labels = labels.to(device)
+            x1, x2 = x1.to(device), x2.to(device)
 
             # Forward pass
-            embeddings = model(images)
-
-            # Normalize embeddings for contrastive learning
-            embeddings = torch.nn.functional.normalize(embeddings, dim=1)
+            z1, z2 = model(x1), model(x2)
 
             # Calculate loss (expects unnormalized embeddings)
-            loss = loss_fn(embeddings, labels)
+            loss = loss_fn(z1, z2)
 
             optimizer.zero_grad()
             loss.backward()
