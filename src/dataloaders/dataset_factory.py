@@ -46,7 +46,7 @@ def get_dataloader(config, transform):
     )
 
     # TODO: add support for different transformations for test set
-    
+
     test_dataset = dataset_class(
         root_dir=data_config['test_dir'],  # Directory for testing data
         transform=transform,  # Transformations to apply
@@ -67,8 +67,8 @@ def get_dataloader(config, transform):
 
     batch_size_test = data_config.get('batch_size_test', None)
     if batch_size_test is None:
-        data_config['batch_size'] = data_config['batch_size']
-        
+        batch_size_test = data_config['batch_size']
+
     test_loader = DataLoader(
         test_dataset,
         batch_size=batch_size_test,  # Define the batch size

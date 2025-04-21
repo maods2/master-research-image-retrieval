@@ -1,7 +1,7 @@
 import os
 import sys
 
-from models.fsl_models import UNIFsl
+from models.fsl_models import ResNetFsl, UNIFsl
 
 sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'))
@@ -49,6 +49,9 @@ def get_model(model_config):
 
     elif model_name == 'uni_fsl':   # Pathology Foundation Model
         model = UNIFsl(model_name=model_config['model_name'])
+
+    elif model_name == 'resnet_fsl':   # Pathology Foundation Model
+        model = ResNetFsl(model_name=model_config['model_name'])
 
     elif model_name == 'virchow2':   # Pathology Foundation Model
         model = Virchow2(model_name=model_config['model_name'])

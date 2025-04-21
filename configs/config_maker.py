@@ -31,6 +31,8 @@ def create_config(
     config['model']['experiment_name'] = f"{model_config['model_name']}_{dataset_name}"
     config['model']['num_classes'] = len(dataset_config['class-mapping'])
     config['model']['model_name'] = model_config["model_pretreined"]
+    config['model']['checkpoint_path'] = model_config["checkpoint_path"]
+    config['model']['load_checkpoint'] = model_config["load_checkpoint"]
     
     # Update fields in the 'testing' section
     config['testing']['embeddings_path'] = f'./artifacts/{dataset_name}/embeddings_{model_config["model_name"]}'
@@ -92,13 +94,15 @@ def main():
     
     # Define models to test
     models = [
-        {"model_name": "resnet50", "model_pretreined": ""},
-        {"model_name": "dino", "model_pretreined": "vit_small_patch16_224_dino"},
-        {"model_name": "dinov2", "model_pretreined": "dinov2_vitl14"},
-        {"model_name": "uni", "model_pretreined": "vit_large_patch16_224"},
-        {"model_name": "clip", "model_pretreined": "openai/clip-vit-base-patch32"},
-        {"model_name": "virchow2", "model_pretreined": "hf-hub:paige-ai/Virchow2"},
-        {"model_name": "vit", "model_pretreined": "vit_base_patch16_224"},
+        # {"model_name": "resnet50", "model_pretreined": ""},
+        # {"model_name": "dino", "model_pretreined": "vit_small_patch16_224_dino"},
+        # {"model_name": "dinov2", "model_pretreined": "dinov2_vitl14"},
+        # {"model_name": "uni", "model_pretreined": "vit_large_patch16_224"},
+        # {"model_name": "clip", "model_pretreined": "openai/clip-vit-base-patch32"},
+        # {"model_name": "virchow2", "model_pretreined": "hf-hub:paige-ai/Virchow2"},
+        # {"model_name": "vit", "model_pretreined": "vit_base_patch16_224"},
+        {"model_name": "uni_fsl", "model_pretreined": "vit_large_patch16_224", "load_checkpoint": True, "checkpoint_path": "artifacts/glomerulo/uni_fsl_glomerulo_uni_fsl_2025-04-19_18-43-39_checkpoint.pth"},
+        {"model_name": "resnet_fsl", "model_pretreined": "resnet50", "load_checkpoint": True, "checkpoint_path": "artifacts/glomerulo/resnet_fsl_glomerulo_resnet_fsl_2025-04-20_04-43-03_checkpoint.pth"},
     ]
     
     # Load template

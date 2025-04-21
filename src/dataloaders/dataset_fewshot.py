@@ -48,7 +48,7 @@ class FewShotFolderDataset(StandardImageDataset):
         # Return the total number of samples divided by the number of queries per index
         if self.validation_dataset is not None:
             return len(self.labels)
-        # return 10
+        return 1000
         return len(self.image_paths) // self.q_queries
 
     def _open_image(self, path):
@@ -77,7 +77,7 @@ class FewShotFolderDataset(StandardImageDataset):
     def __getitem__(self, idx):
         if self.validation_dataset is not None:
             return self._validation__getitem__(idx)
-        
+
         # Randomly select n_way classes
         selected = random.sample(self.classes, self.n_way)
         support_imgs, support_lbls = [], []
@@ -116,10 +116,17 @@ class FewShotFolderDataset(StandardImageDataset):
 
 
 class SupportSetDataset(StandardImageDataset):
-    def __init__(self, root_dir, transform=None, class_mapping=None, config=None, n_per_class=None):
+    def __init__(
+        self,
+        root_dir,
+        transform=None,
+        class_mapping=None,
+        config=None,
+        n_per_class=None,
+    ):
         """
         Dataset para carregar conjuntos de suporte para few-shot learning.
-        
+
         Args:
             root_dir (str): Caminho base onde estão as imagens.
             transform (callable, optional): Transformações para aplicar nas imagens.
@@ -146,30 +153,33 @@ class SupportSetDataset(StandardImageDataset):
                 class_mapping=self.class_mapping,
             )
             class_to_path = {
-                cls: paths
-                for cls, paths in self.image_dict.items()
+                cls: paths for cls, paths in self.image_dict.items()
             }
             self._load_support_set(class_to_path)
-            
-            
 
     def _build_transforms(self, config):
         resize_height, resize_width = tuple(config['transform'].get('resize'))
         normalize_mean = tuple(config['transform']['normalize'].get('mean'))
         normalize_std = tuple(config['transform']['normalize'].get('std'))
 
-        return A.Compose([
-            A.Resize(resize_height, resize_width),
-            A.Normalize(mean=normalize_mean, std=normalize_std),
-            ToTensorV2(),
-        ])
+        return A.Compose(
+            [
+                A.Resize(resize_height, resize_width),
+                A.Normalize(mean=normalize_mean, std=normalize_std),
+                ToTensorV2(),
+            ]
+        )
 
     def _load_support_set(self, support_set_config):
         """
         Lê e armazena os paths das imagens do support set.
         """
         for class_name, paths in support_set_config.items():
-            label = self.class_mapping[class_name] if isinstance(class_name, str) else class_name
+            label = (
+                self.class_mapping[class_name]
+                if isinstance(class_name, str)
+                else class_name
+            )
 
             # Seleciona N imagens aleatórias, se necessário
             if self.n_per_class:
@@ -185,14 +195,13 @@ class SupportSetDataset(StandardImageDataset):
         img_path, label = self.samples[idx]
         image = cv2.imread(img_path)
         if image is None:
-            raise FileNotFoundError(f"Image not found at {img_path}")
+            raise FileNotFoundError(f'Image not found at {img_path}')
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
         if self.transform:
             image = self.transform(image=image)['image']
 
         return image, label
-
 
 
 if __name__ == '__main__':
@@ -253,7 +262,7 @@ if __name__ == '__main__':
 
     # test the test loader
     test_loader.dataset.k_shot = 1
-    test_loader.dataset.validation_dataset = True  
+    test_loader.dataset.validation_dataset = True
     query, q_lbls = next(iter(test_loader))
     print(f'Query shape: {query.shape}, Labels: {q_lbls.shape}')
     print()

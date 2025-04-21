@@ -21,12 +21,18 @@ train-tri-res:
 train-uni-fsl:
 	python3 src/main.py --config configs/glomerulo/training/uni_fsl_no_augm_train_config.yaml --pipeline train
 
+train-resnet-fsl:
+	python3 src/main.py --config configs/glomerulo/training/resnet_fsl_no_augm_train_config.yaml --pipeline train
+
 
 # ============================
 # Classification Targets
 # ============================
 test-uni-fsl:
 	python3 src/main.py --config configs/glomerulo/fsl_test/uni_fsl_no_augm_train_config.yaml --pipeline test
+
+test-uni-fsl-sc:
+	python3 src/main.py --config configs/ovarian-cancer-splitted/fsl_test/uni_fsl_no_augm_train_config.yaml --pipeline test
 
 # ============================
 # Retrieval Targets
@@ -52,14 +58,22 @@ retrieval-uni:
 retrieval-virchow2:
 	python3 src/main.py --config configs/$(DATASET)/retrieval_test/virchow2_config.yaml --pipeline test
 
+retrieval-uni-fsl:
+	python3 src/main.py --config configs/$(DATASET)/retrieval_test/uni_fsl_config.yaml --pipeline test
+
+retrieval-resnet-fsl:
+	python3 src/main.py --config configs/$(DATASET)/retrieval_test/resnet_fsl_config.yaml --pipeline test
+
 retrival-all-models:
-	make retrieval-vit DATASET=$(DATASET)
-	make retrieval-resnet DATASET=$(DATASET)
-	make retrieval-dino DATASET=$(DATASET)
-	make retrieval-dinov2 DATASET=$(DATASET)
-	make retrieval-clip DATASET=$(DATASET)
-	make retrieval-uni DATASET=$(DATASET)
-	make retrieval-virchow2 DATASET=$(DATASET)
+# make retrieval-vit DATASET=$(DATASET)
+# make retrieval-resnet DATASET=$(DATASET)
+# make retrieval-dino DATASET=$(DATASET)
+# make retrieval-dinov2 DATASET=$(DATASET)
+# make retrieval-clip DATASET=$(DATASET)
+# make retrieval-uni DATASET=$(DATASET)
+# make retrieval-virchow2 DATASET=$(DATASET)
+	make retrieval-uni-fsl DATASET=$(DATASET)
+	make retrieval-resnet-fsl DATASET=$(DATASET)
 
 # Example usage:
 # make retrival-all DATASET=ovarian-cancer

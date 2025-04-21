@@ -67,9 +67,7 @@ class FewShotTrain(BaseTrainer):
         model.eval()
 
         with torch.no_grad():
-            for query, q_lbls in tqdm(
-                test_loader, desc='Evaluating'
-            ):
+            for query, q_lbls in tqdm(test_loader, desc='Evaluating'):
                 # Remove batch dim [1, N, ...] -> [N, ...]
                 support = support_set[0].to(device)
                 s_lbls = support_set[1].to(device)
@@ -86,9 +84,7 @@ class FewShotTrain(BaseTrainer):
                 )  # [n_way, D]
 
                 # Calculate euclidean distance between query and prototypes
-                preds = model.predict_with_prototypes(
-                    emb_q, prototypes
-                )
+                preds = model.predict_with_prototypes(emb_q, prototypes)
 
                 all_preds.append(preds.cpu().numpy())
                 all_labels.append(q_lbls.cpu().numpy())
@@ -154,16 +150,21 @@ class FewShotTrain(BaseTrainer):
         min_loss = float('inf')
         epochs_without_improvement = 0
         checkpoint_path = None
-        train_history = {'loss': [], 'acc': [], 'acc_val': [], 'f1_score_val': []}
-    
+        train_history = {
+            'loss': [],
+            'acc': [],
+            'acc_val': [],
+            'f1_score_val': [],
+        }
+
         test_loader.dataset.k_shot = 1
-        test_loader.dataset.validation_dataset = True     
+        test_loader.dataset.validation_dataset = True
 
         for epoch in range(epochs):
             avg_loss, avg_acc, support_set = self.train_one_epoch(
                 model, optimizer, train_loader, device, epoch
             )
-            
+
             metrics = self.eval_few_shot_classification(
                 model, test_loader, support_set, device, config, logger
             )
@@ -180,7 +181,12 @@ class FewShotTrain(BaseTrainer):
             train_history['acc_val'].append(metrics['accuracy'])
             train_history['f1_score_val'].append(metrics['f1_score'])
 
-            should_stop, min_loss, epochs_without_improvement, checkpoint_path = self.save_model_if_best(
+            (
+                should_stop,
+                min_loss,
+                epochs_without_improvement,
+                checkpoint_path,
+            ) = self.save_model_if_best(
                 model=model,
                 metric=avg_loss,
                 best_metric=min_loss,
@@ -188,12 +194,16 @@ class FewShotTrain(BaseTrainer):
                 checkpoint_path=checkpoint_path,
                 config=config,
                 metric_logger=metric_logger,
-                mode='loss'
+                mode='loss',
             )
 
             if should_stop:
-                logger.info(f"Early stopping triggered after {epoch+1} epochs with no improvement.")
-                print(f"Early stopping triggered after {epoch+1} epochs with no improvement.")
+                logger.info(
+                    f'Early stopping triggered after {epochs_without_improvement} epochs with no improvement.'
+                )
+                print(
+                    f'Early stopping triggered after {epochs_without_improvement} epochs with no improvement.'
+                )
                 break
 
         train_history['last_epoch_metrics'] = metrics

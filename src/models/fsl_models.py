@@ -14,11 +14,34 @@ import os
 local_dir = './assets/ckpts/vit_large_patch16_224.dinov2.uni_mass100k/'
 
 
-class UNIFsl(nn.Module):
+class BaseFsl(nn.Module):
+    def compute_prototypes(
+        self, embeddings: torch.Tensor, labels: torch.Tensor
+    ) -> torch.Tensor:
+        prototypes = []
+        for c in torch.unique(labels):
+            class_mask = labels == c
+            class_proto = embeddings[class_mask].mean(0)
+            prototypes.append(class_proto)
+        return torch.stack(prototypes)
+
+    def predict_with_prototypes(
+        self, query_embeddings: torch.Tensor, prototypes: torch.Tensor
+    ) -> torch.Tensor:
+        dists = torch.cdist(query_embeddings, prototypes)
+        return torch.argmin(dists, dim=1)
+
+    def predict_probabilities(
+        self, query_embeddings: torch.Tensor, prototypes: torch.Tensor
+    ) -> torch.Tensor:
+        dists = torch.cdist(query_embeddings, prototypes)
+        return (-dists).softmax(dim=1)
+
+
+class UNIFsl(BaseFsl):
     def __init__(self, model_name='vit_large_patch16_224', pretrained=True):
         """ """
         super(UNIFsl, self).__init__()
-
         # Load pretrained DINO model from timm
         self.backbone = model = timm.create_model(
             model_name,
@@ -35,7 +58,6 @@ class UNIFsl(nn.Module):
             ),
             strict=True,
         )
-
         for param in self.backbone.parameters():
             param.requires_grad = False
 
@@ -52,63 +74,45 @@ class UNIFsl(nn.Module):
         x = self.backbone(x)
         x = self.projection(x)
         return x
-    
-    def compute_prototypes(
-        self, embeddings: torch.Tensor, labels: torch.Tensor
-    ) -> torch.Tensor:
-        """
-        Compute class prototypes from embeddings and labels.
 
-        Args:
-            embeddings: Feature embeddings.
-            labels: Corresponding labels.
 
-        Returns:
-            Tensor of class prototypes.
-        """
-        prototypes = []
-        for c in torch.unique(labels):
-            class_mask = labels == c
-            class_proto = embeddings[class_mask].mean(0)
-            prototypes.append(class_proto)
-        return torch.stack(prototypes)  # [n_classes, embedding_dim]
+class ResNetFsl(BaseFsl):
+    def __init__(self, model_name='resnet50', pretrained=True):
+        super().__init__()
 
-    def predict_with_prototypes(self, query_embeddings: torch.Tensor, prototypes: torch.Tensor) -> torch.Tensor:
-        """
-        Predicts the class of query embeddings based on the closest prototype.
+        # Initialize backbone
+        self.backbone = timm.create_model(
+            model_name,
+            pretrained=pretrained,
+            num_classes=0,  # Remove classification head
+        )
 
-        Args:
-            query_embeddings: Tensor of shape [n_query, D], query feature embeddings.
-            prototypes: Tensor of shape [n_way, D], class prototypes.
+        # Calculate output dimension
+        with torch.no_grad():
+            test_tensor = torch.randn(1, 3, 224, 224)
+            out_dim = self.backbone(test_tensor).shape[-1]
 
-        Returns:
-            Tensor of shape [n_query], predicted class indices.
-        """
-        dists = torch.cdist(query_embeddings, prototypes)  # euclidean distance
-        preds = torch.argmin(dists, dim=1)  # [n_query]
-        return preds
+        # Create projection
+        self.projection = nn.Sequential(
+            nn.Linear(out_dim, 512), nn.GELU(), nn.Linear(512, 128)
+        )
 
-    def predict_probabilities(self, query_embeddings: torch.Tensor, prototypes: torch.Tensor) -> torch.Tensor:
-        """
-        Predicts class probabilities for query embeddings based on prototypes.
+        # Freeze backbone if needed
+        for param in self.backbone.parameters():
+            param.requires_grad = False
 
-        Args:
-            query_embeddings: Tensor of shape [n_query, D], query feature embeddings.
-            prototypes: Tensor of shape [n_way, D], class prototypes.
+    def forward(self, x):
+        x = self.backbone(x)
+        x = self.projection(x)
+        return x
 
-        Returns:
-            Tensor of shape [n_query, n_way], predicted class probabilities.
-        """
-        dists = torch.cdist(query_embeddings, prototypes) # euclidean distance
-        p = (-dists).softmax(dim=1)
-        return  p
-    
-    
-    
+
 class SemanticAttributeFsl(nn.Module):
-    def __init__(self, model_name='vit_large_patch16_224', pretrained=True, config=None):
+    def __init__(
+        self, model_name='vit_large_patch16_224', pretrained=True, config=None
+    ):
         super(SemanticAttributeFsl, self).__init__()
-        
+
         # Backbone with projection head
         self.backbone = UNIFsl(model_name, pretrained)
         self.backbone.load_state_dict(
@@ -117,7 +121,9 @@ class SemanticAttributeFsl(nn.Module):
         )
 
         # Load support set (dict: class_name -> (images, labels))
-        self.support_set = {}  # class_name -> (support_imgs: Tensor [N_shot, C, H, W], support_labels: Tensor [N_shot])
+        self.support_set = (
+            {}
+        )  # class_name -> (support_imgs: Tensor [N_shot, C, H, W], support_labels: Tensor [N_shot])
         self.device = config.get('device', 'cpu')
         self._load_support_set(config['support_set'])
 
@@ -126,11 +132,15 @@ class SemanticAttributeFsl(nn.Module):
         support_set_config: dict { class_name: {"images": Tensor, "labels": Tensor} }
         """
         for class_name, data in support_set_config.items():
-            support_imgs = data["images"].to(self.device)      # [N_shot, C, H, W]
-            support_lbls = data["labels"].to(self.device)      # [N_shot]
+            support_imgs = data['images'].to(
+                self.device
+            )      # [N_shot, C, H, W]
+            support_lbls = data['labels'].to(self.device)      # [N_shot]
             self.support_set[class_name] = (support_imgs, support_lbls)
 
-    def _prototypical_scores(self, support_embeddings, support_labels, query_embeddings):
+    def _prototypical_scores(
+        self, support_embeddings, support_labels, query_embeddings
+    ):
         """
         support_embeddings: [N_shot, D]
         support_labels: [N_shot]  (all 1s ideally for the target class)
@@ -141,10 +151,12 @@ class SemanticAttributeFsl(nn.Module):
         """
         # Get prototype vector
         prototype = support_embeddings.mean(dim=0)  # [D]
-        
+
         # Euclidean distance to prototype
-        dists = torch.norm(query_embeddings - prototype.unsqueeze(0), dim=1)  # [B]
-        
+        dists = torch.norm(
+            query_embeddings - prototype.unsqueeze(0), dim=1
+        )  # [B]
+
         # Convert to similarity (negative distance) and sigmoid
         scores = -dists
         probs = torch.sigmoid(scores)
@@ -160,7 +172,10 @@ class SemanticAttributeFsl(nn.Module):
         query_embeddings = self.backbone(x)  # [B, D]
         all_probs = []
 
-        for class_name, (support_imgs, support_lbls) in self.support_set.items():
+        for class_name, (
+            support_imgs,
+            support_lbls,
+        ) in self.support_set.items():
             support_embeddings = self.backbone(support_imgs)  # [N_shot, D]
 
             probs = self._prototypical_scores(
@@ -174,7 +189,7 @@ class SemanticAttributeFsl(nn.Module):
         # Concatenate along class dimension
         out = torch.cat(all_probs, dim=1)  # [B, N_classes]
         return out
-    
+
 
 if __name__ == '__main__':
     model = UNIFsl()

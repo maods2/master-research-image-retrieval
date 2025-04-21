@@ -165,7 +165,7 @@ class BaseTrainer(ABC):
         checkpoint_path: str,
         config: Dict[str, Any],
         metric_logger,
-        mode: str = 'loss'
+        mode: str = 'loss',
     ) -> tuple[bool, float, int, str]:
         """
         Save the model if the current metric is better than the best metric so far,
@@ -189,7 +189,9 @@ class BaseTrainer(ABC):
         """
         patience = config['training'].get('early_stopping_patience', 10)
 
-        if (mode == 'loss' and metric < best_metric) or (mode == 'accuracy' and metric > best_metric):
+        if (mode == 'loss' and metric < best_metric) or (
+            mode == 'accuracy' and metric > best_metric
+        ):
             best_metric = metric
             epochs_without_improvement = 0
             checkpoint_path = save_model_and_log_artifact(
@@ -199,8 +201,12 @@ class BaseTrainer(ABC):
             epochs_without_improvement += 1
 
         should_stop = epochs_without_improvement >= patience
-        return should_stop, best_metric, epochs_without_improvement, checkpoint_path
-
+        return (
+            should_stop,
+            best_metric,
+            epochs_without_improvement,
+            checkpoint_path,
+        )
 
     @abstractmethod
     def __call__(

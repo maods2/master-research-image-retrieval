@@ -12,6 +12,7 @@ from torch.utils.data import DataLoader
 from pipelines.training_pipes.few_shot_train import FewShotTrain
 from utils.embedding_utils import load_or_create_embeddings
 
+
 def load_support_set_from_loader(config, device='cpu'):
     """
     Carrega todas as imagens e labels do support_loader e empilha em dois tensores únicos.
@@ -29,10 +30,9 @@ def load_support_set_from_loader(config, device='cpu'):
             n_per_class=config['model']['k_shot'],
         ),
         batch_size=10,
-        shuffle=False
+        shuffle=False,
     )
 
-    
     all_images = []
     all_labels = []
 
@@ -80,7 +80,7 @@ def fsl_test_fn(
         support_set,
         device=device,
         config=config,
-        logger=logger
+        logger=logger,
     )
 
     test_val = fslt.eval_few_shot_classification(
@@ -89,9 +89,9 @@ def fsl_test_fn(
         support_set,
         device=device,
         config=config,
-        logger=logger
+        logger=logger,
     )
-    
+
     results = {'train': train_val, 'test': test_val}
 
     logger.info(f'Results for fsl classification: {results}')
