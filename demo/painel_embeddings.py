@@ -34,11 +34,19 @@ if __name__ == '__main__':
     embeddings_list = [
         (
             'artifacts/glomerulo/embeddings_uni/embeddings_2025-04-16_04-16-09.npz',
-            'glomerulo',
+            'glomerulo_uni',
+        ),
+        (
+            'artifacts/glomerulo/embeddings_uni_fsl/embeddings_2025-04-20_15-19-51.npz',
+            'glomerulo_uni_fsl',
         ),
         (
             'artifacts/bracs-resized/embeddings_uni/embeddings_2025-04-16_03-05-03.npz',
             'bracs',
+        ),
+        (
+            'artifacts/bracs-resized/embeddings_uni_fsl/embeddings_2025-04-20_15-02-15.npz',
+            'bracs_uni_fsl',
         ),
         (
             'artifacts/CRC-VAL-HE-7K-splitted/embeddings_uni/embeddings_2025-04-16_03-33-52.npz',
@@ -88,7 +96,7 @@ if __name__ == '__main__':
                 embeddings='embedding',
                 brain_key='embedding_viz',
                 method='umap',
-                num_dims=3,
+                num_dims=2,
             )
 
             print(

@@ -36,7 +36,29 @@ class BaseFsl(nn.Module):
     ) -> torch.Tensor:
         dists = torch.cdist(query_embeddings, prototypes)
         return (-dists).softmax(dim=1)
+    
+    def compute_binary_prototypes(self, embeddings, labels, positive_label):
+        # embeddings: (S, D) support embeddings
+        # labels:    (S,) original labels, where positive_label is your "1" class
+        pos_mask = labels == positive_label
+        neg_mask = labels != positive_label
 
+        proto_pos = embeddings[pos_mask].mean(0)    # (D,)
+        proto_neg = embeddings[neg_mask].mean(0)    # (D,)
+
+        # stack into [neg, pos]
+        return torch.stack([proto_neg, proto_pos], dim=0)  # (2, D)
+
+    def predict_binary(self, query_embeddings, prototypes):
+        # query_embeddings: (Q, D), prototypes: (2, D)
+        dists = torch.cdist(query_embeddings, prototypes)  # (Q, 2)
+        # argmin → 0=neg, 1=pos
+        return torch.argmin(dists, dim=1)
+    
+    def predict_binary_probabilities(self, query_embeddings, prototypes):
+        dists = torch.cdist(query_embeddings, prototypes)  # (Q, 2)
+        # argmin → 0=neg, 1=pos
+        return (-dists).softmax(dim=1)
 
 class UNIFsl(BaseFsl):
     def __init__(self, model_name='vit_large_patch16_224', pretrained=True):
@@ -138,29 +160,6 @@ class SemanticAttributeFsl(nn.Module):
             support_lbls = data['labels'].to(self.device)      # [N_shot]
             self.support_set[class_name] = (support_imgs, support_lbls)
 
-    def _prototypical_scores(
-        self, support_embeddings, support_labels, query_embeddings
-    ):
-        """
-        support_embeddings: [N_shot, D]
-        support_labels: [N_shot]  (all 1s ideally for the target class)
-        query_embeddings: [B, D]
-
-        Returns:
-            probs: [B] probability for each query being in the same class as support
-        """
-        # Get prototype vector
-        prototype = support_embeddings.mean(dim=0)  # [D]
-
-        # Euclidean distance to prototype
-        dists = torch.norm(
-            query_embeddings - prototype.unsqueeze(0), dim=1
-        )  # [B]
-
-        # Convert to similarity (negative distance) and sigmoid
-        scores = -dists
-        probs = torch.sigmoid(scores)
-        return probs  # [B]
 
     def forward(self, x: Tensor) -> Tensor:
         """

@@ -152,6 +152,7 @@ def plot_metric_comparison(metric_name, experiments):
     Plot a comparison of a selected metric (e.g. "map") across multiple experiments.
     Each experiment's compiled metric JSON file is loaded and a line chart is generated
     with the metric values at different k values. The y-axis is fixed to [0, 1].
+    The legend is sorted based on the greatest values at the last index.
     
     Parameters:
         metric_name (str): The metric to plot (e.g. "map", "accuracy", "recall", "precision")
@@ -165,6 +166,9 @@ def plot_metric_comparison(metric_name, experiments):
     
     # Build a regex pattern to extract k from the keys (e.g., "mapAt1", "mapAt3", etc.)
     pattern = re.compile(fr"{metric_name}At(\d+)", re.IGNORECASE)
+    
+    # Store experiment data for sorting
+    exp_data = []
     
     for exp_type, exp_info in experiments.items():
         # Construct the file path for the compiled metric results for the selected metric
@@ -187,9 +191,24 @@ def plot_metric_comparison(metric_name, experiments):
             print(f"No valid keys found for metric {metric_name} in experiment {exp_info['folder']}")
             continue
         
-        # Sort by k and plot the line
+        # Sort by k
         ks, values = zip(*sorted(zip(ks, values)))
-        plt.plot(ks, values, marker='o', label=exp_info["folder"])
+        
+        # Store experiment data for sorting
+        exp_data.append({
+            'exp_type': exp_type,
+            'exp_info': exp_info,
+            'ks': ks,
+            'values': values,
+            'last_value': values[-1] if values else 0
+        })
+    
+    # Sort experiments by the last value (descending)
+    exp_data.sort(key=lambda x: x['last_value'], reverse=True)
+    
+    # Plot the sorted experiments
+    for exp in exp_data:
+        plt.plot(exp['ks'], exp['values'], marker='o', label=exp['exp_info']["folder"])
     
     plt.title(f"Comparison of {metric_name.upper()} across experiments")
     plt.xlabel("k")
@@ -328,6 +347,43 @@ def plot_class_performances(latest_experiments, metric_suffix='map_at_k_query_de
         performance = calculate_class_performance(file)
         plot_class_performance(performance, metric)
           
+def plot_class_performance_comparison(file_path1, file_path2, label1="Experiment 1", label2="Experiment 2", title="Class Performance Comparison"):
+    """
+    Plot a bar chart comparing error rates per class for two experiments.
+    """
+    # Calculate performance for both experiments
+    performance1 = calculate_class_performance(file_path1)
+    performance2 = calculate_class_performance(file_path2)
+    
+    if not performance1 or not performance2:
+        print("Insufficient data to plot comparison.")
+        return
+    
+    # Get the union of all classes from both experiments
+    all_classes = sorted(set(performance1.keys()).union(set(performance2.keys())))
+    
+    # Extract error rates for each class, defaulting to 0 if the class is missing
+    error_rates1 = [performance1.get(cls, {}).get("error_rate", 0) for cls in all_classes]
+    error_rates2 = [performance2.get(cls, {}).get("error_rate", 0) for cls in all_classes]
+    
+    # Plot the comparison
+    x = np.arange(len(all_classes))  # the label locations
+    width = 0.35  # the width of the bars
+
+    plt.figure(figsize=(12, 6))
+    plt.bar(x - width/2, error_rates1, width, label=label1, color='skyblue')
+    plt.bar(x + width/2, error_rates2, width, label=label2, color='salmon')
+    
+    plt.xlabel("Class")
+    plt.ylabel("Error Rate")
+    plt.title(title)
+    plt.ylim(0, 1)  # Fix y-axis from 0 to 1
+    plt.xticks(x, all_classes, rotation=45)
+    plt.legend()
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
+    plt.tight_layout()
+    plt.show()
+    
         
 def permutation_test(model1, model2, confidence=95, n_permutations=10000, seed=42):
     random.seed(seed)

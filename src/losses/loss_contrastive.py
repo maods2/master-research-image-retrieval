@@ -2,6 +2,9 @@ import torch
 import torch.nn.functional as F
 
 class NTXentLoss(nn.Module):
+    """
+    https://arxiv.org/pdf/2205.03169
+    """
     def __init__(self, temperature=0.07):
         super().__init__()
         self.temperature = temperature
@@ -24,6 +27,9 @@ class NTXentLoss(nn.Module):
         return loss.mean()
     
 class SupervisedContrastiveLoss(torch.nn.Module):
+    """
+    https://arxiv.org/pdf/2004.11362
+    """
     def __init__(self, temperature=0.1):
         super().__init__()
         self.temperature = temperature
@@ -55,6 +61,9 @@ class SupervisedContrastiveLoss(torch.nn.Module):
 
 
 class ProxyNCALoss(torch.nn.Module):
+    """
+    https://arxiv.org/pdf/1703.07464
+    """
     def __init__(self, num_classes, embedding_dim, temperature=0.1):
         super().__init__()
         self.proxies = torch.nn.Parameter(
@@ -79,6 +88,9 @@ class ProxyNCALoss(torch.nn.Module):
 
 
 class MultiSimilarityLoss(torch.nn.Module):
+    """
+    https://arxiv.org/pdf/1904.06627
+    """
     def __init__(self, alpha=2.0, beta=50.0, base=0.5):
         super().__init__()
         self.alpha = alpha
@@ -115,6 +127,9 @@ class MultiSimilarityLoss(torch.nn.Module):
 
 
 class ArcFaceLoss(torch.nn.Module):
+    """
+    https://arxiv.org/pdf/1801.07698
+    """
     def __init__(self, num_classes, embedding_dim, margin=0.5, scale=64.0):
         super().__init__()
         self.W = torch.nn.Parameter(torch.randn(embedding_dim, num_classes))
@@ -140,6 +155,9 @@ class ArcFaceLoss(torch.nn.Module):
 
 
 class NPairLoss(torch.nn.Module):
+    """
+    https://papers.nips.cc/paper_files/paper/2016/file/6b180037abbebea991d8b1232f8a8ca9-Paper.pdf
+    """
     def __init__(self, temperature=0.1):
         super().__init__()
         self.temperature = temperature
