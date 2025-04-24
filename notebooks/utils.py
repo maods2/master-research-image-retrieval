@@ -283,13 +283,14 @@ def calculate_class_performance(query_retrievals_file):
         query_class = query.get("query_class", "Unknown")
         retrieved_items = query.get("retrieved", [])
         # A query is correct if any retrieved item is relevant.
-        found_correct = 1 if any(item.get("is_relevant", 0) == 1 for item in retrieved_items) else 0
+        # found_correct = 1 if any(item.get("is_relevant", 0) == 1 for item in retrieved_items) else 0
+        revelance_list = [item.get("is_relevant") for item in retrieved_items]
 
         if query_class not in class_stats:
             class_stats[query_class] = {"total": 0, "correct": 0, "errors": 0}
-        class_stats[query_class]["total"] += 1
-        class_stats[query_class]["correct"] += found_correct
-        class_stats[query_class]["errors"] += (1 - found_correct)
+        class_stats[query_class]["total"] += len(revelance_list)
+        class_stats[query_class]["correct"] += sum(revelance_list)
+        class_stats[query_class]["errors"] += len(revelance_list) - sum(revelance_list)
     
     # Calculate error and accuracy rates per class.
     for cls, stats in class_stats.items():
