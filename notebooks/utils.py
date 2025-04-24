@@ -8,6 +8,7 @@ import pandas as pd
 import random
 
 METRIC_FILES = {
+    # testing
     # "accuracy": {
     #     "compiled": "accuracy_at_k_results.json",
     #     "details": "accuracy_at_k_query_details.json"
