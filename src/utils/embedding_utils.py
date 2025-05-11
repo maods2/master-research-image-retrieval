@@ -107,6 +107,12 @@ def create_embeddings_dict(
         Dict[str, Tuple]: A dictionary with keys 'db_embeddings', 'db_labels',
                           'query_embeddings', and 'query_labels'.
     """
+    if hasattr(train_loader.dataset, 'validation_dataset'):
+        test_loader.dataset.k_shot = 1
+        test_loader.dataset.validation_dataset = True
+        train_loader.dataset.k_shot = 1
+        train_loader.dataset.validation_dataset = True
+    
     logger.info('Creating embeddings database from training data...')
     db_embeddings, db_labels = create_embeddings(
         model, train_loader, device, logger, desc='Creating database'
