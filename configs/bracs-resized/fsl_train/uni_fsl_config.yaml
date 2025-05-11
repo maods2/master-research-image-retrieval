@@ -21,6 +21,8 @@ model:
   n_way: 7
   q_shot: 5
   k_queries: 64 # For few-shot learning, this will be the batch size
+  hidden_dim: 512  # Hidden dimension for FSL encoder
+  embedding_dim: 128  # Embedding dimension for FSL encoder
 
 # Loss function configuration
 loss:

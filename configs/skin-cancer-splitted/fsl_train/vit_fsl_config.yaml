@@ -1,9 +1,9 @@
 # Paths and directories for training and testing data
 data:
   dataset_type: FewShotFolderDataset    # Specify the dataset type (e.g., terumo, etc.)
-  train_dir: datasets/final/ovarian-cancer-splitted/train
-  test_dir: datasets/final/ovarian-cancer-splitted/test
-  class_mapping: {Clear_Cell: 0, Endometri: 1, Mucinous: 2, Non_Cancerous: 3, Serous: 4}
+  train_dir: datasets/final/skin-cancer-splitted/train
+  test_dir: datasets/final/skin-cancer-splitted/test
+  class_mapping: {akiec: 0, bcc: 1, bkl: 2, df: 3, mel: 4, nv: 5, vasc: 6}
   batch_size: 1 # Batch size for few-shot learning = 1
   num_workers: 3  # Number of workers to load the data
   suffle_train: true  # Shuffle the training data
@@ -11,14 +11,14 @@ data:
 
 # Model configuration
 model:
-  name: uni_fsl           # Example: You can set it to resnet18, resnet34, etc.
-  experiment_name: uni_fsl_ovarian-cancer-splitted # Name of the experiment
+  name: vit_fsl           # Example: You can set it to resnet18, resnet34, etc.
+  experiment_name: vit_fsl_skin-cancer-splitted  # Name of the experiment
   pretrained: true  # Use pre-trained weights
-  num_classes: 5  # Number of classes in the dataset
+  num_classes: 7  # Number of classes in the dataset
   load_checkpoint: false  # Load a pre-trained model checkpoint
   checkpoint_path: ''  # Path to the model checkpoint
-  model_name: vit_large_patch16_224      # Specify the ViT model name
-  n_way: 5
+  model_name: vit_base_patch16_224       # Specify the ViT model name
+  n_way: 7
   q_shot: 5
   k_queries: 64 # For few-shot learning, this will be the batch size
   hidden_dim: 512  # Hidden dimension for FSL encoder
@@ -91,9 +91,9 @@ testing:
   enabled: true  # Enable testing
   pipeline: default    # The pipeline to run (e.g., default, retrieval, etc.)
   load_embeddings: false  # Load embeddings from disk
-  embeddings_path: ./artifacts/ovarian-cancer-splitted/embeddings_uni_fsl # Path to load embeddings
+  embeddings_path: ./artifacts/skin-cancer-splitted/embeddings_vit_fsl  # Path to load embeddings
   save_embeddings: true  # Save embeddings to disk
-  embeddings_save_path: ./artifacts/ovarian-cancer-splitted/embeddings_uni_fsl # Path to save embeddings
+  embeddings_save_path: ./artifacts/skin-cancer-splitted/embeddings_vit_fsl  # Path to save embeddings
   list_of_metrics:
     # - type: accuracy
     # - type: f1_score
@@ -117,8 +117,8 @@ metric_logging:
   tool: txt    # Tool to log metrics (txt, csv, mlflow, etc.)
 # Output configuration
 output:
-  model_dir: ./artifacts/ovarian-cancer-splitted # Directory to save model artifacts
-  results_dir: ./local_experiments/ovarian-cancer-splitted # Directory to save results
+  model_dir: ./artifacts/skin-cancer-splitted # Directory to save model artifacts
+  results_dir: ./local_experiments/skin-cancer-splitted # Directory to save results
 
 
 

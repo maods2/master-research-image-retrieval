@@ -11,13 +11,13 @@ data:
 
 # Model configuration
 model:
-  name: uni_fsl           # Example: You can set it to resnet18, resnet34, etc.
-  experiment_name: uni_fsl_ovarian-cancer-splitted # Name of the experiment
+  name: dinov2_fsl        # Example: You can set it to resnet18, resnet34, etc.
+  experiment_name: dinov2_fsl_ovarian-cancer-splitted # Name of the experiment
   pretrained: true  # Use pre-trained weights
   num_classes: 5  # Number of classes in the dataset
   load_checkpoint: false  # Load a pre-trained model checkpoint
   checkpoint_path: ''  # Path to the model checkpoint
-  model_name: vit_large_patch16_224      # Specify the ViT model name
+  model_name: dinov2_vitl14              # Specify the ViT model name
   n_way: 5
   q_shot: 5
   k_queries: 64 # For few-shot learning, this will be the batch size
@@ -91,9 +91,9 @@ testing:
   enabled: true  # Enable testing
   pipeline: default    # The pipeline to run (e.g., default, retrieval, etc.)
   load_embeddings: false  # Load embeddings from disk
-  embeddings_path: ./artifacts/ovarian-cancer-splitted/embeddings_uni_fsl # Path to load embeddings
+  embeddings_path: ./artifacts/ovarian-cancer-splitted/embeddings_dinov2_fsl # Path to load embeddings
   save_embeddings: true  # Save embeddings to disk
-  embeddings_save_path: ./artifacts/ovarian-cancer-splitted/embeddings_uni_fsl # Path to save embeddings
+  embeddings_save_path: ./artifacts/ovarian-cancer-splitted/embeddings_dinov2_fsl # Path to save embeddings
   list_of_metrics:
     # - type: accuracy
     # - type: f1_score
