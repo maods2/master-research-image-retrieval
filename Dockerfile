@@ -43,6 +43,8 @@ RUN apt-get update && \
     && apt-get clean autoremove --yes \
     && rm -rf /var/lib/{apt,dpkg,cache,log}
 
+
+RUN apt-get install -y unzip htop
 # Update pip
 RUN pip install --upgrade pip
 
