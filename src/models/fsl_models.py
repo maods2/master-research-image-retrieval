@@ -128,6 +128,26 @@ class ResNetFsl(BaseFsl):
         x = self.projection(x)
         return x
 
+class WrappedFsl(BaseFsl):
+    def __init__(self, backbone, hidden_dim=512, embedding_dim=128): 
+        super().__init__()
+        self.backbone = backbone
+        
+        with torch.no_grad():
+            test_tensor = torch.randn(1, 3, 224, 224)
+            out_dim = self.backbone(test_tensor).shape[-1]
+        # Create projection
+        self.projection = nn.Sequential(
+            nn.Linear(out_dim, hidden_dim), nn.GELU(), nn.Linear(hidden_dim, embedding_dim)
+        )
+        # Freeze backbone if needed
+        for param in self.backbone.parameters():
+            param.requires_grad = False
+    
+    def forward(self, x):
+        x = self.backbone(x)
+        x = self.projection(x)
+        return x
 
 class SemanticAttributeFsl(nn.Module):
     def __init__(

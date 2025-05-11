@@ -9,14 +9,11 @@ retrieval_models = [
 ]
 
 fsl_models = [
-    {
-        "model_name": "uni_fsl",
-        "model_pretreined": "vit_large_patch16_224",
-
-    },
-    {
-        "model_name": "resnet_fsl",
-        "model_pretreined": "resnet50",
-
-    },
+    {"model_name": "resnet_fsl", "model_pretreined": "resnet50"},
+    {"model_name": "dino_fsl", "model_pretreined": "vit_small_patch16_224_dino"},
+    {"model_name": "dinov2_fsl", "model_pretreined": "dinov2_vitl14"},
+    {"model_name": "uni_fsl", "model_pretreined": "vit_large_patch16_224"},
+    {"model_name": "clip_fsl", "model_pretreined": "openai/clip-vit-base-patch32"},
+    {"model_name": "virchow2_fsl", "model_pretreined": "hf-hub:paige-ai/Virchow2"},
+    {"model_name": "vit_fsl", "model_pretreined": "vit_base_patch16_224"},
 ]
