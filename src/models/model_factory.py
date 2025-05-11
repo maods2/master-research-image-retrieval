@@ -1,7 +1,7 @@
 import os
 import sys
 
-from models.fsl_models import ResNetFsl, UNIFsl
+
 
 sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'))
@@ -16,6 +16,7 @@ from src.models.dino import DINO, DINOv2
 from src.models.uni import UNI
 from src.models.virchow2 import Virchow2
 from src.models.vit import ViT, TripletViT
+from src.models.fsl_models import ResNetFsl, UNIFsl
 from src.utils.checkpoint_utils import load_checkpoint
 
 
@@ -35,26 +36,28 @@ def get_model(model_config):
     elif model_name == 'clip':
         model = CLIP(model_name=model_config['model_name'])
 
-    elif model_name == 'triplet_resnet':
-        model = TripletResNet(embedding_size=model_config['embedding_size'])
-
-    elif model_name == 'triplet_vit':
-        model = TripletViT(embedding_size=model_config['embedding_size'])
-
     elif model_name == 'vit':
         model = ViT(model_name=model_config['model_name'])
 
     elif model_name == 'uni':   # Pathology Foundation Model
         model = UNI(model_name=model_config['model_name'])
 
+    elif model_name == 'virchow2':   # Pathology Foundation Model
+        model = Virchow2(model_name=model_config['model_name'])
+
+################### Few-Shot Learning Models ######################################
     elif model_name == 'uni_fsl':   # Pathology Foundation Model
         model = UNIFsl(model_name=model_config['model_name'])
 
     elif model_name == 'resnet_fsl':   # Pathology Foundation Model
         model = ResNetFsl(model_name=model_config['model_name'])
 
-    elif model_name == 'virchow2':   # Pathology Foundation Model
-        model = Virchow2(model_name=model_config['model_name'])
+################### Triplet Models #################################################
+    elif model_name == 'triplet_resnet':
+        model = TripletResNet(embedding_size=model_config['embedding_size'])
+
+    elif model_name == 'triplet_vit':
+        model = TripletViT(embedding_size=model_config['embedding_size'])
 
     else:
         raise ValueError(f'Model {model_name} is not supported')
