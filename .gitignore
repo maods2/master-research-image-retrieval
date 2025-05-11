@@ -23,7 +23,9 @@ notebooks/*.jpg
 *.json
 *.mat
 *.csv
-*.txt
+# *.txt
+*s.txt
+*path.txt
 
 .venv
 .idea
