@@ -192,3 +192,6 @@ streamlit
 performer-pytorch
 isort
 blue
+timm
+toml
+gdown
