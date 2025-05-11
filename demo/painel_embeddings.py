@@ -41,6 +41,10 @@ if __name__ == '__main__':
             'glomerulo_uni_fsl',
         ),
         (
+            'notebooks/all_data_embeddings_uni_fsl.npz',
+            'all_data_glomerulo_uni_fsl',
+        ),
+        (
             'artifacts/bracs-resized/embeddings_uni/embeddings_2025-04-16_03-05-03.npz',
             'bracs',
         ),
