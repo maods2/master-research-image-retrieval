@@ -18,12 +18,42 @@ train-tri-vit-b:
 train-tri-res:
 	python3 src/main.py --config configs/triplet/train_resnet_config.yaml --pipeline train
 
+# ==================================
+# Few Shot Learning Training Targets
+# ==================================
+
+train-fsl-uni:
+	python3 src/main.py --config configs/$(DATASET)/fsl_train/uni_fsl_config.yaml --pipeline train
+train-fsl-resnet:
+	python3 src/main.py --config configs/$(DATASET)/fsl_train/resnet_fsl_config.yaml --pipeline train
+
+
+
+train-fsl-all-models:
+	train-fsl-uni DATASET=$(DATASET)
+	train-fsl-resnet DATASET=$(DATASET)
+
+
+train-all-datasets-models:
+	for dataset in bracs-resized CRC-VAL-HE-7K-splitted ovarian-cancer-splitted skin-cancer-splitted; do \
+		make train-fsl-all-models DATASET=$$dataset; \
+	done
+
+# =========================================
+# Few Shot Learning Training Targets AD-HOC
+# =========================================
+
 train-uni-fsl:
 	python3 src/main.py --config configs/glomerulo/training/uni_fsl_no_augm_train_config.yaml --pipeline train
+
+train-uni-fsl-aug:
+	python3 src/main.py --config configs/glomerulo/training/uni_fsl_train_config.yaml --pipeline train
 
 train-resnet-fsl:
 	python3 src/main.py --config configs/glomerulo/training/resnet_fsl_no_augm_train_config.yaml --pipeline train
 
+train-fsl-vit:
+	python3 src/main.py --config configs/glomerulo/training/vit_fsl_no_augm_train_config.yaml --pipeline train
 
 # ============================
 # Classification Targets
@@ -83,6 +113,20 @@ retrival-all-datasets-models:
 	for dataset in bracs-resized CRC-VAL-HE-7K-splitted glomerulo ovarian-cancer-splitted skin-cancer-splitted; do \
 		make retrival-all-models DATASET=$$dataset; \
 	done
+
+
+
+
+
+# ============================
+# Download Datasets
+# ============================
+download-datasets:
+	cd ./datasets && \
+	gdown https://drive.google.com/uc?id=1OckKt2r-jyQ_Si4HHRn5V7KmVxlICqRg && \
+	unzip final.zip && \
+	rm -rf final.zip
+
 
 # ============================
 # Application Target
