@@ -1,4 +1,8 @@
-from src.dataloaders.dataset import StandardImageDataset
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from dataloaders.dataset import StandardImageDataset
+
 
 class ContrastiveDataset(StandardImageDataset):
     """

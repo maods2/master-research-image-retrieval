@@ -48,7 +48,7 @@ class FewShotFolderDataset(StandardImageDataset):
         # Return the total number of samples divided by the number of queries per index
         if self.validation_dataset is not None:
             return len(self.labels)
-        return 1000
+        # return 1000
         return len(self.image_paths) // self.q_queries
 
     def _open_image(self, path):
