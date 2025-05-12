@@ -39,6 +39,8 @@ Start a new tmux session with a custom name:
 
 ```bash
 tmux new -s <my-session>
+tmux new -s fsl_part1
+tmux new -s fsl_part2
 ```
 
 ### Attach to an Existing Session
@@ -47,6 +49,8 @@ If you already have a tmux session running, you can attach to it using:
 
 ```bash
 tmux attach -t <my-session>
+tmux attach -t fsl_part1
+tmux attach -t fsl_part2
 ```
 
 ### Other tmux Commands
@@ -82,10 +86,11 @@ make download-datasets
 ```
 
 
-## 7. Run Training with Unet
-
-To start training with the Unet model, execute the following commands:
-
+## 7. Run Training
+To start training 
 ```bash
-make train 
+make hf-login (paste token)
+make train-all-datasets-models-part1
+make train-all-datasets-models-part2
+
 ```
