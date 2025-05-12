@@ -28,7 +28,7 @@ train-fsl-resnet:
 	python3 src/main.py --config configs/$(DATASET)/fsl_train/resnet_fsl_config.yaml --pipeline train
 
 train-all-datasets-models-part1:
-	datasets="bracs-resized CRC-VAL-HE-7K-splitted"; \
+	datasets="CRC-VAL-HE-7K-splitted bracs-resized"; \
 	models="resnet_fsl dino_fsl dinov2_fsl uni_fsl clip_fsl virchow2_fsl vit_fsl"; \
 	for dataset in $$datasets; do \
 		for model in $$models; do \
@@ -38,8 +38,18 @@ train-all-datasets-models-part1:
 	done
 
 train-all-datasets-models-part2:
-	datasets="ovarian-cancer-splitted skin-cancer-splitted2"; \
+	datasets="ovarian-cancer-splitted skin-cancer-splitted"; \
 	models="resnet_fsl dino_fsl dinov2_fsl uni_fsl clip_fsl virchow2_fsl vit_fsl"; \
+	for dataset in $$datasets; do \
+		for model in $$models; do \
+			echo "Training on $$dataset with $$model"; \
+			python3 src/main.py --config configs/$$dataset/fsl_train/$$model\_config.yaml --pipeline train; \
+		done; \
+	done
+
+train-all-datasets-models-part3:
+	datasets="bracs-resized"; \
+	models="virchow2_fsl resnet_fsl dino_fsl dinov2_fsl uni_fsl clip_fsl vit_fsl"; \
 	for dataset in $$datasets; do \
 		for model in $$models; do \
 			echo "Training on $$dataset with $$model"; \
@@ -142,6 +152,13 @@ download-datasets:
 	unzip final.zip && \
 	rm -rf final.zip
 
+
+# ============================
+# Huggingface Model Login
+# ============================
+
+hf-login:
+	huggingface-cli login
 
 # ============================
 # Application Target
