@@ -27,9 +27,11 @@ train-fsl-uni:
 train-fsl-resnet:
 	python3 src/main.py --config configs/$(DATASET)/fsl_train/resnet_fsl_config.yaml --pipeline train
 
+# CRC-VAL-HE-7K-splitted - clip_fsl virchow2_fsl vit_fsl
+# not used - uni_fsl CRC-VAL-HE-7K-splitted 
 train-all-datasets-models-part1:
-	datasets="CRC-VAL-HE-7K-splitted bracs-resized"; \
-	models="resnet_fsl dino_fsl dinov2_fsl uni_fsl clip_fsl virchow2_fsl vit_fsl"; \
+	datasets="bracs-resized"; \
+	models="resnet_fsl dino_fsl"; \
 	for dataset in $$datasets; do \
 		for model in $$models; do \
 			echo "Training on $$dataset with $$model"; \
@@ -37,9 +39,22 @@ train-all-datasets-models-part1:
 		done; \
 	done
 
+train-all-datasets-models-part12:
+	datasets="bracs-resized"; \
+	models="dinov2_fsl"; \
+	for dataset in $$datasets; do \
+		for model in $$models; do \
+			echo "Training on $$dataset with $$model"; \
+			python3 src/main.py --config configs/$$dataset/fsl_train/$$model\_config.yaml --pipeline train; \
+		done; \
+	done
+
+# ovarian-cancer-splitted - ALREADY TRAINED
+# skin-cancer-splitted - resnet_fsl dino_fsl dinov2_fsl
+# not used - uni_fsl
 train-all-datasets-models-part2:
-	datasets="ovarian-cancer-splitted skin-cancer-splitted"; \
-	models="resnet_fsl dino_fsl dinov2_fsl uni_fsl clip_fsl virchow2_fsl vit_fsl"; \
+	datasets="skin-cancer-splitted"; \
+	models="clip_fsl virchow2_fsl vit_fsl"; \
 	for dataset in $$datasets; do \
 		for model in $$models; do \
 			echo "Training on $$dataset with $$model"; \
@@ -49,7 +64,7 @@ train-all-datasets-models-part2:
 
 train-all-datasets-models-part3:
 	datasets="bracs-resized"; \
-	models="uni_fsl virchow2_fsl resnet_fsl dino_fsl dinov2_fsl clip_fsl vit_fsl"; \
+	models="virchow2_fsl resnet_fsl dino_fsl dinov2_fsl uni_fsl clip_fsl viSt_fsl"; \
 	for dataset in $$datasets; do \
 		for model in $$models; do \
 			echo "Training on $$dataset with $$model"; \
