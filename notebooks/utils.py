@@ -173,7 +173,7 @@ def plot_metric_comparison(metric_name, experiments):
     
     for exp_type, exp_info in experiments.items():
         # Construct the file path for the compiled metric results for the selected metric
-        file_path = os.path.join(exp_info["path"], METRIC_FILES[metric_name]["compiled"])
+        file_path = os.path.join(exp_info["path"], METRIC_FILES[metric_name.lower()]["compiled"])
         data = load_json_file(file_path)
         if not data:
             print(f"Warning: No data for {metric_name} in experiment {exp_info['folder']}")
@@ -205,20 +205,46 @@ def plot_metric_comparison(metric_name, experiments):
         })
     
     # Sort experiments by the last value (descending)
-    exp_data.sort(key=lambda x: x['last_value'], reverse=True)
+    exp_data.sort(key=lambda x: x['exp_info']["folder"], reverse=False)
+    
+    def get_label(exp):
+        """
+        Generate a label for the experiment based on its folder name.
+        """
+        models = {
+            "dinov2": "DINOv2",
+            "dino_": "DINO",
+            "vit_": "ViT",
+            "resnet": "ResNet",
+            "clip": "CLIP",
+            "uni": "UNI",
+            "virchow2": "Virchow2",
+        }
+        
+        m_map = round(sum(exp['values']) / len(exp['values']) *100, 2)
+        std = round(np.std(exp['values']) * 100, 2)
+        if std > 0:
+            m_map = f"{m_map}% ± {std}"
+        else:
+            m_map = str(m_map)
+            
+        folder = exp['exp_info']["folder"]
+        for key, value in models.items():
+            if key in folder:
+                return f'{value} ({m_map})'
     
     # Plot the sorted experiments
     for exp in exp_data:
-        plt.plot(exp['ks'], exp['values'], marker='o', label=exp['exp_info']["folder"])
+        label = get_label(exp)
+        plt.plot(exp['ks'], exp['values'], marker='o', label=label)
     
-    plt.title(f"Comparison of {metric_name.upper()} across experiments")
     plt.xlabel("k")
-    plt.ylabel(metric_name.capitalize())
+    plt.ylabel(metric_name)
     plt.ylim(0, 1)  # Fix y-axis from 0 to 1
-    plt.legend(title="Experiment Folder")
+    plt.yticks(np.arange(0, 1.05, 0.1))  # Set y-axis ticks from 0 to 1 in steps of 0.5
+    plt.legend(title="Models", loc='lower right')  # Added loc='lower right'
     plt.grid(True)
     plt.show()
-    
     
     
 def load_json_file(file_path):

@@ -16,12 +16,12 @@ model:
   experiment_name: dinov2_fsl_CRC-VAL-HE-7K-splitted # Name of the experiment
   pretrained: true  # Use pre-trained weights
   num_classes: 9  # Number of classes in the dataset
-  load_checkpoint: false  # Load a pre-trained model checkpoint
-  checkpoint_path: ''  # Path to the model checkpoint
+  load_checkpoint: true  # Load a pre-trained model checkpoint
+  checkpoint_path: './artifacts/CRC-VAL-HE-7K-splitted/dinov2_fsl_CRC-VAL-HE-7K-splitted_dinov2_fsl_2025-05-12_15-27-11_checkpoint.pth'  # Path to the model checkpoint
   model_name: dinov2_vitl14              # Specify the ViT model name
   n_way: 9
   q_shot: 5
-  k_queries: 64 # For few-shot learning, this will be the batch size
+  k_queries: 128 # For few-shot learning, this will be the batch size
   hidden_dim: 512  # Hidden dimension for FSL encoder
   embedding_dim: 128  # Embedding dimension for FSL encoder
 
