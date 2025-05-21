@@ -49,7 +49,7 @@ train-all-datasets-models-part2:
 
 train-all-datasets-models-part3:
 	datasets="bracs-resized"; \
-	models="virchow2_fsl resnet_fsl dino_fsl dinov2_fsl uni_fsl clip_fsl vit_fsl"; \
+	models="uni_fsl virchow2_fsl resnet_fsl dino_fsl dinov2_fsl clip_fsl vit_fsl"; \
 	for dataset in $$datasets; do \
 		for model in $$models; do \
 			echo "Training on $$dataset with $$model"; \

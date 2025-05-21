@@ -42,7 +42,7 @@ def update_config_fields_fsl_train(config: dict, dataset_name: str, model_config
     config['model']['num_classes'] = len(dataset_config['class-mapping'])
     config['model']['n_way'] = len(dataset_config['class-mapping'])
     config['model']['model_name'] = model_config["model_pretreined"]
-    config['model']['k_queries'] = 64 # used to be 32 but changed to 64 in better GPU
+    config['model']['k_queries'] = 128 # used to be 32 but changed to 64 in better GPU
     
     # Update fields in the 'testing' section
     config['testing']['embeddings_path'] = f'./artifacts/{dataset_name}/embeddings_{model_config["model_name"]}'
