@@ -233,11 +233,36 @@ def plot_metric_comparison(metric_name, experiments):
             if key in folder:
                 return f'{value} ({m_map})'
     
-    # Plot the sorted experiments
+    # Define fixed colors and line styles for each model type
+    model_styles = {
+        'DINOv2': {'color': '#1f77b4', 'marker': 'o'},   # Tableau blue
+        'DINO': {'color': '#2ca02c', 'marker': 's'},     # Tableau green
+        'ViT': {'color': '#ff7f0e', 'marker': '^'},      # Tableau orange
+        'ResNet': {'color': '#9467bd', 'marker': 'D'},   # Tableau purple
+        'CLIP': {'color': '#d62728', 'marker': 'v'},     # Tableau red
+        'UNI': {'color': '#8c564b', 'marker': '*'},      # Tableau brown
+        'Virchow2': {'color': '#e377c2', 'marker': 'P'}  # Tableau pink
+    }
+    # model_styles = {
+    #     'DINOv2': {'color': 'blue', 'marker': 'o'},
+    #     'DINO': {'color': 'green', 'marker': 's'},
+    #     'ViT': {'color': 'red', 'marker': '^'},
+    #     'ResNet': {'color': 'purple', 'marker': 'D'},
+    #     'CLIP': {'color': 'orange', 'marker': 'v'},
+    #     'UNI': {'color': 'brown', 'marker': '*'},
+    #     'Virchow2': {'color': 'pink', 'marker': 'P'},
+    # }
+
+    # Plot the sorted experiments using consistent styles
     for exp in exp_data:
         label = get_label(exp)
-        plt.plot(exp['ks'], exp['values'], marker='o', label=label)
-    
+        model_type = next((k for k in model_styles.keys() if k in label), 'other')
+        style = model_styles.get(model_type, {'color': 'gray', 'marker': 'x'})
+        plt.plot(exp['ks'], exp['values'], 
+                color=style['color'], 
+                marker=style['marker'],
+                label=label)
+
     plt.xlabel("k")
     plt.ylabel(metric_name)
     plt.ylim(0, 1)  # Fix y-axis from 0 to 1
