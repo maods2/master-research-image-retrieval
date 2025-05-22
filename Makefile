@@ -39,22 +39,12 @@ train-all-datasets-models-part1:
 		done; \
 	done
 
-train-all-datasets-models-part12:
-	datasets="bracs-resized"; \
-	models="dinov2_fsl"; \
-	for dataset in $$datasets; do \
-		for model in $$models; do \
-			echo "Training on $$dataset with $$model"; \
-			python3 src/main.py --config configs/$$dataset/fsl_train/$$model\_config.yaml --pipeline train; \
-		done; \
-	done
-
 # ovarian-cancer-splitted - ALREADY TRAINED
 # skin-cancer-splitted - resnet_fsl dino_fsl dinov2_fsl
 # not used - uni_fsl
 train-all-datasets-models-part2:
-	datasets="skin-cancer-splitted"; \
-	models="clip_fsl virchow2_fsl vit_fsl"; \
+	datasets="skin-cancer-splitted CRC-VAL-HE-7K-splitted bracs-resized"; \
+	models="virchow2_fsl"; \
 	for dataset in $$datasets; do \
 		for model in $$models; do \
 			echo "Training on $$dataset with $$model"; \
@@ -63,8 +53,8 @@ train-all-datasets-models-part2:
 	done
 
 train-all-datasets-models-part3:
-	datasets="bracs-resized"; \
-	models="virchow2_fsl resnet_fsl dino_fsl dinov2_fsl uni_fsl clip_fsl viSt_fsl"; \
+	datasets="glomerulo"; \
+	models="virchow2_fsl resnet_fsl clip_fsl vit_fsl dino_fsl dinov2_fsl uni_fsl"; \
 	for dataset in $$datasets; do \
 		for model in $$models; do \
 			echo "Training on $$dataset with $$model"; \
