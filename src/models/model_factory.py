@@ -7,22 +7,19 @@ sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'))
 )
 
-from torchvision import models
-import torch.nn as nn
-
 from src.models.clip import CLIP
-from src.models.triplet_resnet import TripletResNet, ResNet50
+from src.models.triplet_resnet import TripletResNet, ResNet50, ResNet
 from src.models.dino import DINO, DINOv2
 from src.models.uni import UNI
 from src.models.virchow2 import Virchow2
 from src.models.vit import ViT, TripletViT
-from src.models.fsl_models import WrappedFsl, ResNetFsl, UNIFsl
+from src.models.fsl_models import WrappedFsl
+from src.models.phikon import Phikon
 from src.utils.checkpoint_utils import load_checkpoint
 
 
 def get_model(model_config):
     model_name = model_config['name']
-    num_classes = model_config['num_classes']
 
     if model_name == 'resnet50':
         model = ResNet50()
@@ -42,10 +39,21 @@ def get_model(model_config):
     elif model_name == 'uni':   # Pathology Foundation Model
         model = UNI(model_name=model_config['model_name'])
 
+    elif model_name == 'UNI2-h':   # Pathology Foundation Model
+        model = UNI(model_name=model_config['model_name'])
+
     elif model_name == 'virchow2':   # Pathology Foundation Model
         model = Virchow2(model_name=model_config['model_name'])
+                
+    elif model_name == 'phikon':   # Pathology Foundation Model
+        model = Phikon(model_name=model_config['model_name'])
+
+    elif model_name == 'phikon-v2':   # Pathology Foundation Model
+        model = Phikon(model_name=model_config['model_name'])
+        
 
 ################### Few-Shot Learning Models ######################################
+    
     elif model_name == 'dino_fsl':
         backbone = DINO(model_name=model_config['model_name'])
         model = WrappedFsl(
@@ -78,7 +86,7 @@ def get_model(model_config):
             embedding_dim=model_config['embedding_dim']
             )
 
-    elif model_name == 'uni_fsl2':   # Pathology Foundation Model
+    elif model_name == 'uni_fsl':   # Pathology Foundation Model
         backbone = UNI(model_name=model_config['model_name'])
         model = WrappedFsl(
             backbone,
@@ -94,13 +102,32 @@ def get_model(model_config):
             embedding_dim=model_config['embedding_dim']
             )
 
-    elif model_name == 'uni_fsl':   # Pathology Foundation Model
-        model = UNIFsl(model_name=model_config['model_name'])
-
     elif model_name == 'resnet_fsl':   # Pathology Foundation Model
-        model = ResNetFsl(model_name=model_config['model_name'])
+        backbone = ResNet(model_name=model_config['model_name'])
+        model = WrappedFsl(
+            backbone,
+            hidden_dim=model_config['hidden_dim'], 
+            embedding_dim=model_config['embedding_dim']
+            )
+
+    elif model_name == 'phikon':   # Pathology Foundation Model
+        backbone = Phikon(model_name=model_config['model_name'])
+        model = WrappedFsl(
+            backbone,
+            hidden_dim=model_config['hidden_dim'], 
+            embedding_dim=model_config['embedding_dim']
+            )
+
+    elif model_name == 'phikon-v2':   # Pathology Foundation Model
+        backbone = Phikon(model_name=model_config['model_name'])
+        model = WrappedFsl(
+            backbone,
+            hidden_dim=model_config['hidden_dim'], 
+            embedding_dim=model_config['embedding_dim']
+            )
         
 ################### Triplet Models #################################################
+    
     elif model_name == 'triplet_resnet':
         model = TripletResNet(embedding_size=model_config['embedding_size'])
 
@@ -109,6 +136,11 @@ def get_model(model_config):
 
     else:
         raise ValueError(f'Model {model_name} is not supported')
+
+
+
+################## NOT USED ######################################################
+
 
     if model_config['load_checkpoint']:
         load_checkpoint(model_config['checkpoint_path'], model)

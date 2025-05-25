@@ -99,3 +99,21 @@ def load_checkpoint(filepath, model, optimizer=None, scheduler=None):
         'epoch': checkpoint.get('epoch', None),
         'loss': checkpoint.get('loss', None),
     }
+
+
+def load_full_model(model_name: str, save_dir: str, map_location=None):
+    """
+    Loads a previously saved model using torch.save.
+
+    Args:
+        model_name: Name of the saved model (without extension)
+        save_dir: Directory where the model is saved
+        map_location: 'cpu' or 'cuda', defines where the model will be loaded
+
+    Returns:
+        model: Loaded PyTorch model
+    """
+    load_path = os.path.join(f"./assets/{model_name}", f"{model_name}.pt")
+    model = torch.load(load_path, map_location=map_location, weights_only=False)
+    print(f"Model loaded from: {load_path}")
+    return model
