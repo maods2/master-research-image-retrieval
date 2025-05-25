@@ -72,6 +72,17 @@ train-all-datasets-models:
 		done; \
 	done
 
+make-test:
+	datasets="ovarian-cancer-splitted"; \
+	models="resnet_fsl uni_fsl uni_fsl2 virchow2_fsl philkon_fsl philkon_fsl2"; \
+	for dataset in $$datasets; do \
+		for model in $$models; do \
+			echo "Testing on $$dataset with $$model"; \
+			python3 src/main.py --config configs/$$dataset/fsl_test/$$model\_config.yaml --pipeline test; \
+		done; \
+	done
+
+	
 # =========================================
 # Few Shot Learning Training Targets AD-HOC
 # =========================================

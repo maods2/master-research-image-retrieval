@@ -25,21 +25,21 @@ def main():
         #     "train_dir": "datasets/final/CRC-VAL-HE-7K-splitted/train",
         #     "test_dir": "datasets/final/CRC-VAL-HE-7K-splitted/test"
         # },
-        # "skin-cancer-splitted": {
-        #     "class-mapping": {"akiec": 0, "bcc": 1, "bkl": 2, "df": 3,"mel": 4, "nv": 5, "vasc": 6 },
-        #     "train_dir": "datasets/final/skin-cancer-splitted/train",
-        #     "test_dir": "datasets/final/skin-cancer-splitted/test"
-        # },
+        "skin-cancer-splitted": {
+            "class-mapping": {"akiec": 0, "bcc": 1, "bkl": 2, "df": 3,"mel": 4, "nv": 5, "vasc": 6 },
+            "train_dir": "datasets/final/skin-cancer-splitted/train",
+            "test_dir": "datasets/final/skin-cancer-splitted/test"
+        },
         # "bracs-resized": {
         #     "class-mapping": {"0_N": 0, "1_PB": 1, "2_UDH": 2, "3_FEA": 3,"4_ADH": 4, "5_DCIS": 5, "6_IC": 6},
         #     "train_dir": "datasets/final/bracs-resized/train",
         #     "test_dir": "datasets/final/bracs-resized/retriv_test"
         # },
-        # "ovarian-cancer-splitted": {
-        #     "class-mapping": {"Clear_Cell": 0, "Endometri": 1, "Mucinous": 2, "Non_Cancerous": 3,"Serous": 4},
-        #     "train_dir": "datasets/final/ovarian-cancer-splitted/train",
-        #     "test_dir": "datasets/final/ovarian-cancer-splitted/test"
-        # },
+        "ovarian-cancer-splitted": {
+            "class-mapping": {"Clear_Cell": 0, "Endometri": 1, "Mucinous": 2, "Non_Cancerous": 3,"Serous": 4},
+            "train_dir": "datasets/final/ovarian-cancer-splitted/train",
+            "test_dir": "datasets/final/ovarian-cancer-splitted/test"
+        },
         "glomerulo":{
             "class-mapping": {"Crescent": 0, "Hypercellularity": 1, "Membranous": 2, "Normal": 3,"Podocytopathy": 4, "Sclerosis": 5},
             "train_dir": "datasets/final/glomerulo/train",
