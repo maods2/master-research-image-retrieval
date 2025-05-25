@@ -1,6 +1,6 @@
 data/*
 .pth.tar
-
+*.pt
 __pycache__
 artifacts/
 wandb/
