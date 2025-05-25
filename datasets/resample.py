@@ -5,7 +5,7 @@ from random import sample
 from tqdm import tqdm
 import pandas as pd
 
-def split_dataset_multi_folder(source_dir, target_dir, test_sample_size=10):
+def split_dataset_multi_folder(source_dir, target_dir, sample_size_per_class=10):
     source_dir = Path(source_dir)
     target_dir = Path(target_dir)
     train_dir = target_dir / "train"
@@ -25,12 +25,12 @@ def split_dataset_multi_folder(source_dir, target_dir, test_sample_size=10):
                 images.extend(label_dir.rglob(ext))
 
             # Ensure there are enough images to sample
-            if len(images) < test_sample_size:
-                print(f"Not enough images in {label} to sample {test_sample_size}. Skipping...")
+            if len(images) < sample_size_per_class:
+                print(f"Not enough images in {label} to sample {sample_size_per_class}. Skipping...")
                 continue
 
             # Sample test images
-            test_images = sample(images, test_sample_size)
+            test_images = sample(images, sample_size_per_class)
             train_images = [img for img in images if img not in test_images]
 
             # Create label subdirectories in train and test folders
@@ -47,7 +47,7 @@ def split_dataset_multi_folder(source_dir, target_dir, test_sample_size=10):
 
     print("Dataset split completed.")
 
-def split_dataset_single_folder(source_dir, target_dir, csv_file, test_sample_size=10):
+def split_dataset_single_folder(source_dir, target_dir, csv_file, sample_size_per_class=10):
     source_dir = Path(source_dir)
     target_dir = Path(target_dir)
     train_dir = target_dir / "train"
@@ -80,12 +80,12 @@ def split_dataset_single_folder(source_dir, target_dir, csv_file, test_sample_si
     # Process each label
     for label, images in label_to_images.items():
         # Ensure there are enough images to sample
-        if len(images) < test_sample_size:
-            print(f"Not enough images in {label} to sample {test_sample_size}. Skipping...")
+        if len(images) < sample_size_per_class:
+            print(f"Not enough images in {label} to sample {sample_size_per_class}. Skipping...")
             continue
 
         # Sample test images
-        test_images = sample(images, test_sample_size)
+        test_images = sample(images, sample_size_per_class)
         train_images = [img for img in images if img not in test_images]
 
         # Create label subdirectories in train and test folders
@@ -109,14 +109,30 @@ def split_dataset_single_folder(source_dir, target_dir, csv_file, test_sample_si
     print("Dataset split completed.")
 
 if __name__ == "__main__":
-    # source_folder = "./datasets/raw/OvarianCancer"  # Source folder containing labeled subfolders
-    # target_folder = "./datasets/final/ovarian-cancer-splitted"  # Target folder for train/test split
-    # split_dataset_multi_folder(source_folder, target_folder)
+    import sys
+    import os
     
-    
-    split_dataset_single_folder(
-        source_dir="./datasets/raw/Skin-Cancer",
-        target_dir="./datasets/final/skin-cancer-splitted_2",
-        csv_file="./datasets/raw/Skin-Cancer/HAM10000_metadata.csv",
-        test_sample_size=10
-    )
+    arguments = sys.argv[1:]
+    if len(arguments) == 0:
+        print("No arguments provided. Please provide the source directory and target directory.")
+        sys.exit(1)
+    if len(arguments) > 1:
+        print("Too many arguments provided. Please provide only the source directory and target directory.")
+        sys.exit(1)
+
+    if arguments[0] == "ovarian-cancer":
+        split_dataset_multi_folder(
+            source_dir="./datasets/raw/OvarianCancer",
+            target_dir="./datasets/final/ovarian-cancer-splitted",
+            sample_size_per_class=20
+        )
+    elif arguments[0] == "skin-cancer":
+        split_dataset_single_folder(
+            source_dir="./datasets/raw/Skin-Cancer",
+            target_dir="./datasets/final/skin-cancer-splitted",
+            csv_file="./datasets/raw/Skin-Cancer/HAM10000_metadata.csv",
+            sample_size_per_class=20
+        )
+    else:
+        print("Invalid argument. Please provide 'ovarian-cancer' or 'skin-cancer'.")
+        sys.exit(1)
