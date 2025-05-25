@@ -22,6 +22,7 @@ def update_config_fields(config: dict, dataset_name: str, model_config: Dict[str
     # Update fields in the 'testing' section
     config['testing']['embeddings_path'] = f'./artifacts/{dataset_name}/embeddings_{model_config["model_name"]}'
     config['testing']['embeddings_save_path'] = f'./artifacts/{dataset_name}/embeddings_{model_config["model_name"]}'
+    config['testing']['normalize_embeddings'] = True
     
     # Update fields in the 'output' section
     config['output']['model_dir'] = f'./artifacts/{experiment_name}_{dataset_name}'
@@ -29,7 +30,7 @@ def update_config_fields(config: dict, dataset_name: str, model_config: Dict[str
     
     return config
 
-def update_config_fields_fsl_train(config: dict, dataset_name: str, model_config: Dict[str, str], dataset_config: Dict[str, str]) -> dict:
+def update_config_fields_fsl_train(config: dict, dataset_name: str, model_config: Dict[str, str], dataset_config: Dict[str, str], experiment_name: str) -> dict:
     """Update configuration fields with provided values."""
     # Update paths in the 'data' section
     config['data']['train_dir'] = dataset_config['train_dir']
@@ -47,12 +48,12 @@ def update_config_fields_fsl_train(config: dict, dataset_name: str, model_config
     # Update fields in the 'testing' section
     config['testing']['embeddings_path'] = f'./artifacts/{dataset_name}/embeddings_{model_config["model_name"]}'
     config['testing']['embeddings_save_path'] = f'./artifacts/{dataset_name}/embeddings_{model_config["model_name"]}'
-    config['testing']['normalize_embeddings'] = True
-    config['testing']['enabled'] = True
+    config['testing']['normalize_embeddings'] = False
+    config['testing']['enabled'] = False
     
     # Update fields in the 'output' section
-    config['output']['model_dir'] = f'./artifacts/{dataset_name}'
-    config['output']['results_dir'] = f'./local_experiments/{dataset_name}'
+    config['output']['model_dir'] = f'./artifacts/{experiment_name}_{dataset_name}'
+    config['output']['results_dir'] = f'./local_experiments/{experiment_name}_{dataset_name}'
     
     return config
 
@@ -76,7 +77,7 @@ def create_config(
         config = update_config_fields(config, dataset_name, model_config, dataset_config, experiment_name) 
         
     elif template_type == "fsl_train":
-        config = update_config_fields_fsl_train(config, dataset_name, model_config, dataset_config)
+        config = update_config_fields_fsl_train(config, dataset_name, model_config, dataset_config, experiment_name)
     
     # Create output directory if it doesn't exist
     dataset_config_dir = os.path.join(output_dir, dataset_name + config_type_folder)

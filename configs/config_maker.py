@@ -50,7 +50,9 @@ def main(template_type: str = "fsl_train") -> None:
     elif template_type == "fsl_train":
         template_path = "./configs/templates/fsl_train/default_train_config.yaml"
         models = fsl_models
-        config_type_folder="/fsl_train/"
+        experiment_name = "retr_fsl_train_test"
+        # experiment_name = "retr_fsl_train_test_norm"
+        config_type_folder="/retr_fsl_train_test/"
     else:
         raise ValueError("Invalid template type.")
     

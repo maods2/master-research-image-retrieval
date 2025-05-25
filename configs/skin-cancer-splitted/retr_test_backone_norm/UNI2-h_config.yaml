@@ -34,7 +34,7 @@ testing:
   embeddings_path: ./artifacts/skin-cancer-splitted/embeddings_UNI2-h # Path to load embeddings
   save_embeddings: true  # Save embeddings to disk
   embeddings_save_path: ./artifacts/skin-cancer-splitted/embeddings_UNI2-h # Path to save embeddings
-  normalize_embeddings: false  # Normalize embeddings to unit norm (L2 normalization)
+  normalize_embeddings: true   # Normalize embeddings to unit norm (L2 normalization)
   list_of_metrics:
     # - type: accuracy
     # - type: f1_score
