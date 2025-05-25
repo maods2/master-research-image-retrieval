@@ -16,7 +16,7 @@ def invert_dict(d):
 
 
 def create_embeddings(
-    model, data_loader, device, logger, desc='Extracting features'
+    model, data_loader, normalize_embeddings, device, logger, desc='Extracting features'
 ):
     """
     Generate embeddings and labels from a given data loader.
@@ -40,6 +40,9 @@ def create_embeddings(
     for img, label in data_loader:
         with torch.no_grad():
             embedding = model(img.to(device))
+            if normalize_embeddings:
+                embedding = torch.nn.functional.normalize(embedding, dim=1)
+                
         embeddings.append(embedding.cpu().numpy())
         # Handle both one-hot and standard labels
         if len(label.shape) > 1:  # one-hot encoded
@@ -114,13 +117,14 @@ def create_embeddings_dict(
         train_loader.dataset.validation_dataset = True
     
     logger.info('Creating embeddings database from training data...')
+    normalize_embeddings = config['testing'].get('normalize_embeddings', False)
     db_embeddings, db_labels = create_embeddings(
-        model, train_loader, device, logger, desc='Creating database'
+        model, train_loader, normalize_embeddings, device, logger, desc='Creating database'
     )
 
     logger.info('Generating query embeddings from test data...')
     query_embeddings, query_labels = create_embeddings(
-        model, test_loader, device, logger, desc='Generating queries'
+        model, test_loader, normalize_embeddings, device, logger, desc='Generating queries'
     )
 
     # Use the generalist function to get attributes

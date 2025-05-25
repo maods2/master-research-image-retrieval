@@ -17,7 +17,6 @@ class TripletResNet(nn.Module):
         x = self.backbone(x)
         return self.normalize(x)  # Embeddings normalizados
 
-
 class ResNet50(nn.Module):
     def __init__(self, embedding_size=512):
         super().__init__()

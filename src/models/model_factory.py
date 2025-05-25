@@ -21,9 +21,9 @@ from src.utils.checkpoint_utils import load_checkpoint
 def get_model(model_config):
     model_name = model_config['name']
 
-    if model_name == 'resnet50':
-        model = ResNet50()
-
+    if model_name == 'resnet':
+        model = ResNet(model_name=model_config['model_name'])
+        
     elif model_name == 'dino':
         model = DINO(model_name=model_config['model_name'])
 
@@ -87,6 +87,14 @@ def get_model(model_config):
             )
 
     elif model_name == 'uni_fsl':   # Pathology Foundation Model
+        backbone = UNI(model_name=model_config['model_name'])
+        model = WrappedFsl(
+            backbone,
+            hidden_dim=model_config['hidden_dim'], 
+            embedding_dim=model_config['embedding_dim']
+            )
+
+    elif model_name == 'UNI2-h_fsl':   # Pathology Foundation Model
         backbone = UNI(model_name=model_config['model_name'])
         model = WrappedFsl(
             backbone,
