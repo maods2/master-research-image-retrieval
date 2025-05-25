@@ -4,7 +4,7 @@ from typing import Dict
 from ruamel.yaml import YAML
 
 
-def update_config_fields(config: dict, dataset_name: str, model_config: Dict[str, str], dataset_config: Dict[str, str]) -> dict:
+def update_config_fields(config: dict, dataset_name: str, model_config: Dict[str, str], dataset_config: Dict[str, str], experiment_name: str) -> dict:
     """Update configuration fields with provided values."""
     # Update paths in the 'data' section
     config['data']['train_dir'] = dataset_config['train_dir']
@@ -24,8 +24,8 @@ def update_config_fields(config: dict, dataset_name: str, model_config: Dict[str
     config['testing']['embeddings_save_path'] = f'./artifacts/{dataset_name}/embeddings_{model_config["model_name"]}'
     
     # Update fields in the 'output' section
-    config['output']['model_dir'] = f'./artifacts/{dataset_name}'
-    config['output']['results_dir'] = f'./local_experiments/{dataset_name}'
+    config['output']['model_dir'] = f'./artifacts/{experiment_name}_{dataset_name}'
+    config['output']['results_dir'] = f'./local_experiments/{experiment_name}_{dataset_name}'
     
     return config
 
@@ -47,6 +47,7 @@ def update_config_fields_fsl_train(config: dict, dataset_name: str, model_config
     # Update fields in the 'testing' section
     config['testing']['embeddings_path'] = f'./artifacts/{dataset_name}/embeddings_{model_config["model_name"]}'
     config['testing']['embeddings_save_path'] = f'./artifacts/{dataset_name}/embeddings_{model_config["model_name"]}'
+    config['testing']['normalize_embeddings'] = True
     config['testing']['enabled'] = True
     
     # Update fields in the 'output' section
@@ -61,8 +62,9 @@ def create_config(
         model_config: Dict[str, str], 
         dataset_config: Dict[str, str], 
         output_dir: str,
-        config_type_folder: str = "retrieval_test",
-        template_type: str = "default"
+        config_type_folder: str = "/retrieval_test/",
+        template_type: str = "retrieval_test",
+        experiment_name: str = None
         ):
     """Create a new config file with customized parameters."""
     # Copy the template to preserve its structure
@@ -70,8 +72,9 @@ def create_config(
     
 
     # In the original function, replace the placeholder with:
-    if template_type == "default":
-        config = update_config_fields(config, dataset_name, model_config, dataset_config)
+    if template_type == "retrieval_test":
+        config = update_config_fields(config, dataset_name, model_config, dataset_config, experiment_name) 
+        
     elif template_type == "fsl_train":
         config = update_config_fields_fsl_train(config, dataset_name, model_config, dataset_config)
     
