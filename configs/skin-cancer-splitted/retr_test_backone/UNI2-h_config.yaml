@@ -1,0 +1,64 @@
+# Paths and directories for training and testing data
+data:
+  dataset_type: StandardImageDataset    # Specify the dataset type (e.g., terumo, etc.)
+  train_dir: datasets/final/skin-cancer-splitted/train
+  test_dir: datasets/final/skin-cancer-splitted/test
+  class_mapping: {akiec: 0, bcc: 1, bkl: 2, df: 3, mel: 4, nv: 5, vasc: 6}
+  batch_size: 32
+  num_workers: 3  # Number of workers to load the data
+  suffle_test: false
+  suffle_train: false
+
+# Transformation configuration for image preprocessing
+transform:
+  resize: [224, 224]  # Resize images to 224x224
+  normalize:
+    mean: [0.485, 0.456, 0.406]  # Normalize mean for ImageNet
+    std: [0.229, 0.224, 0.225]   # Normalize std for ImageNet
+  to_tensor: true  # Convert to tensor (default is true)
+
+# Model configuration
+model:
+  name: UNI2-h          # Example: You can set it to resnet18, resnet34, etc.
+  experiment_name: UNI2-h_skin-cancer-splitted # Name of the experiment
+  pretrained: true  # Use pre-trained weights
+  num_classes: 7  # Number of classes in the dataset
+  load_checkpoint: false  # Load a pre-trained model checkpoint
+  checkpoint_path: ''  # Path to the model checkpoint
+  model_name: UNI2-h                     # Specify the ViT model name
+
+
+testing:
+  pipeline: default    # The pipeline to run (e.g., default, retrieval, etc.)
+  load_embeddings: false  # Load embeddings from disk
+  embeddings_path: ./artifacts/skin-cancer-splitted/embeddings_UNI2-h # Path to load embeddings
+  save_embeddings: true  # Save embeddings to disk
+  embeddings_save_path: ./artifacts/skin-cancer-splitted/embeddings_UNI2-h # Path to save embeddings
+  normalize_embeddings: false  # Normalize embeddings to unit norm (L2 normalization)
+  list_of_metrics:
+    # - type: accuracy
+    # - type: f1_score
+    # - type: precision
+    # - type: recall
+  - type: map@k
+    k_values: [1, 3, 6, 9, 12, 15]
+    # - type: precision@k
+    #   k_values: [1, 3, 5, 10, 15]
+    # - type: recall@k
+    #   k_values: [1, 3, 5, 10, 15]
+    # - type: accuracy@k
+    #   k_values: [1, 3, 5, 10, 15]
+
+# Logging configuration
+logging:
+  log_file: ./logs.txt    # file to save logs
+  log_level: INFO    # Set logging level (DEBUG, INFO, WARNING, ERROR)
+
+metric_logging:
+  tool: txt    # Tool to log metrics (txt, csv, mlflow, etc.)
+# Output configuration
+output:
+  model_dir: ./artifacts/retr_test_backone_skin-cancer-splitted # Directory to save model artifacts
+  results_dir: ./local_experiments/retr_test_backone_skin-cancer-splitted # Directory to save results
+
+

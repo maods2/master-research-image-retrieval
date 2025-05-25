@@ -27,51 +27,50 @@ train-fsl-uni:
 train-fsl-resnet:
 	python3 src/main.py --config configs/$(DATASET)/fsl_train/resnet_fsl_config.yaml --pipeline train
 
-# CRC-VAL-HE-7K-splitted - clip_fsl virchow2_fsl vit_fsl
-# not used - uni_fsl CRC-VAL-HE-7K-splitted 
-train-all-datasets-models-part1:
-	datasets="bracs-resized"; \
-	models="resnet_fsl dino_fsl"; \
-	for dataset in $$datasets; do \
-		for model in $$models; do \
-			echo "Training on $$dataset with $$model"; \
-			python3 src/main.py --config configs/$$dataset/fsl_train/$$model\_config.yaml --pipeline train; \
-		done; \
-	done
 
-# ovarian-cancer-splitted - ALREADY TRAINED
-# skin-cancer-splitted - resnet_fsl dino_fsl dinov2_fsl
-# not used - uni_fsl
-train-all-datasets-models-part2:
-	datasets="skin-cancer-splitted CRC-VAL-HE-7K-splitted bracs-resized"; \
-	models="virchow2_fsl"; \
-	for dataset in $$datasets; do \
-		for model in $$models; do \
-			echo "Training on $$dataset with $$model"; \
-			python3 src/main.py --config configs/$$dataset/fsl_train/$$model\_config.yaml --pipeline train; \
-		done; \
-	done
-
-train-all-datasets-models-part3:
+train-fsl-glomerulo:
 	datasets="glomerulo"; \
-	models="virchow2_fsl resnet_fsl clip_fsl vit_fsl dino_fsl dinov2_fsl uni_fsl"; \
+	models="resnet vit dino dinov2 uni UNI2-h philkon philkon2 virchow2"; \
 	for dataset in $$datasets; do \
 		for model in $$models; do \
 			echo "Training on $$dataset with $$model"; \
-			python3 src/main.py --config configs/$$dataset/fsl_train/$$model\_config.yaml --pipeline train; \
+			python3 src/main.py --config configs/$$dataset/retr_fsl_train_test/$$model\_config.yaml --pipeline train; \
 		done; \
 	done
 
-train-all-datasets-models:
-	datasets="bracs-resized CRC-VAL-HE-7K-splitted ovarian-cancer-splitted skin-cancer-splitted"; \
-	models="resnet_fsl dino_fsl dinov2_fsl uni_fsl clip_fsl virchow2_fsl vit_fsl"; \
+train-fsl-ovarian-cancer:
+	datasets="ovarian-cancer-splitted"; \
+	models="resnet vit dino dinov2 uni UNI2-h philkon philkon2 virchow2"; \
 	for dataset in $$datasets; do \
 		for model in $$models; do \
 			echo "Training on $$dataset with $$model"; \
-			python3 src/main.py --config configs/$$dataset/fsl_train/$$model\_config.yaml --pipeline train; \
+			python3 src/main.py --config configs/$$dataset/retr_fsl_train_test/$$model\_config.yaml --pipeline train; \
 		done; \
 	done
 
+train-fsl-skin-cancer:
+	datasets="skin-cancer-splitted"; \
+	models="resnet vit dino dinov2 uni UNI2-h philkon philkon2 virchow2"; \
+	for dataset in $$datasets; do \
+		for model in $$models; do \
+			echo "Training on $$dataset with $$model"; \
+			python3 src/main.py --config configs/$$dataset/retr_fsl_train_test/$$model\_config.yaml --pipeline train; \
+		done; \
+	done
+
+
+
+make-test:
+	datasets="ovarian-cancer-splitted"; \
+	models="resnet_fsl uni_fsl uni_fsl2 virchow2_fsl philkon_fsl philkon_fsl2"; \
+	for dataset in $$datasets; do \
+		for model in $$models; do \
+			echo "Testing on $$dataset with $$model"; \
+			python3 src/main.py --config configs/$$dataset/fsl_test/$$model\_config.yaml --pipeline test; \
+		done; \
+	done
+
+	
 # =========================================
 # Few Shot Learning Training Targets AD-HOC
 # =========================================
@@ -100,51 +99,24 @@ test-uni-fsl-sc:
 # ============================
 # Retrieval Targets
 # ============================
-retrieval-vit:
-	python3 src/main.py --config configs/$(DATASET)/retrieval_test/vit_config.yaml --pipeline test
+retrieval-test-pretrained1:
+	datasets="glomerulo ovarian-cancer-splitted skin-cancer-splitted"; \
+	models="resnet vit dino dinov2 uni UNI2-h philkon philkon2 virchow2"; \
+	for dataset in $$datasets; do \
+		for model in $$models; do \
+			echo "Training on $$dataset with $$model"; \
+			python3 src/main.py --config configs/$$dataset/retr_test_backone/$$model\_config.yaml --pipeline test; \
+		done; \
+	done
 
-retrieval-resnet:
-	python3 src/main.py --config configs/$(DATASET)/retrieval_test/resnet50_config.yaml --pipeline test
-
-retrieval-dino:
-	python3 src/main.py --config configs/$(DATASET)/retrieval_test/dino_config.yaml --pipeline test
-
-retrieval-dinov2:
-	python3 src/main.py --config configs/$(DATASET)/retrieval_test/dinov2_config.yaml --pipeline test
-
-retrieval-clip:
-	python3 src/main.py --config configs/$(DATASET)/retrieval_test/clip_config.yaml --pipeline test
-
-retrieval-uni:
-	python3 src/main.py --config configs/$(DATASET)/retrieval_test/uni_config.yaml --pipeline test
-
-retrieval-virchow2:
-	python3 src/main.py --config configs/$(DATASET)/retrieval_test/virchow2_config.yaml --pipeline test
-
-retrieval-uni-fsl:
-	python3 src/main.py --config configs/$(DATASET)/retrieval_test/uni_fsl_config.yaml --pipeline test
-
-retrieval-resnet-fsl:
-	python3 src/main.py --config configs/$(DATASET)/retrieval_test/resnet_fsl_config.yaml --pipeline test
-
-retrival-all-models:
-# make retrieval-vit DATASET=$(DATASET)
-# make retrieval-resnet DATASET=$(DATASET)
-# make retrieval-dino DATASET=$(DATASET)
-# make retrieval-dinov2 DATASET=$(DATASET)
-# make retrieval-clip DATASET=$(DATASET)
-# make retrieval-uni DATASET=$(DATASET)
-# make retrieval-virchow2 DATASET=$(DATASET)
-	make retrieval-uni-fsl DATASET=$(DATASET)
-	make retrieval-resnet-fsl DATASET=$(DATASET)
-
-# Example usage:
-# make retrival-all DATASET=ovarian-cancer
-# make retrival-all DATASET=bracs-resized
-
-retrival-all-datasets-models:
-	for dataset in bracs-resized CRC-VAL-HE-7K-splitted glomerulo ovarian-cancer-splitted skin-cancer-splitted; do \
-		make retrival-all-models DATASET=$$dataset; \
+retrieval-test-pretrained2:
+	datasets="glomerulo ovarian-cancer-splitted skin-cancer-splitted"; \
+	models="resnet vit dino dinov2 uni UNI2-h philkon philkon2 virchow2"; \
+	for dataset in $$datasets; do \
+		for model in $$models; do \
+			echo "Training on $$dataset with $$model"; \
+			python3 src/main.py --config configs/$$dataset/retr_test_backone_norm/$$model\_config.yaml --pipeline test; \
+		done; \
 	done
 
 
@@ -153,10 +125,32 @@ retrival-all-datasets-models:
 # ============================
 download-datasets:
 	cd ./datasets && \
-	gdown https://drive.google.com/uc?id=1OckKt2r-jyQ_Si4HHRn5V7KmVxlICqRg && \
-	unzip final.zip && \
-	rm -rf final.zip
+	gdown https://drive.google.com/uc?id=14GaaCw7og5jqwsBggb52EgVQKBwOJQpV && \
+	unzip final_v2.zip && \
+	rm -rf final_v2.zip
 
+
+# ============================
+# Download Models
+# ============================
+download-models:
+	mkdir -p ./assets && \
+	cd ./assets && \
+	gdown https://drive.google.com/uc?id=1kBwDBUA85wo7IQS54WFcBxHnKd2cHbOg && \
+	gdown https://drive.google.com/uc?id=1FisQEXGLm5e0gWE2o0-jxWuef757GtDJ && \
+	gdown https://drive.google.com/uc?id=1NV4dKyaOVmMtr-P_YP_p58KTLZqX_GZJ && \
+	gdown https://drive.google.com/uc?id=1ip3sTjGoMWpGfcheNpaizhbLHQqUpDtM && \
+	gdown https://drive.google.com/uc?id=12jdPlh2gDTVZflMc8SEzPos1XRDTains && \
+	unzip Virchow2.zip && \
+	rm -rf Virchow2.zip \
+	unzip UNI2-h.zip && \
+	rm -rf UNI2-h.zip \
+	unzip uni.zip && \
+	rm -rf uni.zip \
+	unzip phikon-v2.zip && \
+	rm -rf phikon-v2.zip \
+	unzip phikon.zip && \
+	rm -rf phikon.zip 
 
 # ============================
 # Huggingface Model Login

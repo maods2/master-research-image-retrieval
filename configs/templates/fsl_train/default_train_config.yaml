@@ -95,19 +95,20 @@ testing:
   embeddings_path: ./artifacts/glomerulo/embeddings_uni_fsl             # Path to load embeddings
   save_embeddings: true  # Save embeddings to disk
   embeddings_save_path: ./artifacts/glomerulo/embeddings_uni_fsl             # Path to save embeddings
+  normalize_embeddings: false  # Normalize embeddings to unit norm (L2 normalization)
   list_of_metrics:
     # - type: accuracy
     # - type: f1_score
     # - type: precision
     # - type: recall
   - type: map@k
-    k_values: [1, 3, 5, 10]
-  - type: precision@k
-    k_values: [1, 3, 5, 10]
-  - type: recall@k
-    k_values: [1, 3, 5, 10]
-  - type: accuracy@k
-    k_values: [1, 3, 5, 10]
+    k_values: [1, 3, 6, 9, 12, 15]
+  # - type: precision@k
+  #   k_values: [1, 3, 5, 10]
+  # - type: recall@k
+  #   k_values: [1, 3, 5, 10]
+  # - type: accuracy@k
+  #   k_values: [1, 3, 5, 10]
 
 # Logging configuration
 logging:

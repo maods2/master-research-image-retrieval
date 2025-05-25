@@ -8,28 +8,18 @@ import torch.nn as nn
 import timm
 import os
 
-local_dir = "./assets/ckpts/vit_Virchow2/"
+from utils.checkpoint_utils import load_full_model
+
 class Virchow2(nn.Module):
-    def __init__(self, model_name='hf-hub:paige-ai/Virchow2', pretrained=True):
+    def __init__(self, model_name='Virchow2', pretrained=True):
         """ """
         super(Virchow2, self).__init__()
-
-        # Load pretrained DINO model from timm
-        self.backbone = model = timm.create_model(
-            model_name,
-            img_size=224,
-            patch_size=16,
-            init_values=1e-5,
-            num_classes=0,
-            dynamic_img_size=True,
+       
+        self.backbone = load_full_model(
+            model_name=model_name,
+            save_dir=model_name,
+            map_location='cpu'
         )
-        # model.load_state_dict(
-        #     torch.load(
-        #         os.path.join(local_dir, 'pytorch_model.bin'),
-        #         map_location='cpu',
-        #     ),
-        #     strict=True,
-        # )
 
     def forward(self, x, only_cls_token=True):
 
