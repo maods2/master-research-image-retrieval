@@ -263,7 +263,7 @@ def plot_metric_comparison(metric_name, experiments):
                 marker=style['marker'],
                 label=label)
 
-    plt.xlabel("k")
+    plt.xlabel("k", fontsize=12)
     plt.ylabel(metric_name)
     plt.ylim(0, 1)  # Fix y-axis from 0 to 1
     plt.yticks(np.arange(0, 1.05, 0.1))  # Set y-axis ticks from 0 to 1 in steps of 0.5
