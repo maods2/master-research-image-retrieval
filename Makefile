@@ -27,50 +27,38 @@ train-fsl-uni:
 train-fsl-resnet:
 	python3 src/main.py --config configs/$(DATASET)/fsl_train/resnet_fsl_config.yaml --pipeline train
 
-# CRC-VAL-HE-7K-splitted - clip_fsl virchow2_fsl vit_fsl
-# not used - uni_fsl CRC-VAL-HE-7K-splitted 
-train-all-datasets-models-part1:
-	datasets="bracs-resized"; \
-	models="resnet_fsl dino_fsl"; \
-	for dataset in $$datasets; do \
-		for model in $$models; do \
-			echo "Training on $$dataset with $$model"; \
-			python3 src/main.py --config configs/$$dataset/fsl_train/$$model\_config.yaml --pipeline train; \
-		done; \
-	done
 
-# ovarian-cancer-splitted - ALREADY TRAINED
-# skin-cancer-splitted - resnet_fsl dino_fsl dinov2_fsl
-# not used - uni_fsl
-train-all-datasets-models-part2:
-	datasets="skin-cancer-splitted CRC-VAL-HE-7K-splitted bracs-resized"; \
-	models="virchow2_fsl"; \
-	for dataset in $$datasets; do \
-		for model in $$models; do \
-			echo "Training on $$dataset with $$model"; \
-			python3 src/main.py --config configs/$$dataset/fsl_train/$$model\_config.yaml --pipeline train; \
-		done; \
-	done
-
-train-all-datasets-models-part3:
+train-fsl-glomerulo:
 	datasets="glomerulo"; \
-	models="virchow2_fsl resnet_fsl clip_fsl vit_fsl dino_fsl dinov2_fsl uni_fsl"; \
+	models="resnet vit dino dinov2 uni UNI2-h philkon philkon2 virchow2"; \
 	for dataset in $$datasets; do \
 		for model in $$models; do \
 			echo "Training on $$dataset with $$model"; \
-			python3 src/main.py --config configs/$$dataset/fsl_train/$$model\_config.yaml --pipeline train; \
+			python3 src/main.py --config configs/$$dataset/retr_fsl_train_test/$$model\_config.yaml --pipeline train; \
 		done; \
 	done
 
-train-all-datasets-models:
-	datasets="bracs-resized CRC-VAL-HE-7K-splitted ovarian-cancer-splitted skin-cancer-splitted"; \
-	models="resnet_fsl dino_fsl dinov2_fsl uni_fsl clip_fsl virchow2_fsl vit_fsl"; \
+train-fsl-ovarian-cancer:
+	datasets="ovarian-cancer-splitted"; \
+	models="resnet vit dino dinov2 uni UNI2-h philkon philkon2 virchow2"; \
 	for dataset in $$datasets; do \
 		for model in $$models; do \
 			echo "Training on $$dataset with $$model"; \
-			python3 src/main.py --config configs/$$dataset/fsl_train/$$model\_config.yaml --pipeline train; \
+			python3 src/main.py --config configs/$$dataset/retr_fsl_train_test/$$model\_config.yaml --pipeline train; \
 		done; \
 	done
+
+train-fsl-skin-cancer:
+	datasets="skin-cancer-splitted"; \
+	models="resnet vit dino dinov2 uni UNI2-h philkon philkon2 virchow2"; \
+	for dataset in $$datasets; do \
+		for model in $$models; do \
+			echo "Training on $$dataset with $$model"; \
+			python3 src/main.py --config configs/$$dataset/retr_fsl_train_test/$$model\_config.yaml --pipeline train; \
+		done; \
+	done
+
+
 
 make-test:
 	datasets="ovarian-cancer-splitted"; \
