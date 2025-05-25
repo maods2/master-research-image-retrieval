@@ -153,9 +153,9 @@ retrival-all-datasets-models:
 # ============================
 download-datasets:
 	cd ./datasets && \
-	gdown https://drive.google.com/uc?id=1OckKt2r-jyQ_Si4HHRn5V7KmVxlICqRg && \
-	unzip final.zip && \
-	rm -rf final.zip
+	gdown https://drive.google.com/uc?id=14GaaCw7og5jqwsBggb52EgVQKBwOJQpV && \
+	unzip final_v2.zip && \
+	rm -rf final_v2.zip
 
 
 # ============================
