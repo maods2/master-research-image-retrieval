@@ -111,51 +111,24 @@ test-uni-fsl-sc:
 # ============================
 # Retrieval Targets
 # ============================
-retrieval-vit:
-	python3 src/main.py --config configs/$(DATASET)/retrieval_test/vit_config.yaml --pipeline test
+retrieval-test-pretrained1:
+	datasets="glomerulo ovarian-cancer-splitted skin-cancer-splitted"; \
+	models="resnet vit dino dinov2 uni UNI2-h philkon philkon2 virchow2"; \
+	for dataset in $$datasets; do \
+		for model in $$models; do \
+			echo "Training on $$dataset with $$model"; \
+			python3 src/main.py --config configs/$$dataset/retr_test_backone/$$model\_config.yaml --pipeline test; \
+		done; \
+	done
 
-retrieval-resnet:
-	python3 src/main.py --config configs/$(DATASET)/retrieval_test/resnet50_config.yaml --pipeline test
-
-retrieval-dino:
-	python3 src/main.py --config configs/$(DATASET)/retrieval_test/dino_config.yaml --pipeline test
-
-retrieval-dinov2:
-	python3 src/main.py --config configs/$(DATASET)/retrieval_test/dinov2_config.yaml --pipeline test
-
-retrieval-clip:
-	python3 src/main.py --config configs/$(DATASET)/retrieval_test/clip_config.yaml --pipeline test
-
-retrieval-uni:
-	python3 src/main.py --config configs/$(DATASET)/retrieval_test/uni_config.yaml --pipeline test
-
-retrieval-virchow2:
-	python3 src/main.py --config configs/$(DATASET)/retrieval_test/virchow2_config.yaml --pipeline test
-
-retrieval-uni-fsl:
-	python3 src/main.py --config configs/$(DATASET)/retrieval_test/uni_fsl_config.yaml --pipeline test
-
-retrieval-resnet-fsl:
-	python3 src/main.py --config configs/$(DATASET)/retrieval_test/resnet_fsl_config.yaml --pipeline test
-
-retrival-all-models:
-# make retrieval-vit DATASET=$(DATASET)
-# make retrieval-resnet DATASET=$(DATASET)
-# make retrieval-dino DATASET=$(DATASET)
-# make retrieval-dinov2 DATASET=$(DATASET)
-# make retrieval-clip DATASET=$(DATASET)
-# make retrieval-uni DATASET=$(DATASET)
-# make retrieval-virchow2 DATASET=$(DATASET)
-	make retrieval-uni-fsl DATASET=$(DATASET)
-	make retrieval-resnet-fsl DATASET=$(DATASET)
-
-# Example usage:
-# make retrival-all DATASET=ovarian-cancer
-# make retrival-all DATASET=bracs-resized
-
-retrival-all-datasets-models:
-	for dataset in bracs-resized CRC-VAL-HE-7K-splitted glomerulo ovarian-cancer-splitted skin-cancer-splitted; do \
-		make retrival-all-models DATASET=$$dataset; \
+retrieval-test-pretrained2:
+	datasets="glomerulo ovarian-cancer-splitted skin-cancer-splitted"; \
+	models="resnet vit dino dinov2 uni UNI2-h philkon philkon2 virchow2"; \
+	for dataset in $$datasets; do \
+		for model in $$models; do \
+			echo "Training on $$dataset with $$model"; \
+			python3 src/main.py --config configs/$$dataset/retr_test_backone_norm/$$model\_config.yaml --pipeline test; \
+		done; \
 	done
 
 
@@ -168,6 +141,28 @@ download-datasets:
 	unzip final_v2.zip && \
 	rm -rf final_v2.zip
 
+
+# ============================
+# Download Models
+# ============================
+download-models:
+	mkdir -p ./assets && \
+	cd ./assets && \
+	gdown https://drive.google.com/uc?id=1kBwDBUA85wo7IQS54WFcBxHnKd2cHbOg && \
+	gdown https://drive.google.com/uc?id=1FisQEXGLm5e0gWE2o0-jxWuef757GtDJ && \
+	gdown https://drive.google.com/uc?id=1NV4dKyaOVmMtr-P_YP_p58KTLZqX_GZJ && \
+	gdown https://drive.google.com/uc?id=1ip3sTjGoMWpGfcheNpaizhbLHQqUpDtM && \
+	gdown https://drive.google.com/uc?id=12jdPlh2gDTVZflMc8SEzPos1XRDTains && \
+	unzip Virchow2.zip && \
+	rm -rf Virchow2.zip \
+	unzip UNI2-h.zip && \
+	rm -rf UNI2-h.zip \
+	unzip uni.zip && \
+	rm -rf uni.zip \
+	unzip phikon-v2.zip && \
+	rm -rf phikon-v2.zip \
+	unzip phikon.zip && \
+	rm -rf phikon.zip 
 
 # ============================
 # Huggingface Model Login
