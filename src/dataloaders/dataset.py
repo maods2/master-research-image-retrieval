@@ -64,7 +64,8 @@ class StandardImageDataset(Dataset):
 
         for class_name in classes:
             class_dir = self.root_dir / class_name
-            image_extensions = ['*.jpg', '*.jpeg', '*.png', '*.tif', '*.tiff']
+            image_extensions = ['*.jpg', '*.jpeg', '*.png', '*.tif', '*.tiff', 
+                               '*.JPG', '*.JPEG', '*.PNG', '*.TIF', '*.TIFF', '*.webp']
 
             # Collect all matching image files for each extension
             images = []
