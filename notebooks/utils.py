@@ -218,7 +218,10 @@ def plot_metric_comparison(metric_name, experiments):
             "resnet": "ResNet",
             "clip": "CLIP",
             "uni": "UNI",
+            "UNI2-h": "UNIv2",
             "virchow2": "Virchow2",
+            "phikon": "Phikon",
+            "phikon2": "Phikon2",
         }
         
         m_map = round(sum(exp['values']) / len(exp['values']) *100, 2)
@@ -241,7 +244,11 @@ def plot_metric_comparison(metric_name, experiments):
         'ResNet': {'color': '#9467bd', 'marker': 'D'},   # Tableau purple
         'CLIP': {'color': '#d62728', 'marker': 'v'},     # Tableau red
         'UNI': {'color': '#8c564b', 'marker': '*'},      # Tableau brown
-        'Virchow2': {'color': '#e377c2', 'marker': 'P'}  # Tableau pink
+        'Virchow2': {'color': '#e377c2', 'marker': 'P'},  # Tableau pink
+        'Phikon': {'color': '#7f7f7f', 'marker': 'x'},   # Tableau gray
+        'Phikon2': {'color': '#bcbd22', 'marker': 'h'},  # Tableau olive
+        'UNIv2': {'color': '#17becf', 'marker': 'X'},    # Tableau cyan
+        
     }
     # model_styles = {
     #     'DINOv2': {'color': 'blue', 'marker': 'o'},
