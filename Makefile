@@ -30,7 +30,7 @@ train-fsl-resnet:
 
 train-fsl-glomerulo:
 	datasets="glomerulo"; \
-	models="resnet vit dino dinov2 uni UNI2-h philkon philkon2 virchow2"; \
+	models="resnet_fsl vit_fsl dino_fsl dinov2_fsl uni_fsl UNI2-h_fsl philkon_fsl philkon2_fsl virchow2_fsl"; \
 	for dataset in $$datasets; do \
 		for model in $$models; do \
 			echo "Training on $$dataset with $$model"; \
@@ -40,7 +40,7 @@ train-fsl-glomerulo:
 
 train-fsl-ovarian-cancer:
 	datasets="ovarian-cancer-splitted"; \
-	models="resnet vit dino dinov2 uni UNI2-h philkon philkon2 virchow2"; \
+	models="resnet_fsl vit_fsl dino_fsl dinov2_fsl uni_fsl UNI2-h_fsl philkon_fsl philkon2_fsl virchow2_fsl"; \
 	for dataset in $$datasets; do \
 		for model in $$models; do \
 			echo "Training on $$dataset with $$model"; \
@@ -50,7 +50,7 @@ train-fsl-ovarian-cancer:
 
 train-fsl-skin-cancer:
 	datasets="skin-cancer-splitted"; \
-	models="resnet vit dino dinov2 uni UNI2-h philkon philkon2 virchow2"; \
+	models="resnet_fsl vit_fsl dino_fsl dinov2_fsl uni_fsl UNI2-h_fsl philkon_fsl philkon2_fsl virchow2_fsl"; \
 	for dataset in $$datasets; do \
 		for model in $$models; do \
 			echo "Training on $$dataset with $$model"; \
