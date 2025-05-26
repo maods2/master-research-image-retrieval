@@ -189,6 +189,7 @@ def load_or_create_embeddings(
         device = config.get(
             'device', 'cuda' if torch.cuda.is_available() else 'cpu'
         )
+    logger.info(f'Using device: {device}')
 
     if config['testing'].get('load_embeddings', False):
         logger.info(
