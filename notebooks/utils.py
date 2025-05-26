@@ -163,7 +163,7 @@ def plot_metric_comparison(metric_name, experiments):
     import matplotlib.pyplot as plt
     import re
     # Create a new figure for comparison
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(10, 7))
     
     # Build a regex pattern to extract k from the keys (e.g., "mapAt1", "mapAt3", etc.)
     pattern = re.compile(fr"{metric_name}At(\d+)", re.IGNORECASE)
@@ -218,7 +218,7 @@ def plot_metric_comparison(metric_name, experiments):
             "resnet": "ResNet",
             "clip": "CLIP",
             "uni": "UNI",
-            "UNI2-h": "UNIv2",
+            "UNI2-h": "UNI2",
             "virchow2": "Virchow2",
             "phikon": "Phikon",
             "phikon2": "Phikon2",
@@ -247,34 +247,57 @@ def plot_metric_comparison(metric_name, experiments):
         'Virchow2': {'color': '#e377c2', 'marker': 'P'},  # Tableau pink
         'Phikon': {'color': '#7f7f7f', 'marker': 'x'},   # Tableau gray
         'Phikon2': {'color': '#bcbd22', 'marker': 'h'},  # Tableau olive
-        'UNIv2': {'color': '#17becf', 'marker': 'X'},    # Tableau cyan
+        'UNI2': {'color': '#17becf', 'marker': 'X'},    # Tableau cyan
         
     }
-    # model_styles = {
-    #     'DINOv2': {'color': 'blue', 'marker': 'o'},
-    #     'DINO': {'color': 'green', 'marker': 's'},
-    #     'ViT': {'color': 'red', 'marker': '^'},
-    #     'ResNet': {'color': 'purple', 'marker': 'D'},
-    #     'CLIP': {'color': 'orange', 'marker': 'v'},
-    #     'UNI': {'color': 'brown', 'marker': '*'},
-    #     'Virchow2': {'color': 'pink', 'marker': 'P'},
-    # }
 
     # Plot the sorted experiments using consistent styles
+    handles = []
+    labels = []
+
+    # Adiciona separadores
+    foundation_models = []
+    pretrained_backbones = []
+
     for exp in exp_data:
         label = get_label(exp)
         model_type = next((k for k in model_styles.keys() if k in label), 'other')
         style = model_styles.get(model_type, {'color': 'gray', 'marker': 'x'})
-        plt.plot(exp['ks'], exp['values'], 
-                color=style['color'], 
-                marker=style['marker'],
-                label=label)
+        
+        line, = plt.plot(
+            exp['ks'], exp['values'], 
+            color=style['color'], 
+            marker=style['marker'],
+            label=label
+        )
+
+        # Decide a qual grupo pertence
+        if model_type in ['UNI', 'UNIv2', 'Phikon', 'Phikon2', 'Virchow2']:
+            foundation_models.append((line, label))
+        else:
+            pretrained_backbones.append((line, label))
+
+    # Junta as legendas com pseudo-subgrupos
+    handles += [plt.Line2D([0], [0], color='none', label='— Foundation Models —')]
+    labels += ['• Foundation Models  ']
+    for h, l in foundation_models:
+        handles.append(h)
+        labels.append(l)
+
+    handles += [plt.Line2D([0], [0], color='none', label='— Pretrained Backbones —')]
+    labels += ['• Pretrained Backbones ']
+    for h, l in pretrained_backbones:
+        handles.append(h)
+        labels.append(l)
+
+    # Adiciona a legenda formatada
 
     plt.xlabel("k", fontsize=12)
     plt.ylabel(metric_name)
     plt.ylim(0, 1)  # Fix y-axis from 0 to 1
-    plt.yticks(np.arange(0, 1.05, 0.1))  # Set y-axis ticks from 0 to 1 in steps of 0.5
-    plt.legend(title="Models", loc='lower right')  # Added loc='lower right'
+    plt.xlim(0, 16)  # Fix y-axis from 0 to 1
+    plt.yticks(np.arange(0, 1.05, 0.1))  # Set y-axis ticks from 0 to 1 in steps of 0.5 print("•")
+    plt.legend(handles=handles, labels=labels, loc='lower right')
     plt.grid(True)
     plt.show()
     
