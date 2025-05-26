@@ -26,4 +26,5 @@ class Phikon(nn.Module):
         )
 
     def forward(self, x):
-        return self.backbone(x)  
+        x = self.backbone(x)
+        return x.last_hidden_state[:, 0, :] 

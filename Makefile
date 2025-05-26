@@ -110,10 +110,10 @@ retrieval-test-pretrained1:
 		done; \
 	done
 
-#resnet vit dino 
+#resnet vit dino dinov2 uni 
 retrieval-test-pretrained2:
 	datasets="glomerulo ovarian-cancer-splitted skin-cancer-splitted"; \
-	models="dinov2 uni UNI2-h phikon phikon2 virchow2"; \
+	models="UNI2-h phikon phikon2 virchow2"; \
 	for dataset in $$datasets; do \
 		for model in $$models; do \
 			echo "Retrieve on $$dataset with $$model"; \
