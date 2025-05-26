@@ -44,7 +44,7 @@ def main(template_type: str = "fsl_train") -> None:
     if template_type == "retrieval_test":
         template_path = "./configs/templates/retrieval_test/default_model_config.yaml"
         models = retrieval_backbone_models
-        experiment_name = "retr_test_backone_norm"
+        experiment_name = "retr_test_backone"
         config_type_folder=f"/{experiment_name}/"
         
     elif template_type == "fsl_train":
@@ -52,7 +52,7 @@ def main(template_type: str = "fsl_train") -> None:
         models = fsl_models
         experiment_name = "retr_fsl_train_test"
         # experiment_name = "retr_fsl_train_test_norm"
-        config_type_folder="/retr_fsl_train_test/"
+        config_type_folder=f"/{experiment_name}/"
     else:
         raise ValueError("Invalid template type.")
     

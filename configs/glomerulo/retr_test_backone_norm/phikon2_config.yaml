@@ -1,9 +1,10 @@
 # Paths and directories for training and testing data
 data:
   dataset_type: StandardImageDataset    # Specify the dataset type (e.g., terumo, etc.)
-  train_dir: datasets/final/ovarian-cancer-splitted/train
-  test_dir: datasets/final/ovarian-cancer-splitted/test
-  class_mapping: {Clear_Cell: 0, Endometri: 1, Mucinous: 2, Non_Cancerous: 3, Serous: 4}
+  train_dir: datasets/final/glomerulo/train
+  test_dir: datasets/final/glomerulo/test
+  class_mapping: {Crescent: 0, Hypercellularity: 1, Membranous: 2, Normal: 3, Podocytopathy: 4,
+    Sclerosis: 5}
   batch_size: 32
   num_workers: 3  # Number of workers to load the data
   suffle_test: false
@@ -19,22 +20,22 @@ transform:
 
 # Model configuration
 model:
-  name: philkon2        # Example: You can set it to resnet18, resnet34, etc.
-  experiment_name: philkon2_ovarian-cancer-splitted # Name of the experiment
+  name: phikon2         # Example: You can set it to resnet18, resnet34, etc.
+  experiment_name: phikon2_glomerulo         # Name of the experiment
   pretrained: true  # Use pre-trained weights
-  num_classes: 5  # Number of classes in the dataset
+  num_classes: 6  # Number of classes in the dataset
   load_checkpoint: false  # Load a pre-trained model checkpoint
   checkpoint_path: ''  # Path to the model checkpoint
-  model_name: philkon2                   # Specify the ViT model name
+  model_name: phikon2                    # Specify the ViT model name
 
 
 testing:
   pipeline: default    # The pipeline to run (e.g., default, retrieval, etc.)
   load_embeddings: false  # Load embeddings from disk
-  embeddings_path: ./artifacts/ovarian-cancer-splitted/embeddings_philkon2 # Path to load embeddings
+  embeddings_path: ./artifacts/glomerulo/embeddings_phikon2         # Path to load embeddings
   save_embeddings: true  # Save embeddings to disk
-  embeddings_save_path: ./artifacts/ovarian-cancer-splitted/embeddings_philkon2 # Path to save embeddings
-  normalize_embeddings: false  # Normalize embeddings to unit norm (L2 normalization)
+  embeddings_save_path: ./artifacts/glomerulo/embeddings_phikon2         # Path to save embeddings
+  normalize_embeddings: true   # Normalize embeddings to unit norm (L2 normalization)
   list_of_metrics:
     # - type: accuracy
     # - type: f1_score
@@ -58,7 +59,7 @@ metric_logging:
   tool: txt    # Tool to log metrics (txt, csv, mlflow, etc.)
 # Output configuration
 output:
-  model_dir: ./artifacts/retr_test_backone_ovarian-cancer-splitted # Directory to save model artifacts
-  results_dir: ./local_experiments/retr_test_backone_ovarian-cancer-splitted # Directory to save results
+  model_dir: ./artifacts/retr_test_backone_norm_glomerulo # Directory to save model artifacts
+  results_dir: ./local_experiments/retr_test_backone_norm_glomerulo # Directory to save results
 
 

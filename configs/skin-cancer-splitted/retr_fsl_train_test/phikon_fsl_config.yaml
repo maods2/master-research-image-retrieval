@@ -11,13 +11,13 @@ data:
 
 # Model configuration
 model:
-  name: philkon_fsl       # Example: You can set it to resnet18, resnet34, etc.
-  experiment_name: philkon_fsl_skin-cancer-splitted # Name of the experiment
+  name: phikon_fsl        # Example: You can set it to resnet18, resnet34, etc.
+  experiment_name: phikon_fsl_skin-cancer-splitted # Name of the experiment
   pretrained: true  # Use pre-trained weights
   num_classes: 7  # Number of classes in the dataset
   load_checkpoint: false  # Load a pre-trained model checkpoint
   checkpoint_path: ''  # Path to the model checkpoint
-  model_name: philkon                    # Specify the ViT model name
+  model_name: phikon                     # Specify the ViT model name
   n_way: 7
   q_shot: 5
   k_queries: 128 # For few-shot learning, this will be the batch size
@@ -91,9 +91,9 @@ testing:
   enabled: false # Enable testing
   pipeline: default    # The pipeline to run (e.g., default, retrieval, etc.)
   load_embeddings: false  # Load embeddings from disk
-  embeddings_path: ./artifacts/skin-cancer-splitted/embeddings_philkon_fsl # Path to load embeddings
+  embeddings_path: ./artifacts/skin-cancer-splitted/embeddings_phikon_fsl # Path to load embeddings
   save_embeddings: true  # Save embeddings to disk
-  embeddings_save_path: ./artifacts/skin-cancer-splitted/embeddings_philkon_fsl # Path to save embeddings
+  embeddings_save_path: ./artifacts/skin-cancer-splitted/embeddings_phikon_fsl # Path to save embeddings
   normalize_embeddings: false  # Normalize embeddings to unit norm (L2 normalization)
   list_of_metrics:
     # - type: accuracy

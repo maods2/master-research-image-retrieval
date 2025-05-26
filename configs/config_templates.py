@@ -22,7 +22,7 @@ def update_config_fields(config: dict, dataset_name: str, model_config: Dict[str
     # Update fields in the 'testing' section
     config['testing']['embeddings_path'] = f'./artifacts/{dataset_name}/embeddings_{model_config["model_name"]}'
     config['testing']['embeddings_save_path'] = f'./artifacts/{dataset_name}/embeddings_{model_config["model_name"]}'
-    config['testing']['normalize_embeddings'] = True
+    # config['testing']['normalize_embeddings'] = True
     
     # Update fields in the 'output' section
     config['output']['model_dir'] = f'./artifacts/{experiment_name}_{dataset_name}'

@@ -30,7 +30,7 @@ train-fsl-resnet:
 
 train-fsl-glomerulo:
 	datasets="glomerulo"; \
-	models="resnet_fsl vit_fsl dino_fsl dinov2_fsl uni_fsl UNI2-h_fsl philkon_fsl philkon2_fsl virchow2_fsl"; \
+	models="resnet_fsl vit_fsl dino_fsl dinov2_fsl uni_fsl UNI2-h_fsl philkon_fsl phikon_fsl virchow2_fsl"; \
 	for dataset in $$datasets; do \
 		for model in $$models; do \
 			echo "Training on $$dataset with $$model"; \
@@ -40,7 +40,7 @@ train-fsl-glomerulo:
 
 train-fsl-ovarian-cancer:
 	datasets="ovarian-cancer-splitted"; \
-	models="resnet_fsl vit_fsl dino_fsl dinov2_fsl uni_fsl UNI2-h_fsl philkon_fsl philkon2_fsl virchow2_fsl"; \
+	models="resnet_fsl vit_fsl dino_fsl dinov2_fsl uni_fsl UNI2-h_fsl philkon_fsl phikon_fsl virchow2_fsl"; \
 	for dataset in $$datasets; do \
 		for model in $$models; do \
 			echo "Training on $$dataset with $$model"; \
@@ -50,7 +50,7 @@ train-fsl-ovarian-cancer:
 
 train-fsl-skin-cancer:
 	datasets="skin-cancer-splitted"; \
-	models="resnet_fsl vit_fsl dino_fsl dinov2_fsl uni_fsl UNI2-h_fsl philkon_fsl philkon2_fsl virchow2_fsl"; \
+	models="resnet_fsl vit_fsl dino_fsl dinov2_fsl uni_fsl UNI2-h_fsl philkon_fsl phikon_fsl virchow2_fsl"; \
 	for dataset in $$datasets; do \
 		for model in $$models; do \
 			echo "Training on $$dataset with $$model"; \
@@ -99,22 +99,24 @@ test-uni-fsl-sc:
 # ============================
 # Retrieval Targets
 # ============================
+# resnet vit dino dinov2 uni UNI2-h  
 retrieval-test-pretrained1:
 	datasets="glomerulo ovarian-cancer-splitted skin-cancer-splitted"; \
-	models="resnet vit dino dinov2 uni UNI2-h philkon philkon2 virchow2"; \
+	models="phikon phikon2 virchow2"; \
 	for dataset in $$datasets; do \
 		for model in $$models; do \
-			echo "Training on $$dataset with $$model"; \
+			echo "Retrieve on $$dataset with $$model"; \
 			python3 src/main.py --config configs/$$dataset/retr_test_backone/$$model\_config.yaml --pipeline test; \
 		done; \
 	done
 
+#resnet vit dino 
 retrieval-test-pretrained2:
 	datasets="glomerulo ovarian-cancer-splitted skin-cancer-splitted"; \
-	models="resnet vit dino dinov2 uni UNI2-h philkon philkon2 virchow2"; \
+	models="dinov2 uni UNI2-h phikon phikon2 virchow2"; \
 	for dataset in $$datasets; do \
 		for model in $$models; do \
-			echo "Training on $$dataset with $$model"; \
+			echo "Retrieve on $$dataset with $$model"; \
 			python3 src/main.py --config configs/$$dataset/retr_test_backone_norm/$$model\_config.yaml --pipeline test; \
 		done; \
 	done
