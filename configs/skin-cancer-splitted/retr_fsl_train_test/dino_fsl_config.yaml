@@ -88,7 +88,7 @@ transform:
   to_tensor: true
 
 testing:
-  enabled: false # Enable testing
+  enabled: true  # Enable testing
   pipeline: default    # The pipeline to run (e.g., default, retrieval, etc.)
   load_embeddings: false  # Load embeddings from disk
   embeddings_path: ./artifacts/skin-cancer-splitted/embeddings_dino_fsl # Path to load embeddings

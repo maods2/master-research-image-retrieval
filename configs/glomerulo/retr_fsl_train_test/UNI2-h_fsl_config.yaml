@@ -89,7 +89,7 @@ transform:
   to_tensor: true
 
 testing:
-  enabled: false # Enable testing
+  enabled: true  # Enable testing
   pipeline: default    # The pipeline to run (e.g., default, retrieval, etc.)
   load_embeddings: false  # Load embeddings from disk
   embeddings_path: ./artifacts/glomerulo/embeddings_UNI2-h_fsl          # Path to load embeddings

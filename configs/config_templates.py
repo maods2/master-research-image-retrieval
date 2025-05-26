@@ -49,7 +49,7 @@ def update_config_fields_fsl_train(config: dict, dataset_name: str, model_config
     config['testing']['embeddings_path'] = f'./artifacts/{dataset_name}/embeddings_{model_config["model_name"]}'
     config['testing']['embeddings_save_path'] = f'./artifacts/{dataset_name}/embeddings_{model_config["model_name"]}'
     config['testing']['normalize_embeddings'] = False
-    config['testing']['enabled'] = False
+    config['testing']['enabled'] = True
     
     # Update fields in the 'output' section
     config['output']['model_dir'] = f'./artifacts/{experiment_name}_{dataset_name}'
