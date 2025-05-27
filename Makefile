@@ -99,10 +99,11 @@ test-uni-fsl-sc:
 # ============================
 # Retrieval Targets
 # ============================
-# resnet vit dino dinov2 uni UNI2-h  
+# glomerulo   
+# phikon phikon2 virchow2
 retrieval-test-pretrained1:
-	datasets="glomerulo ovarian-cancer-splitted skin-cancer-splitted"; \
-	models="phikon phikon2 virchow2"; \
+	datasets="ovarian-cancer-splitted skin-cancer-splitted"; \
+	models="resnet vit dino dinov2 uni UNI2-h"; \
 	for dataset in $$datasets; do \
 		for model in $$models; do \
 			echo "Retrieve on $$dataset with $$model"; \
@@ -110,10 +111,11 @@ retrieval-test-pretrained1:
 		done; \
 	done
 
-#resnet vit dino dinov2 uni 
+# glomerulo 
+# UNI2-h phikon phikon2 virchow2
 retrieval-test-pretrained2:
-	datasets="glomerulo ovarian-cancer-splitted skin-cancer-splitted"; \
-	models="UNI2-h phikon phikon2 virchow2"; \
+	datasets="ovarian-cancer-splitted skin-cancer-splitted"; \
+	models="resnet vit dino dinov2 uni"; \
 	for dataset in $$datasets; do \
 		for model in $$models; do \
 			echo "Retrieve on $$dataset with $$model"; \
