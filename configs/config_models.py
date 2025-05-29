@@ -52,8 +52,8 @@ retrieval_backbone_models = [
         "load_checkpoint": False,
     },
     {
-        "model_name": "phikon2", 
-        "model_pretreined": "phikon2",
+        "model_name": "phikon-v2", 
+        "model_pretreined": "phikon-v2",
         "checkpoint_path": "",
         "load_checkpoint": False,
     },
@@ -73,6 +73,6 @@ fsl_models = [
     {"model_name": "uni_fsl", "model_pretreined": "uni"},
     {"model_name": "UNI2-h_fsl", "model_pretreined": "UNI2-h"},
     {"model_name": "phikon_fsl", "model_pretreined": "phikon"},
-    {"model_name": "phikon2_fsl", "model_pretreined": "phikon2"},
+    {"model_name": "phikon2_fsl", "model_pretreined": "phikon-v2"},
     {"model_name": "virchow2_fsl", "model_pretreined": "Virchow2"},
 ]

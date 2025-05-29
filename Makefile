@@ -102,8 +102,8 @@ test-uni-fsl-sc:
 # glomerulo   
 # phikon phikon2 virchow2
 retrieval-test-pretrained1:
-	datasets="ovarian-cancer-splitted skin-cancer-splitted"; \
-	models="resnet vit dino dinov2 uni UNI2-h"; \
+	datasets="ovarian-cancer-splitted"; \
+	models="phikon-v2"; \
 	for dataset in $$datasets; do \
 		for model in $$models; do \
 			echo "Retrieve on $$dataset with $$model"; \
@@ -115,7 +115,7 @@ retrieval-test-pretrained1:
 # UNI2-h phikon phikon2 virchow2
 retrieval-test-pretrained2:
 	datasets="ovarian-cancer-splitted skin-cancer-splitted"; \
-	models="resnet vit dino dinov2 uni"; \
+	models="resnet vit dino dinov2 uni UNI2-h phikon phikon-v2 virchow2"; \
 	for dataset in $$datasets; do \
 		for model in $$models; do \
 			echo "Retrieve on $$dataset with $$model"; \
