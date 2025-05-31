@@ -118,7 +118,7 @@ def get_model(model_config):
             embedding_dim=model_config['embedding_dim']
             )
 
-    elif model_name == 'phikon':   # Pathology Foundation Model
+    elif model_name == 'phikon_fsl':   # Pathology Foundation Model
         backbone = Phikon(model_name=model_config['model_name'])
         model = WrappedFsl(
             backbone,
@@ -126,7 +126,7 @@ def get_model(model_config):
             embedding_dim=model_config['embedding_dim']
             )
 
-    elif model_name == 'phikon-v2':   # Pathology Foundation Model
+    elif model_name == 'phikon-v2_fsl':   # Pathology Foundation Model
         backbone = Phikon(model_name=model_config['model_name'])
         model = WrappedFsl(
             backbone,
