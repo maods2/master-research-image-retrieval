@@ -76,3 +76,60 @@ fsl_models = [
     {"model_name": "phikon2_fsl", "model_pretreined": "phikon-v2"},
     {"model_name": "virchow2_fsl", "model_pretreined": "Virchow2"},
 ]
+
+fsl_test_models = [
+    {
+        "model_name": "resnet_fsl", 
+        "model_pretreined": "resnet50",
+        "checkpoint_path": "./artifacts/retr_fsl_train_test_glomerulo/resnet_fsl_glomerulo_resnet_fsl_2025-05-26_02-49-38_checkpoint.pth",
+        "load_checkpoint": True,
+    },
+    {
+        "model_name": "vit_fsl", 
+        "model_pretreined": "vit_base_patch16_224",
+        "checkpoint_path": "./artifacts/retr_fsl_train_test_glomerulo/vit_fsl_glomerulo_vit_fsl_2025-05-26_05-02-00_checkpoint.pth",
+        "load_checkpoint": True,
+    },
+    {
+        "model_name": "dino_fsl", 
+        "model_pretreined": "vit_small_patch16_224_dino",
+        "checkpoint_path": "./artifacts/retr_fsl_train_test_glomerulo/dino_fsl_glomerulo_dino_fsl_2025-05-26_11-52-34_checkpoint.pth",
+        "load_checkpoint": True,
+    },
+    {
+        "model_name": "dinov2_fsl", 
+        "model_pretreined": "dinov2_vitl14",
+        "checkpoint_path": "./artifacts/retr_fsl_train_test_glomerulo/dinov2_fsl_glomerulo_dinov2_fsl_2025-05-26_14-30-20_checkpoint.pth",
+        "load_checkpoint": True,
+    },
+    {
+        "model_name": "uni_fsl", 
+        "model_pretreined": "uni",
+        "checkpoint_path": "./artifacts/retr_fsl_train_test_glomerulo/uni_fsl_glomerulo_uni_fsl_2025-05-27_14-28-01_checkpoint.pth",
+        "load_checkpoint": True,
+    },
+    {
+        "model_name": "UNI2-h_fsl", 
+        "model_pretreined": "UNI2-h",
+        "checkpoint_path": "./artifacts/retr_fsl_train_test_glomerulo/UNI2-h_fsl_glomerulo_UNI2-h_fsl_2025-05-28_09-46-09_checkpoint.pth",
+        "load_checkpoint": True,
+    },
+    # {
+    #     "model_name": "phikon_fsl", 
+    #     "model_pretreined": "phikon",
+    #     "checkpoint_path": "",
+    #     "load_checkpoint": False,
+    # },
+    # {
+    #     "model_name": "phikon-v2_fsl", 
+    #     "model_pretreined": "phikon-v2",
+    #     "checkpoint_path": "",
+    #     "load_checkpoint": False,
+    # },
+    {
+        "model_name": "virchow2_fsl", 
+        "model_pretreined": "Virchow2",
+        "checkpoint_path": "./artifacts/retr_fsl_train_test_glomerulo/virchow2_fsl_glomerulo_virchow2_fsl_2025-05-29_16-05-49_checkpoint.pth",
+        "load_checkpoint": True,
+    },
+]
