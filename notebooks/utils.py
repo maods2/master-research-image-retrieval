@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import random
+from collections import defaultdict
 
 METRIC_FILES = {
     # testing
@@ -316,6 +317,63 @@ def load_json_file(file_path):
     except Exception as e:
         print(f"Error loading {file_path}: {e}")
         return None
+
+def calculate_class_map(query_retrievals_file):
+    data = load_json_file(query_retrievals_file)
+    if data is None:
+        return {}
+    
+    queries = data.get("query_retrievals", [])
+    k = data.get("k", None)
+    if not queries:
+        print("No query retrievals found in the file.")
+        return {}
+    
+    class_stats = defaultdict(list)
+    for query in queries:
+        query_class = query.get("query_class")
+        average_precision = query.get("average_precision")
+        class_stats[query_class].append(average_precision)
+    # Calculate mean average precision per class
+    class_map = {}
+    for cls, aps in class_stats.items():
+        if aps:
+            class_map[cls] = sum(aps) / len(aps)
+        else:
+            class_map[cls] = 0.0
+        
+    return class_map, k
+            
+    
+def plot_class_map(class_stats, title="", k=None):
+    """
+    Plot a bar chart of error rates per class.
+    """
+    if not class_stats:
+        print("No class statistics to plot.")
+        return
+    
+    classes = list(class_stats.keys())
+    error_rates = [class_stats[c] for c in classes]
+    
+    plt.figure(figsize=(10, 6))
+    plt.bar(classes, error_rates, color='salmon')
+    plt.xlabel("Class")
+    plt.ylabel("Average Precision")
+    plt.title(f"{title} - Average Precision at {k} per Class")
+    plt.ylim(0, 1)  # Fix y-axis from 0 to 1
+    plt.xticks(rotation=45)
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
+    plt.tight_layout()
+    plt.show()
+ 
+def plot_classes_maps(latest_experiments, metric_suffix='map_at_k_query_details.json'):
+    for model, files in latest_experiments.items():
+        path = files["path"]
+        file = path + "/" + metric_suffix        
+        class_map, k = calculate_class_map(file)
+        plot_class_map(class_map, title=f"{model} - Average Precision per Class", k=k)
+        
 
 def calculate_class_performance(query_retrievals_file):
     """

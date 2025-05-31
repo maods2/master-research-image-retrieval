@@ -6,6 +6,7 @@ data:
   class_mapping: {Crescent: 0, Hypercellularity: 1, Membranous: 2, Normal: 3, Podocytopathy: 4,
     Sclerosis: 5}
   batch_size: 1 # Batch size for few-shot learning = 1
+  batch_size_test: 200
   num_workers: 3  # Number of workers to load the data
   suffle_train: true  # Shuffle the training data
   suffle_test: false

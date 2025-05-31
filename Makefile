@@ -133,9 +133,10 @@ retrieval-test-fsl-ovarian-cancer:
 		done; \
 	done
 
+# models="vit_fsl dino_fsl dinov2_fsl virchow2_fsl uni_fsl UNI2-h_fsl phikon-v2_fsl phikon_fsl"; 
 retrieval-test-fsl-glomerulo:
 	datasets="glomerulo"; \
-	models="resnet_fsl vit_fsl dino_fsl dinov2_fsl virchow2_fsl uni_fsl UNI2-h_fsl phikon-v2_fsl phikon_fsl"; \
+	models="virchow2_fsl"; \
 	for dataset in $$datasets; do \
 		for model in $$models; do \
 			echo "Retrieve on $$dataset with $$model"; \
