@@ -30,13 +30,6 @@ def update_config_fields(config: dict, dataset_name: str, model_config: Dict[str
     
     return config
 
-def update_config_fields_norm(config: dict, dataset_name: str, model_config: Dict[str, str], dataset_config: Dict[str, str], experiment_name: str) -> dict:
-
-    new_config = update_config_fields(config, dataset_name, model_config, dataset_config, experiment_name) 
-    new_config['testing']['normalize_embeddings'] = True
-    
-    return new_config
-
 def update_config_fields_fsl_train(config: dict, dataset_name: str, model_config: Dict[str, str], dataset_config: Dict[str, str], experiment_name: str) -> dict:
     """Update configuration fields with provided values."""
     # Update paths in the 'data' section
@@ -64,6 +57,20 @@ def update_config_fields_fsl_train(config: dict, dataset_name: str, model_config
     
     return config
 
+def update_config_fields_norm(config: dict, dataset_name: str, model_config: Dict[str, str], dataset_config: Dict[str, str], experiment_name: str) -> dict:
+
+    new_config = update_config_fields(config, dataset_name, model_config, dataset_config, experiment_name) 
+    new_config['testing']['normalize_embeddings'] = True
+    
+    return new_config
+
+def update_config_fields_fsl_test(config: dict, dataset_name: str, model_config: Dict[str, str], dataset_config: Dict[str, str], experiment_name: str) -> dict:
+
+    new_config = update_config_fields(config, dataset_name, model_config, dataset_config, experiment_name) 
+    new_config['model']['hidden_dim'] = 512
+    new_config['model']['embedding_dim'] = 128    
+    return new_config
+
 def create_config(
         template: dict, 
         dataset_name: str, 
@@ -89,6 +96,9 @@ def create_config(
     elif template_type == "fsl_train":
         config = update_config_fields_fsl_train(config, dataset_name, model_config, dataset_config, experiment_name)
     
+    elif template_type == "retrieval_test_fsl":
+        config = update_config_fields_fsl_test(config, dataset_name, model_config, dataset_config, experiment_name)
+        
     # Create output directory if it doesn't exist
     dataset_config_dir = os.path.join(output_dir, dataset_name + config_type_folder)
     os.makedirs(dataset_config_dir, exist_ok=True)
