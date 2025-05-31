@@ -11,13 +11,13 @@ data:
 
 # Model configuration
 model:
-  name: phikon2_fsl       # Example: You can set it to resnet18, resnet34, etc.
-  experiment_name: phikon2_fsl_ovarian-cancer-splitted # Name of the experiment
+  name: phikon-v2_fsl       # Example: You can set it to resnet18, resnet34, etc.
+  experiment_name: phikon-v2_fsl_ovarian-cancer-splitted # Name of the experiment
   pretrained: true  # Use pre-trained weights
   num_classes: 5  # Number of classes in the dataset
   load_checkpoint: false  # Load a pre-trained model checkpoint
   checkpoint_path: ''  # Path to the model checkpoint
-  model_name: phikon2                    # Specify the ViT model name
+  model_name: phikon-v2                    # Specify the ViT model name
   n_way: 5
   q_shot: 5
   k_queries: 128 # For few-shot learning, this will be the batch size
