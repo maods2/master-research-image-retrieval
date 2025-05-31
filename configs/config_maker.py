@@ -14,23 +14,23 @@ def load_template(template_path: str) -> dict:
 
 def main(template_type: str = "fsl_train") -> None:
     
-    from config_models import fsl_models, retrieval_backbone_models
+    from config_models import fsl_models, retrieval_backbone_models, fsl_test_models
     
     # Define output directory for configs
     output_dir = "./configs/"
     
     # Define datasets and their class mappings
     datasets = {
-        "skin-cancer-splitted": {
-            "class-mapping": {"akiec": 0, "bcc": 1, "bkl": 2, "df": 3,"mel": 4, "nv": 5, "vasc": 6 },
-            "train_dir": "datasets/final/skin-cancer-splitted/train",
-            "test_dir": "datasets/final/skin-cancer-splitted/test"
-        },
-        "ovarian-cancer-splitted": {
-            "class-mapping": {"Clear_Cell": 0, "Endometri": 1, "Mucinous": 2, "Non_Cancerous": 3,"Serous": 4},
-            "train_dir": "datasets/final/ovarian-cancer-splitted/train",
-            "test_dir": "datasets/final/ovarian-cancer-splitted/test"
-        },
+        # "skin-cancer-splitted": {
+        #     "class-mapping": {"akiec": 0, "bcc": 1, "bkl": 2, "df": 3,"mel": 4, "nv": 5, "vasc": 6 },
+        #     "train_dir": "datasets/final/skin-cancer-splitted/train",
+        #     "test_dir": "datasets/final/skin-cancer-splitted/test"
+        # },
+        # "ovarian-cancer-splitted": {
+        #     "class-mapping": {"Clear_Cell": 0, "Endometri": 1, "Mucinous": 2, "Non_Cancerous": 3,"Serous": 4},
+        #     "train_dir": "datasets/final/ovarian-cancer-splitted/train",
+        #     "test_dir": "datasets/final/ovarian-cancer-splitted/test"
+        # },
         "glomerulo":{
             "class-mapping": {"Crescent": 0, "Hypercellularity": 1, "Membranous": 2, "Normal": 3,"Podocytopathy": 4, "Sclerosis": 5},
             "train_dir": "datasets/final/glomerulo/train",
@@ -58,6 +58,13 @@ def main(template_type: str = "fsl_train") -> None:
         models = fsl_models
         experiment_name = "retr_fsl_train_test"
         config_type_folder=f"/{experiment_name}/"
+
+    elif template_type == "retrieval_test_fsl":
+        template_path = "./configs/templates/retrieval_test/default_model_config.yaml"
+        models = fsl_test_models
+        experiment_name = "retr_fsl_train_test"
+        config_type_folder=f"/{experiment_name}/"    
+
     else:
         raise ValueError("Invalid template type.")
     
