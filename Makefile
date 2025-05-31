@@ -123,10 +123,9 @@ retrieval-test-pretrained2:
 		done; \
 	done
 
-# models="resnet_fsl vit_fsl dino_fsl dinov2_fsl uni_fsl UNI2-h_fsl phikon-v2_fsl phikon_fsl virchow2_fsl";
 retrieval-test-fsl-ovarian-cancer:
 	datasets="ovarian-cancer-splitted"; \
-	models="phikon-v2_fsl"; \
+	models="resnet_fsl vit_fsl dino_fsl dinov2_fsl uni_fsl UNI2-h_fsl phikon-v2_fsl phikon_fsl virchow2_fsl"; \
 	for dataset in $$datasets; do \
 		for model in $$models; do \
 			echo "Retrieve on $$dataset with $$model"; \

@@ -83,7 +83,7 @@ def load_checkpoint(filepath, model, optimizer=None, scheduler=None):
     Returns:
         dict: A dictionary with optional keys 'epoch' and 'loss' from the checkpoint.
     """
-    checkpoint = torch.load(filepath)
+    checkpoint = torch.load(filepath, map_location='cpu')
     model.load_state_dict(checkpoint['model_state_dict'])
     print(f'Model state loaded from {filepath}')
 

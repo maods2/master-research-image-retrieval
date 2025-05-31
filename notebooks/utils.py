@@ -220,8 +220,8 @@ def plot_metric_comparison(metric_name, experiments):
             "uni": "UNI",
             "UNI2-h": "UNI2",
             "virchow2": "Virchow2",
-            "phikon": "Phikon",
-            "phikon2": "Phikon2",
+            "phikon-v2": "Phikon-v2",
+            "phikon_": "Phikon",
         }
         
         m_map = round(sum(exp['values']) / len(exp['values']) *100, 2)
@@ -245,8 +245,8 @@ def plot_metric_comparison(metric_name, experiments):
         'CLIP': {'color': '#d62728', 'marker': 'v'},     # Tableau red
         'UNI': {'color': '#8c564b', 'marker': '*'},      # Tableau brown
         'Virchow2': {'color': '#e377c2', 'marker': 'P'},  # Tableau pink
+        'Phikon-v2': {'color': '#bcbd22', 'marker': 'h'},  # Tableau olive
         'Phikon': {'color': '#7f7f7f', 'marker': 'x'},   # Tableau gray
-        'Phikon2': {'color': '#bcbd22', 'marker': 'h'},  # Tableau olive
         'UNI2': {'color': '#17becf', 'marker': 'X'},    # Tableau cyan
         
     }
@@ -272,7 +272,7 @@ def plot_metric_comparison(metric_name, experiments):
         )
 
         # Decide a qual grupo pertence
-        if model_type in ['UNI', 'UNIv2', 'Phikon', 'Phikon2', 'Virchow2']:
+        if model_type in ['UNI', 'UNIv2', 'Phikon', 'Phikon-v2', 'Virchow2']:
             foundation_models.append((line, label))
         else:
             pretrained_backbones.append((line, label))
