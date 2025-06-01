@@ -4,7 +4,7 @@ data:
   train_dir: datasets/final/ovarian-cancer-splitted/train
   test_dir: datasets/final/ovarian-cancer-splitted/test
   class_mapping: {Clear_Cell: 0, Endometri: 1, Mucinous: 2, Non_Cancerous: 3, Serous: 4}
-  batch_size: 32
+  batch_size: 64
   num_workers: 3  # Number of workers to load the data
   suffle_test: false
   suffle_train: false

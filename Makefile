@@ -103,7 +103,7 @@ test-uni-fsl-sc:
 # glomerulo   
 # phikon phikon2 virchow2
 retrieval-test-pretrained1:
-	datasets="skin-cancer-splitted"; \
+	datasets="glomerulo"; \
 	models="phikon phikon-v2"; \
 	for dataset in $$datasets; do \
 		for model in $$models; do \

@@ -3,6 +3,7 @@ import re
 import json
 from datetime import datetime
 import matplotlib.pyplot as plt
+import seaborn as sns
 import numpy as np
 import pandas as pd
 import random
@@ -345,33 +346,82 @@ def calculate_class_map(query_retrievals_file):
     return class_map, k
             
     
+# def plot_class_map(class_stats, title="", k=None):
+#     """
+#     Plot a bar chart of error rates per class.
+#     """
+#     if not class_stats:
+#         print("No class statistics to plot.")
+#         return
+    
+#     classes = list(class_stats.keys())
+#     error_rates = [class_stats[c] for c in classes]
+    
+#     plt.figure(figsize=(10, 6))
+#     plt.bar(classes, error_rates, color='salmon')
+#     plt.xlabel("Class")
+#     plt.ylabel("Average Precision")
+#     plt.title(f"{title} - Average Precision at {k} per Class")
+#     plt.ylim(0, 1)  # Fix y-axis from 0 to 1
+#     plt.xticks(rotation=45)
+#     plt.grid(axis='y', linestyle='--', alpha=0.7)
+#     plt.tight_layout()
+#     plt.show()
+ 
 def plot_class_map(class_stats, title="", k=None):
     """
-    Plot a bar chart of error rates per class.
+    Plot a bar chart of average precision per class, formatted for scientific publication.
     """
     if not class_stats:
         print("No class statistics to plot.")
         return
-    
+
     classes = list(class_stats.keys())
     error_rates = [class_stats[c] for c in classes]
     
-    plt.figure(figsize=(10, 6))
-    plt.bar(classes, error_rates, color='salmon')
-    plt.xlabel("Class")
-    plt.ylabel("Average Precision")
-    plt.title(f"{title} - Average Precision at {k} per Class")
-    plt.ylim(0, 1)  # Fix y-axis from 0 to 1
-    plt.xticks(rotation=45)
-    plt.grid(axis='y', linestyle='--', alpha=0.7)
+    # Paleta colorblind-friendly
+    colors = sns.color_palette("colorblind", len(classes))
+
+    fig, ax = plt.subplots(figsize=(10, 6))  # IEEE-friendly size
+
+    bars = ax.bar(classes, error_rates, color=colors, edgecolor='black')
+
+    # Eixos e layout
+    ax.set_xlabel("Class", fontsize=9)
+    ax.set_ylabel("Average Precision", fontsize=9)
+    ax.set_ylim(0, 1)
+    # ax.set_title(f"{title} - AP@{k}" if k is not None else title, fontsize=10)
+    ax.tick_params(axis='both', labelsize=8)
+    ax.set_xticklabels(classes, rotation=45, ha='right')
+
+    # Fonte dos ticks
+    # for label in ax.get_xticklabels() + ax.get_yticklabels():
+    #     label.set_fontname('Times New Roman')
+
+    # Anota valores sobre as barras
+    for bar in bars:
+        height = bar.get_height()
+        ax.annotate(f'{height:.2f}',
+                    xy=(bar.get_x() + bar.get_width() / 2, height),
+                    xytext=(0, 2),
+                    textcoords="offset points",
+                    ha='center', va='bottom',
+                    fontsize=8,
+                   )
+
+    # Remover bordas desnecessárias
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+
     plt.tight_layout()
     plt.show()
- 
+    
 def plot_classes_maps(latest_experiments, metric_suffix='map_at_k_query_details.json'):
     for model, files in latest_experiments.items():
         path = files["path"]
         file = path + "/" + metric_suffix        
         class_map, k = calculate_class_map(file)
+        print(f"Plotting class map for {model} with k={k}...")
         plot_class_map(class_map, title=f"{model} - Average Precision per Class", k=k)
         
 
