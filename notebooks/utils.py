@@ -420,7 +420,10 @@ def plot_classes_maps(latest_experiments, metric_suffix='map_at_k_query_details.
     for model, files in latest_experiments.items():
         path = files["path"]
         file = path + "/" + metric_suffix        
-        class_map, k = calculate_class_map(file)
+        res = calculate_class_map(file)
+        if len(res)==0:
+            continue
+        class_map, k = res
         print(f"Plotting class map for {model} with k={k}...")
         plot_class_map(class_map, title=f"{model} - Average Precision per Class", k=k)
         
