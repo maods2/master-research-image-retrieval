@@ -103,8 +103,8 @@ test-uni-fsl-sc:
 # glomerulo   
 # phikon phikon2 virchow2
 retrieval-test-pretrained1:
-	datasets="ovarian-cancer-splitted"; \
-	models="phikon-v2"; \
+	datasets="skin-cancer-splitted"; \
+	models="phikon phikon-v2"; \
 	for dataset in $$datasets; do \
 		for model in $$models; do \
 			echo "Retrieve on $$dataset with $$model"; \
