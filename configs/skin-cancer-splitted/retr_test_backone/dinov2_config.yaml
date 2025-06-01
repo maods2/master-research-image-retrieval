@@ -4,7 +4,7 @@ data:
   train_dir: datasets/final/skin-cancer-splitted/train
   test_dir: datasets/final/skin-cancer-splitted/test
   class_mapping: {akiec: 0, bcc: 1, bkl: 2, df: 3, mel: 4, nv: 5, vasc: 6}
-  batch_size: 32
+  batch_size: 64
   num_workers: 3  # Number of workers to load the data
   suffle_test: false
   suffle_train: false

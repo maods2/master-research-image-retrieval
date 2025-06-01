@@ -11,8 +11,7 @@ data:
     4_ADH: 4
     5_DCIS: 5
     6_IC: 6
-  batch_size: 32
-  batch_size_test: 200
+  batch_size: 64
   num_workers: 3  # Number of workers to load the data
   suffle_test: false
   suffle_train: false

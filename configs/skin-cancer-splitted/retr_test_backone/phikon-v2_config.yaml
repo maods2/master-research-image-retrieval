@@ -4,7 +4,7 @@ data:
   train_dir: datasets/final/skin-cancer-splitted/train
   test_dir: datasets/final/skin-cancer-splitted/test
   class_mapping: {akiec: 0, bcc: 1, bkl: 2, df: 3, mel: 4, nv: 5, vasc: 6}
-  batch_size: 32
+  batch_size: 64
   num_workers: 3  # Number of workers to load the data
   suffle_test: false
   suffle_train: false
@@ -19,21 +19,21 @@ transform:
 
 # Model configuration
 model:
-  name: phikon2         # Example: You can set it to resnet18, resnet34, etc.
-  experiment_name: phikon2_skin-cancer-splitted # Name of the experiment
+  name: phikon-v2       # Example: You can set it to resnet18, resnet34, etc.
+  experiment_name: phikon-v2_skin-cancer-splitted # Name of the experiment
   pretrained: true  # Use pre-trained weights
   num_classes: 7  # Number of classes in the dataset
   load_checkpoint: false  # Load a pre-trained model checkpoint
   checkpoint_path: ''  # Path to the model checkpoint
-  model_name: phikon2                    # Specify the ViT model name
+  model_name: phikon-v2                  # Specify the ViT model name
 
 
 testing:
   pipeline: default    # The pipeline to run (e.g., default, retrieval, etc.)
   load_embeddings: false  # Load embeddings from disk
-  embeddings_path: ./artifacts/skin-cancer-splitted/embeddings_phikon2 # Path to load embeddings
+  embeddings_path: ./artifacts/skin-cancer-splitted/embeddings_phikon-v2 # Path to load embeddings
   save_embeddings: true  # Save embeddings to disk
-  embeddings_save_path: ./artifacts/skin-cancer-splitted/embeddings_phikon2 # Path to save embeddings
+  embeddings_save_path: ./artifacts/skin-cancer-splitted/embeddings_phikon-v2 # Path to save embeddings
   normalize_embeddings: false  # Normalize embeddings to unit norm (L2 normalization)
   list_of_metrics:
     # - type: accuracy
