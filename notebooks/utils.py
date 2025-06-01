@@ -388,7 +388,7 @@ def plot_class_map(class_stats, title="", k=None):
 
     # Eixos e layout
     ax.set_xlabel("Class", fontsize=9)
-    ax.set_ylabel("Average Precision", fontsize=9)
+    ax.set_ylabel(f"ap@{k}", fontsize=9)
     ax.set_ylim(0, 1)
     # ax.set_title(f"{title} - AP@{k}" if k is not None else title, fontsize=10)
     ax.tick_params(axis='both', labelsize=8)
