@@ -66,15 +66,15 @@ retrieval_backbone_models = [
 ]
 
 fsl_models = [
-    {"model_name": "resnet_fsl", "model_pretreined": "resnet50"},
-    {"model_name": "vit_fsl", "model_pretreined": "vit_base_patch16_224"},
-    {"model_name": "dino_fsl", "model_pretreined": "vit_small_patch16_224_dino"},
-    {"model_name": "dinov2_fsl", "model_pretreined": "dinov2_vitl14"},
-    {"model_name": "uni_fsl", "model_pretreined": "uni"},
-    {"model_name": "UNI2-h_fsl", "model_pretreined": "UNI2-h"},
+    # {"model_name": "resnet_fsl", "model_pretreined": "resnet50"},
+    # {"model_name": "vit_fsl", "model_pretreined": "vit_base_patch16_224"},
+    # {"model_name": "dino_fsl", "model_pretreined": "vit_small_patch16_224_dino"},
+    # {"model_name": "dinov2_fsl", "model_pretreined": "dinov2_vitl14"},
+    # {"model_name": "uni_fsl", "model_pretreined": "uni"},
+    # {"model_name": "UNI2-h_fsl", "model_pretreined": "UNI2-h"},
     {"model_name": "phikon_fsl", "model_pretreined": "phikon"},
-    {"model_name": "phikon2_fsl", "model_pretreined": "phikon-v2"},
-    {"model_name": "virchow2_fsl", "model_pretreined": "Virchow2"},
+    {"model_name": "phikon-v2_fsl", "model_pretreined": "phikon-v2"},
+    # {"model_name": "virchow2_fsl", "model_pretreined": "Virchow2"},
 ]
 
 fsl_test_models = [

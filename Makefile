@@ -28,9 +28,10 @@ train-fsl-resnet:
 	python3 src/main.py --config configs/$(DATASET)/fsl_train/resnet_fsl_config.yaml --pipeline train
 
 
+# models="resnet_fsl vit_fsl dino_fsl dinov2_fsl uni_fsl UNI2-h_fsl phikon_fsl phikon-v2_fsl virchow2_fsl"; 
 train-fsl-glomerulo:
 	datasets="glomerulo"; \
-	models="resnet_fsl vit_fsl dino_fsl dinov2_fsl uni_fsl UNI2-h_fsl philkon_fsl phikon_fsl virchow2_fsl"; \
+	models="phikon_fsl phikon-v2_fsl"; \
 	for dataset in $$datasets; do \
 		for model in $$models; do \
 			echo "Training on $$dataset with $$model"; \
@@ -40,7 +41,7 @@ train-fsl-glomerulo:
 
 train-fsl-ovarian-cancer:
 	datasets="ovarian-cancer-splitted"; \
-	models="resnet_fsl vit_fsl dino_fsl dinov2_fsl uni_fsl UNI2-h_fsl philkon_fsl phikon_fsl virchow2_fsl"; \
+	models="phikon_fsl phikon-v2_fsl"; \
 	for dataset in $$datasets; do \
 		for model in $$models; do \
 			echo "Training on $$dataset with $$model"; \
@@ -50,7 +51,7 @@ train-fsl-ovarian-cancer:
 
 train-fsl-skin-cancer:
 	datasets="skin-cancer-splitted"; \
-	models="resnet_fsl vit_fsl dino_fsl dinov2_fsl uni_fsl UNI2-h_fsl philkon_fsl phikon_fsl virchow2_fsl"; \
+	models="resnet_fsl vit_fsl dino_fsl dinov2_fsl uni_fsl UNI2-h_fsl phikon_fsl phikon-v2_fsl virchow2_fsl"; \
 	for dataset in $$datasets; do \
 		for model in $$models; do \
 			echo "Training on $$dataset with $$model"; \

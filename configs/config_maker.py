@@ -21,16 +21,16 @@ def main(template_type: str = "fsl_train") -> None:
     
     # Define datasets and their class mappings
     datasets = {
-        # "skin-cancer-splitted": {
-        #     "class-mapping": {"akiec": 0, "bcc": 1, "bkl": 2, "df": 3,"mel": 4, "nv": 5, "vasc": 6 },
-        #     "train_dir": "datasets/final/skin-cancer-splitted/train",
-        #     "test_dir": "datasets/final/skin-cancer-splitted/test"
-        # },
-        # "ovarian-cancer-splitted": {
-        #     "class-mapping": {"Clear_Cell": 0, "Endometri": 1, "Mucinous": 2, "Non_Cancerous": 3,"Serous": 4},
-        #     "train_dir": "datasets/final/ovarian-cancer-splitted/train",
-        #     "test_dir": "datasets/final/ovarian-cancer-splitted/test"
-        # },
+        "skin-cancer-splitted": {
+            "class-mapping": {"akiec": 0, "bcc": 1, "bkl": 2, "df": 3,"mel": 4, "nv": 5, "vasc": 6 },
+            "train_dir": "datasets/final/skin-cancer-splitted/train",
+            "test_dir": "datasets/final/skin-cancer-splitted/test"
+        },
+        "ovarian-cancer-splitted": {
+            "class-mapping": {"Clear_Cell": 0, "Endometri": 1, "Mucinous": 2, "Non_Cancerous": 3,"Serous": 4},
+            "train_dir": "datasets/final/ovarian-cancer-splitted/train",
+            "test_dir": "datasets/final/ovarian-cancer-splitted/test"
+        },
         "glomerulo":{
             "class-mapping": {"Crescent": 0, "Hypercellularity": 1, "Membranous": 2, "Normal": 3,"Podocytopathy": 4, "Sclerosis": 5},
             "train_dir": "datasets/final/glomerulo/train",

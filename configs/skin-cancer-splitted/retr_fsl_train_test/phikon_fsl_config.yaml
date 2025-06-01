@@ -5,6 +5,7 @@ data:
   test_dir: datasets/final/skin-cancer-splitted/test
   class_mapping: {akiec: 0, bcc: 1, bkl: 2, df: 3, mel: 4, nv: 5, vasc: 6}
   batch_size: 1 # Batch size for few-shot learning = 1
+  batch_size_test: 200
   num_workers: 3  # Number of workers to load the data
   suffle_train: true  # Shuffle the training data
   suffle_test: false
