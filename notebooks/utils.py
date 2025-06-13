@@ -29,6 +29,14 @@ METRIC_FILES = {
     }
 }
 
+def filter_experiment(experiment, keyword):
+    """
+    Filter experiments based on a keyword in their folder name.
+    """
+    if keyword in experiment:
+        return { keyword: experiment[keyword]}
+    raise ValueError(f"Keyword '{keyword}' not found in experiment {experiment}")
+
 def parse_experiment_folder(folder_name):
     """
     Parse an experiment folder name into (experiment_type, timestamp)
@@ -150,7 +158,12 @@ def plot_all_metrics(aggregated_metrics, exp_type):
             print(f"No data available for metric: {metric}")
             
             
-def plot_metric_comparison(metric_name, experiments):
+def plot_metric_comparison(
+        metric_name, 
+        experiments,
+        legend_location='lower right',
+        save_as=None,
+        ):
     """
     Plot a comparison of a selected metric (e.g. "map") across multiple experiments.
     Each experiment's compiled metric JSON file is loaded and a line chart is generated
@@ -280,27 +293,29 @@ def plot_metric_comparison(metric_name, experiments):
             pretrained_backbones.append((line, label))
 
     # Junta as legendas com pseudo-subgrupos
-    handles += [plt.Line2D([0], [0], color='none', label='— Foundation Models —')]
-    labels += ['• Foundation Models  ']
+    handles += [plt.Line2D([0], [0], color='none', label='— Histopatology foundation models —')]
+    labels += ['• Histopatology foundation models  ']
     for h, l in foundation_models:
         handles.append(h)
         labels.append(l)
 
-    handles += [plt.Line2D([0], [0], color='none', label='— Pretrained Backbones —')]
-    labels += ['• Pretrained Backbones ']
+    handles += [plt.Line2D([0], [0], color='none', label='— ImageNet-pretreined models —')]
+    labels += ['• ImageNet-pretreined models ']
     for h, l in pretrained_backbones:
         handles.append(h)
         labels.append(l)
 
     # Adiciona a legenda formatada
 
-    plt.xlabel("k", fontsize=12)
-    plt.ylabel(metric_name)
+    plt.xlabel("k", fontsize=14)
+    plt.ylabel(metric_name, fontsize=14)
     plt.ylim(0, 1)  # Fix y-axis from 0 to 1
     plt.xlim(0, 16)  # Fix y-axis from 0 to 1
     plt.yticks(np.arange(0, 1.05, 0.1))  # Set y-axis ticks from 0 to 1 in steps of 0.5 print("•")
-    plt.legend(handles=handles, labels=labels, loc='lower right')
+    plt.legend(handles=handles, labels=labels, loc=legend_location)
     plt.grid(True)
+    if save_as:
+        plt.savefig(f"{save_as}.pdf", format="pdf")
     plt.show()
     
     
@@ -368,7 +383,7 @@ def calculate_class_map(query_retrievals_file):
 #     plt.tight_layout()
 #     plt.show()
  
-def plot_class_map(class_stats, title="", k=None):
+def plot_class_map(class_stats, title="", k=None, experiment=None, save_fig=False):
     """
     Plot a bar chart of average precision per class, formatted for scientific publication.
     """
@@ -414,9 +429,12 @@ def plot_class_map(class_stats, title="", k=None):
     ax.spines['right'].set_visible(False)
 
     plt.tight_layout()
+    
+    if save_fig and experiment:
+        plt.savefig(f"{experiment}.pdf", format="pdf")
     plt.show()
     
-def plot_classes_maps(latest_experiments, metric_suffix='map_at_k_query_details.json'):
+def plot_classes_maps(latest_experiments, dataset=None, save_fig=False, metric_suffix='map_at_k_query_details.json'):
     for model, files in latest_experiments.items():
         path = files["path"]
         file = path + "/" + metric_suffix        
@@ -425,7 +443,13 @@ def plot_classes_maps(latest_experiments, metric_suffix='map_at_k_query_details.
             continue
         class_map, k = res
         print(f"Plotting class map for {model} with k={k}...")
-        plot_class_map(class_map, title=f"{model} - Average Precision per Class", k=k)
+        plot_class_map(
+            class_map, 
+            title=f"{model} - Average Precision per Class", 
+            k=k,
+            experiment=f'{dataset}_{model}_class_map_at_{k}', 
+            save_fig=save_fig
+            )
         
 
 def calculate_class_performance(query_retrievals_file):
