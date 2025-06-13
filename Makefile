@@ -49,9 +49,9 @@ train-fsl-ovarian-cancer:
 		done; \
 	done
 
-train-fsl-skin-cancer:
+train-fsl-skin-cancer1:
 	datasets="skin-cancer-splitted"; \
-	models="resnet_fsl vit_fsl dino_fsl dinov2_fsl uni_fsl UNI2-h_fsl phikon_fsl phikon-v2_fsl virchow2_fsl"; \
+	models="phikon_fsl"; \
 	for dataset in $$datasets; do \
 		for model in $$models; do \
 			echo "Training on $$dataset with $$model"; \
@@ -59,6 +59,15 @@ train-fsl-skin-cancer:
 		done; \
 	done
 
+train-fsl-skin-cancer2:
+	datasets="skin-cancer-splitted"; \
+	models="phikon-v2_fsl"; \
+	for dataset in $$datasets; do \
+		for model in $$models; do \
+			echo "Training on $$dataset with $$model"; \
+			python3 src/main.py --config configs/$$dataset/retr_fsl_train_test/$$model\_config.yaml --pipeline train; \
+		done; \
+	done
 
 
 make-test:

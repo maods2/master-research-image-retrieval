@@ -1,5 +1,6 @@
 import time
 from typing import Dict, Tuple, Any
+from dataloaders.transform_factory import get_transforms
 import torch
 from torch.utils.data import DataLoader, Subset
 import numpy as np
@@ -115,6 +116,10 @@ def create_embeddings_dict(
         test_loader.dataset.validation_dataset = True
         train_loader.dataset.k_shot = 1
         train_loader.dataset.validation_dataset = True
+        
+    
+    train_loader.transform = get_transforms(config['testing']['transform'])
+    test_loader.transform = get_transforms(config['testing']['transform'])
     
     logger.info('Creating embeddings database from training data...')
     normalize_embeddings = config['testing'].get('normalize_embeddings', False)
