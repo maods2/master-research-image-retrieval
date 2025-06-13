@@ -649,27 +649,50 @@ def permutation_test(model1, model2, confidence=95, n_permutations=10000, seed=4
     }
 
 
-def plot_permutation_test_distribution(result):
-    plt.figure(figsize=(10, 5))
+def plot_permutation_test_distribution(result, model, save_as=None):
+    # Estilo compatível com publicações
+    # plt.style.use('seaborn-whitegrid')
+    plt.rcParams.update({
+        'font.size': 12,
+        'axes.labelsize': 13,
+        'axes.titlesize': 14,
+        'legend.fontsize': 11,
+        'xtick.labelsize': 11,
+        'ytick.labelsize': 11,
+        'pdf.fonttype': 42,  # Fonte compatível com LaTeX/IEEE
+        'ps.fonttype': 42,
+    })
     
+    fig, ax = plt.subplots(figsize=(15, 8))
+
     # Histograma da distribuição de permutação
-    plt.hist(result["permutation_distribution"], bins=50, alpha=0.7, color='skyblue', edgecolor='black')
-    
+    ax.hist(result["permutation_distribution"], bins=50, alpha=0.8,
+            color='#1f77b4', edgecolor='black', label='Permutation Distribution')
+
     # Linha da diferença observada
-    plt.axvline(result["observed_difference"], color='red', linestyle='--', linewidth=2,
-                label=f'Diferença Observada = {result["observed_difference"]:.4f}')
-    
+    ax.axvline(result["observed_difference"], color='#d62728', linestyle='--', linewidth=2,
+               label=f'Observed Difference = {result["observed_difference"]:.4f}')
+
     # Linhas do intervalo de confiança
     lower, upper = result["confidence_interval"]
-    plt.axvline(lower, color='green', linestyle='--', linewidth=2, label=f'IC 95% = [{lower:.2f}, {upper:.2f}]')
-    plt.axvline(upper, color='green', linestyle='--', linewidth=2)
-    
-    plt.title("Permutation Test - Precision@k")
-    plt.xlabel("Diferença média (Modelo 1 - Modelo 2)")
-    plt.ylabel("Frequência")
-    plt.legend()
-    plt.grid(True)
+    ax.axvline(lower, color='#2ca02c', linestyle='--', linewidth=2, label=f'95% Confidence Interval = [{lower:.3f}, {upper:.3f}]')
+    ax.axvline(upper, color='#2ca02c', linestyle='--', linewidth=2)
+
+    # Descrição dos eixos e título
+    # ax.set_title("Permutation Test - Average Precision", pad=12)
+    ax.set_title(f"AP@15 (p_value = {result.get('p_value'):.2e})")
+    ax.set_xlabel(f"Difference in Mean Performance (FineTuned - Pretreined) Bootstrap Distribution for {model} model (CI = 95%)")
+    ax.set_ylabel("Frequency")
+
+    # Grade e legenda
+    ax.legend(frameon=True)
+    ax.grid(True, linestyle='--', linewidth=0.5, alpha=0.7)
+
     plt.tight_layout()
+
+    if save_as:
+        plt.savefig(f"{save_as}.pdf", format='pdf', bbox_inches='tight')
+    
     plt.show()
     
 
