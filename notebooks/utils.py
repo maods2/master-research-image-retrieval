@@ -232,8 +232,8 @@ def plot_metric_comparison(
             "vit_": "ViT",
             "resnet": "ResNet",
             "clip": "CLIP",
-            "uni": "UNI",
-            "UNI2-h": "UNI2",
+            "uni_": "UNI",
+            "UNI2-h": "UNI2-h",
             "virchow2": "Virchow2",
             "phikon-v2": "Phikon-v2",
             "phikon_": "Phikon",
@@ -249,6 +249,7 @@ def plot_metric_comparison(
         folder = exp['exp_info']["folder"]
         for key, value in models.items():
             if key in folder:
+                # print(f'{value} ({folder})')
                 return f'{value} ({m_map})'
     
     # Define fixed colors and line styles for each model type
@@ -258,11 +259,11 @@ def plot_metric_comparison(
         'ViT': {'color': '#ff7f0e', 'marker': '^'},      # Tableau orange
         'ResNet': {'color': '#9467bd', 'marker': 'D'},   # Tableau purple
         'CLIP': {'color': '#d62728', 'marker': 'v'},     # Tableau red
-        'UNI': {'color': '#8c564b', 'marker': '*'},      # Tableau brown
         'Virchow2': {'color': '#e377c2', 'marker': 'P'},  # Tableau pink
         'Phikon-v2': {'color': '#bcbd22', 'marker': 'h'},  # Tableau olive
         'Phikon': {'color': '#7f7f7f', 'marker': 'x'},   # Tableau gray
-        'UNI2': {'color': '#17becf', 'marker': 'X'},    # Tableau cyan
+        'UNI2-h': {'color': '#17becf', 'marker': 'X'},    # Tableau cyan
+        'UNI': {'color': '#8c564b', 'marker': '*'},      # Tableau brown
         
     }
 
@@ -287,7 +288,7 @@ def plot_metric_comparison(
         )
 
         # Decide a qual grupo pertence
-        if model_type in ['UNI', 'UNIv2', 'Phikon', 'Phikon-v2', 'Virchow2']:
+        if model_type in ['UNI', 'UNI2-h', 'Phikon', 'Phikon-v2', 'Virchow2']:
             foundation_models.append((line, label))
         else:
             pretrained_backbones.append((line, label))
