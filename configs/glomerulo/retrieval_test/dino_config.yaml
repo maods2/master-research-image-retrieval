@@ -34,7 +34,7 @@ testing:
   load_embeddings: false  # Load embeddings from disk
   embeddings_path: ./artifacts/glomerulo/embeddings_dino            # Path to load embeddings
   save_embeddings: true  # Save embeddings to disk
-  : ./artifacts/glomerulo/embeddings_dino            # Path to save embeddings
+  embeddings_save_path: ./artifacts/glomerulo/embeddings_dino            # Path to save embeddings
   list_of_metrics:
     # - type: accuracy
     # - type: f1_score

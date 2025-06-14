@@ -76,9 +76,8 @@ testing:
   enabled: true  # Enable testing
   pipeline: default    # The pipeline to run (e.g., default, retrieval, etc.)
   load_embeddings: false  # Load embeddings from disk
-  embeddings_path: ./local_experiments/glomerulo/supcon/embeddings_resnet_supcon             # Path to load embeddings
+  embeddings_path: ''          # Path to load embeddings
   save_embeddings: true  # Save embeddings to disk
-  : ./local_experiments/glomerulo/supcon/embeddings_resnet_supcon             # Path to save embeddings
   normalize_embeddings: false  # Normalize embeddings to unit norm (L2 normalization)
   list_of_metrics:
     # - type: accuracy
@@ -103,7 +102,7 @@ metric_logging:
   tool: txt    # Tool to log metrics (txt, csv, mlflow, etc.)
 # Output configuration
 output:
-  results_dir: ./local_experiments/glomerulo/supcon    # Directory to save results
+  results_dir: ./local_experiments/supcon/glomerulo    # Directory to save results
 
 
 

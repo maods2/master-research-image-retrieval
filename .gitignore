@@ -1,5 +1,6 @@
 data/*
 .pth.tar
+*checkpoint.pth
 *.pt
 __pycache__
 artifacts/

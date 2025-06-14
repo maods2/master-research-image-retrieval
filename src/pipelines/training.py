@@ -12,7 +12,7 @@ from utils.metric_logger import setup_metric_logger
 
 
 def train_wrapper(config):
-    logger = setup_logger(config['logging'])
+    logger = setup_logger(config)
     metric_logger = setup_metric_logger(config)
 
     # Load model, loss, and optimizer

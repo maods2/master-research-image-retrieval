@@ -1,9 +1,21 @@
+import sys
+import os
+
+
+
+sys.path.append(
+    os.path.dirname(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    )
+)
+
 import json
 from metrics.metric_base import MetricLoggerBase
 import mlflow
-import os
 from datetime import datetime
 from typing import Dict, Optional
+
+from utils.checkpoint_utils import generate_experiment_folder
 
 
 class MLFlowMetricLogger(MetricLoggerBase):
@@ -114,14 +126,8 @@ class FileUtils:
 class TxtMetricLogger(MetricLoggerBase):
     def __init__(self, config: Dict):
         self.config = config
-        self.folder_name = self._generate_experiment_folder()
-        self.workspace_dir = config.get(
-            'workspace_dir',
-            f"{config.get('output').get('results_dir')}/{self.folder_name}",
-        )
-        FileUtils.ensure_dir_exists(self.workspace_dir)
-        config['workspace_dir'] = self.workspace_dir
 
+        self.workspace_dir, self.folder_name = generate_experiment_folder(config)
         file_name = f'{self.folder_name}_metrics.txt'
         self.metric_file_path = os.path.join(self.workspace_dir, file_name)
 
