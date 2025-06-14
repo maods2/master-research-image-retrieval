@@ -55,7 +55,6 @@ class SupConTrainer(BaseTrainer):
 
             running_loss += loss.item()
             progress_bar.set_postfix(loss=loss.item())
-            break
 
         avg_loss = running_loss / len(dataloader)
         return avg_loss

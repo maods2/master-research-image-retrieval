@@ -158,7 +158,19 @@ retrieval-test-fsl-glomerulo:
 # Supervised Constrastive Learning
 # =============================
 train-supcon-glomerulo:
-	python3 src/main.py --config configs/templates/sup_con/default_train_config.yaml --pipeline train
+	python3 src/main.py --config configs/glomerulo/sup_con/default_train_config.yaml --pipeline train
+
+train-supcon-ovarian-cancer:
+	python3 src/main.py --config configs/ovarian-cancer-splitted/sup_con/default_train_config.yaml--pipeline train
+
+train-supcon-skin-cancer:	
+	python3 src/main.py --config configs/skin-cancer-splitted/sup_con/default_train_config.yaml --pipeline train
+
+train-supcon:
+	python3 src/main.py --config configs/glomerulo/sup_con/default_train_config.yaml --pipeline train
+	python3 src/main.py --config configs/ovarian-cancer-splitted/sup_con/default_train_config.yaml--pipeline train
+	python3 src/main.py --config configs/skin-cancer-splitted/sup_con/default_train_config.yaml --pipeline train
+
 
 
 # ============================
