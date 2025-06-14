@@ -631,7 +631,7 @@ def permutation_test(model1, model2, confidence=95, n_permutations=10000, seed=4
         diffs.append(np.mean(np.array(perm_prec1) - np.array(perm_prec2)))
 
     diffs = np.array(diffs)
-    p_value = np.mean(np.abs(diffs) >= abs(observed_diff))
+    p_value = (np.sum(np.abs(diffs) >= abs(observed_diff)) + 1) / (n_permutations + 1)
 
     # Intervalo de confiança
     lower, upper = np.percentile(diffs, [(100 - confidence) / 2, 100 - (100 - confidence) / 2])
@@ -681,7 +681,7 @@ def plot_permutation_test_distribution(result, model, save_as=None):
     # Descrição dos eixos e título
     # ax.set_title("Permutation Test - Average Precision", pad=12)
     ax.set_title(f"AP@15 (p_value = {result.get('p_value'):.2e})")
-    ax.set_xlabel(f"Difference in Mean Performance (FineTuned - Pretreined) Bootstrap Distribution for {model} model (CI = 95%)")
+    ax.set_xlabel(f"Difference in Mean Performance (FineTuned - Pretreined) Bootstrap Distribution for {model} models (CI = 95%)")
     ax.set_ylabel("Frequency")
 
     # Grade e legenda

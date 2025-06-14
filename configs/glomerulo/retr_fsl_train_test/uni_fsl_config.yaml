@@ -26,7 +26,7 @@ model:
   num_classes: 6  # Number of classes in the dataset
   load_checkpoint: true   # Load a pre-trained model checkpoint
   checkpoint_path: 
-    ./artifacts/retr_fsl_train_test_glomerulo/uni_fsl_glomerulo_uni_fsl_2025-05-27_14-28-01_checkpoint.pth # Path to the model checkpoint
+    ./artifacts/glomerulo/uni_fsl_glomerulo_uni_fsl_2025-04-19_18-43-39_checkpoint.pth # Path to the model checkpoint
   model_name: uni                        # Specify the ViT model name
 
 
