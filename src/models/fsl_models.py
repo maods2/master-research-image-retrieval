@@ -36,7 +36,7 @@ class BaseFsl(nn.Module):
     ) -> torch.Tensor:
         dists = torch.cdist(query_embeddings, prototypes)
         return (-dists).softmax(dim=1)
-    
+
     def compute_binary_prototypes(self, embeddings, labels, positive_label):
         # embeddings: (S, D) support embeddings
         # labels:    (S,) original labels, where positive_label is your "1" class
@@ -54,32 +54,36 @@ class BaseFsl(nn.Module):
         dists = torch.cdist(query_embeddings, prototypes)  # (Q, 2)
         # argmin → 0=neg, 1=pos
         return torch.argmin(dists, dim=1)
-    
+
     def predict_binary_probabilities(self, query_embeddings, prototypes):
         dists = torch.cdist(query_embeddings, prototypes)  # (Q, 2)
         # argmin → 0=neg, 1=pos
         return (-dists).softmax(dim=1)
 
+
 class WrappedFsl(BaseFsl):
-    def __init__(self, backbone, hidden_dim=512, embedding_dim=128): 
+    def __init__(self, backbone, hidden_dim=512, embedding_dim=128):
         super().__init__()
         self.backbone = backbone
-        
+
         with torch.no_grad():
             test_tensor = torch.randn(1, 3, 224, 224)
             out_dim = self.backbone(test_tensor).shape[-1]
         # Create projection
         self.projection = nn.Sequential(
-            nn.Linear(out_dim, hidden_dim), nn.GELU(), nn.Linear(hidden_dim, embedding_dim)
+            nn.Linear(out_dim, hidden_dim),
+            nn.GELU(),
+            nn.Linear(hidden_dim, embedding_dim),
         )
         # Freeze backbone if needed
         for param in self.backbone.parameters():
             param.requires_grad = False
-    
+
     def forward(self, x):
         x = self.backbone(x)
         x = self.projection(x)
         return x
+
 
 class SemanticAttributeFsl(nn.Module):
     def __init__(
@@ -111,7 +115,6 @@ class SemanticAttributeFsl(nn.Module):
             )      # [N_shot, C, H, W]
             support_lbls = data['labels'].to(self.device)      # [N_shot]
             self.support_set[class_name] = (support_imgs, support_lbls)
-
 
     def forward(self, x: Tensor) -> Tensor:
         """

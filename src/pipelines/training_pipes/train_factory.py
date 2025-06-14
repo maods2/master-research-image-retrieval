@@ -12,13 +12,13 @@ def get_train_function(config):
 
     elif config['training']['pipeline'] == 'train_few_shot_leaning':
         from pipelines.training_pipes.few_shot_train import FewShotTrain
+
         return FewShotTrain(config)
-        
 
-    elif config['training']['pipeline'] == 'contrastive':
-        from pipelines.training_pipes.contrastive_train import ContrastiveTrain 
+    elif config['training']['pipeline'] == 'supervised_constrastive_leaning':
+        from pipelines.training_pipes.supcon_trainer import SupConTrainer
 
-        return ContrastiveTrain(config)
+        return SupConTrainer(config)
 
     else:
         raise ValueError(

@@ -33,7 +33,7 @@ testing:
   load_embeddings: false  # Load embeddings from disk
   embeddings_path: ./artifacts/skin-cancer-splitted/embeddings_dino # Path to load embeddings
   save_embeddings: true  # Save embeddings to disk
-  embeddings_save_path: ./artifacts/skin-cancer-splitted/embeddings_dino # Path to save embeddings
+  : ./artifacts/skin-cancer-splitted/embeddings_dino # Path to save embeddings
   normalize_embeddings: false  # Normalize embeddings to unit norm (L2 normalization)
   list_of_metrics:
     # - type: accuracy

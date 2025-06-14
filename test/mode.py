@@ -1,129 +1,229 @@
-from abc import ABC, abstractmethod
-from typing import Any, Callable, Dict, List, Optional, Union
-
 import torch
-from torch.utils.data import DataLoader
+import torch.nn as nn
+import torch.nn.functional as F
+from torch.utils.data import Dataset, DataLoader
+import numpy as np
+from typing import Tuple, Dict, Any, Callable
+from tqdm import tqdm
 
+# -------------------------
+# SupCon Loss
+# -------------------------
+class SupConLoss(nn.Module):
+    def __init__(self, temperature=0.07):
+        super().__init__()
+        self.temperature = temperature
 
+    def forward(self, features, labels):
+        device = features.device
+        batch_size = labels.shape[0]
+        labels = labels.contiguous().view(-1, 1)
 
-class BaseTrainer(ABC):
-    """Abstract base class for training PyTorch models.
-    
-    This class defines the common interface and shared functionality for all trainers,
-    ensuring consistent behavior across different training pipelines.
-    """
-    
-    def __init__(self) -> None:
-        """
-        """
-        self.sample_dataloader = None
-        # Initialize retrieval metrics
-        self.retrieval_at_k_metrics = []
+        mask = torch.eq(labels, labels.T).float().to(device)
+        contrast_count = features.shape[1]
+        contrast_feature = torch.cat(torch.unbind(features, dim=1), dim=0)
+        anchor_feature = contrast_feature
+        anchor_count = contrast_count
 
-    
-    def _initialize_sample_dataloader(self, data_loader: DataLoader) -> None:
-        """Initialize sample dataloaders for database and query samples.
-        
-        Args:
-            data_loader: The original dataloader to sample from
-        """
-        db_subset, query_subset = create_balanced_db_and_query(
-            dataset=data_loader.dataset,
-            total_db_samples=400,
-            total_query_samples=60,
-            seed=42
-        )
-        
-        db_loader = torch.utils.data.DataLoader(
-            dataset=db_subset,
-            batch_size=data_loader.batch_size,
-            shuffle=False,
-            num_workers=data_loader.num_workers,
-            pin_memory=data_loader.pin_memory
+        logits = torch.div(
+            torch.matmul(anchor_feature, contrast_feature.T),
+            self.temperature
         )
 
-        query_loader = torch.utils.data.DataLoader(
-            dataset=query_subset,
-            batch_size=data_loader.batch_size,
-            shuffle=False,
-            num_workers=data_loader.num_workers,
-            pin_memory=data_loader.pin_memory
-        )
-         
-        self.sample_dataloader = {
-            'db': db_loader,
-            'query': query_loader
-        }
-    
-    def eval_retrieval_at_k(
-        self, 
-        model: torch.nn.Module, 
-        train_loader: DataLoader, 
-        config: Dict[str, Any], 
-        logger: Callable
-    ) -> Dict[str, Any]:
-        """Evaluate retrieval metrics at different k values.
-        
-        Args:
-            model: The model to evaluate
-            train_loader: DataLoader for training data
-            config: Configuration dictionary
-            logger: Logging function or object
-            
-        Returns:
-            Dictionary of metric names and their values
-        """
-        # Initialize sample dataloader if not already created
-        if self.sample_dataloader is None:
-            self._initialize_sample_dataloader(train_loader)
-        
-        embeddings = load_or_create_embeddings(
-            model,
-            self.sample_dataloader['db'],
-            self.sample_dataloader['query'],
-            config,
-            logger,
-            device=None
-        )
-        
-        results = {}
-        for metric in self.retrieval_at_k_metrics:
-            res = metric(
-                model=model, 
-                train_loader=train_loader, 
-                test_loader=train_loader, 
-                embeddings=embeddings, 
-                config=config, 
-                logger=logger
-            )
-            results[metric.__class__.__name__] = res
-            
-        return results
-    
+        logits_max, _ = torch.max(logits, dim=1, keepdim=True)
+        logits = logits - logits_max.detach()
 
-    @abstractmethod
+        mask = mask.repeat(anchor_count, contrast_count)
+        logits_mask = torch.scatter(
+            torch.ones_like(mask),
+            1,
+            torch.arange(batch_size * anchor_count).view(-1, 1).to(device),
+            0
+        )
+
+        mask = mask * logits_mask
+
+        exp_logits = torch.exp(logits) * logits_mask
+        log_prob = logits - torch.log(exp_logits.sum(1, keepdim=True) + 1e-12)
+
+        mean_log_prob_pos = (mask * log_prob).sum(1) / (mask.sum(1) + 1e-12)
+        loss = -mean_log_prob_pos
+        loss = loss.mean()
+
+        return loss
+
+
+# -------------------------
+# Contrastive Dataset
+# -------------------------
+class ContrastiveDataset(Dataset):
+    def __init__(self, dataset, transform=None):
+        self.dataset = dataset
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.dataset)
+
+    def __getitem__(self, idx):
+        img, label = self.dataset[idx]
+        if self.transform:
+            img1 = self.transform(img)
+            img2 = self.transform(img)
+        else:
+            img1 = img2 = img
+
+        return torch.stack([img1, img2]), label
+
+
+# -------------------------
+# SupCon Trainer
+# -------------------------
+class SupConTrainer:
+    def __init__(self, config: dict):
+        self.config = config
+        self.temperature = config['model'].get('temperature', 0.07)
+
+    def train_one_epoch(self, model, optimizer, dataloader, device, epoch):
+        model.train()
+        running_loss = 0.0
+        progress_bar = tqdm(dataloader, desc=f'Epoch {epoch + 1}')
+
+        criterion = SupConLoss(temperature=self.temperature)
+
+        for images, labels in progress_bar:
+            images = images.to(device)  # [B, 2, C, H, W]
+            labels = labels.to(device)
+
+            optimizer.zero_grad()
+            bsz = images.shape[0]
+            features = model(images.view(-1, *images.shape[2:]))  # [2*B, D]
+            features = F.normalize(features, dim=1)
+            features = features.view(bsz, 2, -1)  # [B, 2, D]
+
+            loss = criterion(features, labels)
+            loss.backward()
+            optimizer.step()
+
+            running_loss += loss.item()
+            progress_bar.set_postfix(loss=loss.item())
+
+        avg_loss = running_loss / len(dataloader)
+        return avg_loss, 0.0, None  # acc/supp set not used here
+
     def __call__(
         self,
-        model: torch.nn.Module,
-        loss_fn: callable,
-        optimizer: torch.optim.Optimizer,
-        train_loader: torch.utils.data.DataLoader,
-        test_loader: torch.utils.data.DataLoader,
-        config: dict,
-        logger: callable,
-        metric_logger: MetricLoggerBase,
-    ) -> torch.nn.Module:
-        raise NotImplementedError('Subclasses must implement this method.')
-
-    @abstractmethod
-    def train_one_epoch(
-        self,
         model,
-        loss_fn,
+        loss_fn,  # not used
         optimizer,
         train_loader,
-        device,
-        log_interval,
-        epoch,
+        test_loader,
+        config,
+        logger,
+        metric_logger,
     ):
-        raise NotImplementedError('Subclasses must implement this method.')
+        device = config.get('device', 'cuda' if torch.cuda.is_available() else 'cpu')
+        model.to(device)
+        epochs = config['training']['epochs']
+        patience = config['training'].get('early_stopping_patience', 10)
+
+        min_loss = float('inf')
+        epochs_without_improvement = 0
+        checkpoint_path = None
+        train_history = {'loss': []}
+
+        for epoch in range(epochs):
+            avg_loss, _, _ = self.train_one_epoch(model, optimizer, train_loader, device, epoch)
+
+            logger.info(f'[Epoch {epoch + 1}/{epochs}] Loss: {avg_loss:.4f}')
+            print(f'[Epoch {epoch + 1}/{epochs}] Loss: {avg_loss:.4f}')
+            train_history['loss'].append(avg_loss)
+
+            (
+                should_stop,
+                min_loss,
+                epochs_without_improvement,
+                checkpoint_path,
+            ) = self.save_model_if_best(
+                model=model,
+                metric=avg_loss,
+                best_metric=min_loss,
+                epochs_without_improvement=epochs_without_improvement,
+                checkpoint_path=checkpoint_path,
+                config=config,
+                metric_logger=metric_logger,
+                mode='loss',
+            )
+
+            if should_stop:
+                logger.info(f'Early stopping triggered after {epochs_without_improvement} epochs.')
+                print(f'Early stopping triggered after {epochs_without_improvement} epochs.')
+                break
+
+        train_history['last_epoch_metrics'] = {'loss': avg_loss}
+        metric_logger.log_json(train_history, 'train_metrics')
+
+        return model
+
+    def save_model_if_best(self, model, metric, best_metric, epochs_without_improvement, checkpoint_path, config, metric_logger, mode='loss'):
+        improved = metric < best_metric if mode == 'loss' else metric > best_metric
+        if improved:
+            best_metric = metric
+            epochs_without_improvement = 0
+            checkpoint_path = config['training'].get('checkpoint_path', 'best_model.pt')
+            torch.save(model.state_dict(), checkpoint_path)
+        else:
+            epochs_without_improvement += 1
+        should_stop = epochs_without_improvement >= config['training'].get('early_stopping_patience', 10)
+        return should_stop, best_metric, epochs_without_improvement, checkpoint_path
+
+
+# -------------------------
+# Quick Test (Dummy)
+# -------------------------
+if __name__ == '__main__':
+    import torchvision.transforms as T
+    from torchvision.datasets import CIFAR10
+    import torchvision.models as models
+
+    transform = T.Compose([
+        T.RandomResizedCrop(32),
+        T.RandomHorizontalFlip(),
+        T.ToTensor()
+    ])
+
+    dataset = ContrastiveDataset(CIFAR10(root='./data', train=True, download=True, transform=transform))
+    dataloader = DataLoader(dataset, batch_size=64, shuffle=True)
+
+    backbone = models.resnet18(pretrained=False)
+    backbone.fc = nn.Identity()
+
+    class ProjectionHead(nn.Module):
+        def __init__(self, base_model, out_dim=128):
+            super().__init__()
+            self.backbone = base_model
+            self.proj = nn.Sequential(
+                nn.Linear(512, 512),
+                nn.ReLU(),
+                nn.Linear(512, out_dim)
+            )
+
+        def forward(self, x):
+            features = self.backbone(x)
+            return self.proj(features)
+
+    model = ProjectionHead(backbone)
+
+    trainer = SupConTrainer(config={
+        'model': {'temperature': 0.07},
+        'training': {'epochs': 10, 'early_stopping_patience': 3}
+    })
+
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+
+    class DummyLogger:
+        def info(self, msg): print(msg)
+
+    class DummyMetricLogger:
+        def log_json(self, d, name): print(f"Metrics logged: {d}")
+
+    trainer(model, None, optimizer, dataloader, None, trainer.config, DummyLogger(), DummyMetricLogger())

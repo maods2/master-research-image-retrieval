@@ -33,7 +33,7 @@ testing:
   load_embeddings: false  # Load embeddings from disk
   embeddings_path: ./artifacts/ovarian-cancer-splitted/embeddings_dinov2 # Path to load embeddings
   save_embeddings: true  # Save embeddings to disk
-  embeddings_save_path: ./artifacts/ovarian-cancer-splitted/embeddings_dinov2 # Path to save embeddings
+  : ./artifacts/ovarian-cancer-splitted/embeddings_dinov2 # Path to save embeddings
   list_of_metrics:
     # - type: accuracy
     # - type: f1_score

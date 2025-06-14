@@ -2,10 +2,12 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
+
 class NTXentLoss(nn.Module):
     """
     https://arxiv.org/pdf/2205.03169
     """
+
     def __init__(self, temperature=0.07):
         super().__init__()
         self.temperature = temperature
@@ -16,55 +18,73 @@ class NTXentLoss(nn.Module):
         z = torch.cat([z1, z2], dim=0)  # (2N, D)
         z = F.normalize(z, dim=1)
         sim_matrix = torch.matmul(z, z.T) / self.temperature  # (2N,2N)
-        mask = torch.eye(2*N, device=sim_matrix.device).bool()
+        mask = torch.eye(2 * N, device=sim_matrix.device).bool()
         sim_matrix = sim_matrix.masked_fill(mask, -9e15)
 
         # positives are diagonal offsets
-        positives = torch.cat([sim_matrix[i, i+N].unsqueeze(0) for i in range(N)] +
-                              [sim_matrix[i+N, i].unsqueeze(0) for i in range(N)], dim=0)
+        positives = torch.cat(
+            [sim_matrix[i, i + N].unsqueeze(0) for i in range(N)]
+            + [sim_matrix[i + N, i].unsqueeze(0) for i in range(N)],
+            dim=0,
+        )
         exp_sim = torch.exp(sim_matrix)
         denom = exp_sim.sum(dim=1)
         loss = -torch.log(torch.exp(positives) / denom)
         return loss.mean()
-    
-class SupervisedContrastiveLoss(torch.nn.Module):
+
+
+class SupConLoss(torch.nn.Module):
     """
     https://arxiv.org/pdf/2004.11362
     """
-    def __init__(self, temperature=0.1):
+
+    def __init__(self, config):
         super().__init__()
-        self.temperature = temperature
+        self.temperature = config.get('temperature', 0.07)
 
-    def forward(self, embeddings, labels):
-        # Normalize embeddings
-        embeddings = F.normalize(embeddings, p=2, dim=1)
+    def forward(self, features, labels):
+        device = features.device
+        batch_size = labels.shape[0]
+        labels = labels.contiguous().view(-1, 1)
 
-        # Compute similarity matrix
-        sim_matrix = torch.matmul(embeddings, embeddings.T) / self.temperature
+        mask = torch.eq(labels, labels.T).float().to(device)
+        contrast_count = features.shape[1]
+        contrast_feature = torch.cat(torch.unbind(features, dim=1), dim=0)
+        anchor_feature = contrast_feature
+        anchor_count = contrast_count
 
-        # Create mask for positive pairs (same class)
-        labels = labels.unsqueeze(0)
-        mask = torch.eq(labels, labels.T).float()
-
-        # Exclude diagonal (self-similarity)
-        logits_mask = torch.ones_like(mask) - torch.eye(
-            embeddings.size(0), device=mask.device
+        logits = torch.div(
+            torch.matmul(anchor_feature, contrast_feature.T), self.temperature
         )
-        masked_sim = sim_matrix * logits_mask
 
-        # Compute log probabilities
-        exp_sim = torch.exp(masked_sim)
-        log_prob = masked_sim - torch.log(exp_sim.sum(dim=1, keepdim=True))
+        logits_max, _ = torch.max(logits, dim=1, keepdim=True)
+        logits = logits - logits_max.detach()
 
-        # Average log-likelihood over positive pairs
-        loss = -(mask * log_prob).sum(dim=1) / mask.sum(dim=1)
-        return loss.mean()
+        mask = mask.repeat(anchor_count, contrast_count)
+        logits_mask = torch.scatter(
+            torch.ones_like(mask),
+            1,
+            torch.arange(batch_size * anchor_count).view(-1, 1).to(device),
+            0,
+        )
+
+        mask = mask * logits_mask
+
+        exp_logits = torch.exp(logits) * logits_mask
+        log_prob = logits - torch.log(exp_logits.sum(1, keepdim=True) + 1e-12)
+
+        mean_log_prob_pos = (mask * log_prob).sum(1) / (mask.sum(1) + 1e-12)
+        loss = -mean_log_prob_pos
+        loss = loss.mean()
+
+        return loss
 
 
 class ProxyNCALoss(torch.nn.Module):
     """
     https://arxiv.org/pdf/1703.07464
     """
+
     def __init__(self, num_classes, embedding_dim, temperature=0.1):
         super().__init__()
         self.proxies = torch.nn.Parameter(
@@ -92,6 +112,7 @@ class MultiSimilarityLoss(torch.nn.Module):
     """
     https://arxiv.org/pdf/1904.06627
     """
+
     def __init__(self, alpha=2.0, beta=50.0, base=0.5):
         super().__init__()
         self.alpha = alpha
@@ -131,6 +152,7 @@ class ArcFaceLoss(torch.nn.Module):
     """
     https://arxiv.org/pdf/1801.07698
     """
+
     def __init__(self, num_classes, embedding_dim, margin=0.5, scale=64.0):
         super().__init__()
         self.W = torch.nn.Parameter(torch.randn(embedding_dim, num_classes))
@@ -159,6 +181,7 @@ class NPairLoss(torch.nn.Module):
     """
     https://papers.nips.cc/paper_files/paper/2016/file/6b180037abbebea991d8b1232f8a8ca9-Paper.pdf
     """
+
     def __init__(self, temperature=0.1):
         super().__init__()
         self.temperature = temperature
@@ -177,5 +200,3 @@ class NPairLoss(torch.nn.Module):
             / torch.exp(sim_matrix * neg_mask).sum(dim=1)
         )
         return loss.mean()
-
-

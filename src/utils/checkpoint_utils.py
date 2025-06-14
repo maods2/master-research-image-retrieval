@@ -39,9 +39,9 @@ def save_checkpoint(
     if scheduler:
         checkpoint['scheduler_state_dict'] = scheduler.state_dict()
 
-    # Generate file name if not provided
+    # Generate file name if not provided config['workspace_dir']
     if config and not filepath:
-        workspace_dir = config.get('output', {}).get('model_dir', './')
+        workspace_dir = config.get('workspace_dir', './')
         model_name = config.get('model', {}).get('name', 'default_model')
         experiment_name = config.get('model', {}).get(
             'experiment_name', 'default_experiment'
@@ -113,7 +113,9 @@ def load_full_model(model_name: str, save_dir: str, map_location=None):
     Returns:
         model: Loaded PyTorch model
     """
-    load_path = os.path.join(f"./assets/{model_name}", f"{model_name}.pt")
-    model = torch.load(load_path, map_location=map_location, weights_only=False)
-    print(f"Model loaded from: {load_path}")
+    load_path = os.path.join(f'./assets/{model_name}', f'{model_name}.pt')
+    model = torch.load(
+        load_path, map_location=map_location, weights_only=False
+    )
+    print(f'Model loaded from: {load_path}')
     return model

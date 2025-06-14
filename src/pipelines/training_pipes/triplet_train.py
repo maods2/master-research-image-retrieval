@@ -81,58 +81,52 @@ class TripletTrain(BaseTrainer):
         device = config.get(
             'device', 'cuda' if torch.cuda.is_available() else 'cpu'
         )
-
-        epochs = config['training']['epochs']
-
         model.to(device)
+        epochs = config['training']['epochs']
+        patience = config['training'].get('early_stopping_patience', 10)
 
+        min_loss = float('inf')
+        epochs_without_improvement = 0
         checkpoint_path = None
-        min_val_loss = float('inf')
-
-        training_loss = []
-        training_mapatk = []
-
+        train_history = {'loss': []}
+        
         for epoch in range(epochs):
-            # Train the model for one epoch
-            epoch_loss = self.train_one_epoch(
-                model,
-                loss_fn,
-                optimizer,
-                train_loader,
-                device,
-                epoch,
+            avg_loss = self.train_one_epoch(
+                model, loss_fn, optimizer, train_loader, device, epoch
             )
 
-            train_loader.dataset.switch_to_classifcation_dataset()   ## applied to MixTripletDataset
-            retrieval_at_k_metrics = self.eval_retrieval_at_k(
-                model, train_loader, config, logger
-            )
-            train_loader.dataset.switch_to_triplet_dataset()   ## applied to MixTripletDataset
+            logger.info(f'[Epoch {epoch + 1}/{epochs}] Loss: {avg_loss:.4f}')
+            print(f'[Epoch {epoch + 1}/{epochs}] Loss: {avg_loss:.4f}')
+            train_history['loss'].append(avg_loss)
 
-            mapatk = retrieval_at_k_metrics['MapAtK']['map_at_k_results']
-            logger.info(
-                f"Epoch {epoch + 1}/{epochs}, Loss: {epoch_loss:.4f}, MapAt10: {mapatk['mapAt10']:.4f}"
-            )
-            print(
-                f"Epoch {epoch + 1}/{epochs}, Loss: {epoch_loss:.4f}, MapAt10: {mapatk['mapAt10']:.4f}"
+            (
+                should_stop,
+                min_loss,
+                epochs_without_improvement,
+                checkpoint_path,
+            ) = self.save_model_if_best(
+                model=model,
+                metric=avg_loss,
+                best_metric=min_loss,
+                epochs_without_improvement=epochs_without_improvement,
+                checkpoint_path=checkpoint_path,
+                config=config,
+                metric_logger=metric_logger,
+                mode='loss',
             )
 
-            training_loss.append(epoch_loss)
-            training_mapatk.append(mapatk['mapAt10'])
-
-            if epoch_loss < min_val_loss:
-                min_val_loss = epoch_loss
-                checkpoint_path = save_model_and_log_artifact(
-                    metric_logger, config, model, filepath=checkpoint_path
+            if should_stop:
+                logger.info(
+                    f'Early stopping triggered after {epochs_without_improvement} epochs.'
                 )
+                print(
+                    f'Early stopping triggered after {epochs_without_improvement} epochs.'
+                )
+                break
 
-        train_loader.dataset.switch_to_classifcation_dataset()
-        test_loader.dataset.switch_to_classifcation_dataset()
-
-        metrics = {
-            'epoch_loss': training_loss,
-            'epoch_mapAt10': training_mapatk,
-        }
-        metric_logger.log_json(metrics, 'train_metrics')
+        train_history['last_epoch_metrics'] = {'loss': avg_loss}
+        metric_logger.log_json(train_history, 'train_metrics')
 
         return model
+
+

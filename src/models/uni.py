@@ -10,6 +10,7 @@ import timm
 import os
 from utils.checkpoint_utils import load_full_model
 
+
 class UNI(nn.Module):
     def __init__(self, model_name='uni', pretrained=True):
         """ """
@@ -17,9 +18,7 @@ class UNI(nn.Module):
 
         # Load pretrained DINO model from timm
         self.backbone = load_full_model(
-            model_name=model_name,
-            save_dir=model_name,
-            map_location='cpu'
+            model_name=model_name, save_dir=model_name, map_location='cpu'
         )
 
     def forward(self, x):
@@ -30,6 +29,7 @@ if __name__ == '__main__':
     from huggingface_hub import login, hf_hub_download
     import torch
     import os
+
     # login()  # login with your User Access Token, found at https://huggingface.co/settings/tokens
     # local_dir = "./assets/ckpts/vit_large_patch16_224.dinov2.uni_mass100k/"
     # os.makedirs(local_dir, exist_ok=True)  # create directory if it does not exist

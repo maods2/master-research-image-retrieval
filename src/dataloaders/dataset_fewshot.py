@@ -48,33 +48,33 @@ class FewShotFolderDataset(StandardImageDataset):
         """
         This will return the number of samples in the dataset, and will be used
         to determine the number of batches per epoch.
-        
+
         Specifically for few-shot learning training phase, the batch size defined
         in the dataloader will be equal 1, due the __getitem__(self, idx) method will return
         a support set and a query set of size n_way*k_shot and n_way*q_queries
         respectively.
-        
+
         The method __getitem__(self, idx) will return a tuple of 4 elements with the following shapes:
         - support: [n_way*k_shot, C, H, W]
         - support_labels: [n_way*k_shot]
         - query: [n_way*q_queries, C, H, W]
         - query_labels: [n_way*q_queries]
         For that reason, the training might be slow, because of the number of images processed in each batch.
-        
+
         __getitem__(self, idx) will return randomly selected iamges from the dataset.
         To return the number of batches per epoch, we need to return the number of images in the dataset divided by the number of queries.
         len(self.image_paths) // self.q_queries
-        
+
         As the __getitem__(self, idx) randomly selects images from the dataset, for huge datasets and havy we might benefit from
         returning the number of images less than (len(self.image_paths) // self.q_queries) during the training phase, since
         the images are randomly selected.
         e.g. if we have 10000 images in the dataset and we are using 5 queries, we will have 2000 batches per epoch.
         we can set the number of images to 250, so we will have 250 batches per epoch for heavy models/datasets.
-        
+
         For the validation phase, we will return the number of images in the dataset, since we want to validate the model
         and the __getitem__(self, idx) will work as a normal classification dataset.
-        
-        
+
+
         """
         if self.validation_dataset is not None:
             return len(self.labels)

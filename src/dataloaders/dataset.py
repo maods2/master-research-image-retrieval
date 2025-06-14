@@ -1,5 +1,6 @@
 import os
 import sys
+
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from pathlib import Path
@@ -64,8 +65,19 @@ class StandardImageDataset(Dataset):
 
         for class_name in classes:
             class_dir = self.root_dir / class_name
-            image_extensions = ['*.jpg', '*.jpeg', '*.png', '*.tif', '*.tiff', 
-                               '*.JPG', '*.JPEG', '*.PNG', '*.TIF', '*.TIFF', '*.webp']
+            image_extensions = [
+                '*.jpg',
+                '*.jpeg',
+                '*.png',
+                '*.tif',
+                '*.tiff',
+                '*.JPG',
+                '*.JPEG',
+                '*.PNG',
+                '*.TIF',
+                '*.TIFF',
+                '*.webp',
+            ]
 
             # Collect all matching image files for each extension
             images = []
@@ -123,7 +135,12 @@ class StandardImageDataset(Dataset):
             image = self.transform(image=image)['image']
 
         return image, label
-
+    
+    def set_transform(self, transform):
+        """
+        ovwerride the base class method to set a new transform.
+        """
+        self.transform = transform
 
 if __name__ == '__main__':
     import os

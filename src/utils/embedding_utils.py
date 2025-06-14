@@ -17,7 +17,12 @@ def invert_dict(d):
 
 
 def create_embeddings(
-    model, data_loader, normalize_embeddings, device, logger, desc='Extracting features'
+    model,
+    data_loader,
+    normalize_embeddings,
+    device,
+    logger,
+    desc='Extracting features',
 ):
     """
     Generate embeddings and labels from a given data loader.
@@ -43,7 +48,7 @@ def create_embeddings(
             embedding = model(img.to(device))
             if normalize_embeddings:
                 embedding = torch.nn.functional.normalize(embedding, dim=1)
-                
+
         embeddings.append(embedding.cpu().numpy())
         # Handle both one-hot and standard labels
         if len(label.shape) > 1:  # one-hot encoded
@@ -112,24 +117,38 @@ def create_embeddings_dict(
                           'query_embeddings', and 'query_labels'.
     """
     if hasattr(train_loader.dataset, 'validation_dataset'):
-        test_loader.dataset.k_shot = 1
         test_loader.dataset.validation_dataset = True
-        train_loader.dataset.k_shot = 1
         train_loader.dataset.validation_dataset = True
+
+    if hasattr(train_loader.dataset, 'k_shot') and hasattr(test_loader.dataset, 'k_shot'):
+        train_loader.dataset.k_shot = 1
+        test_loader.dataset.k_shot = 1
         
-    
-    train_loader.transform = get_transforms(config['testing']['transform'])
-    test_loader.transform = get_transforms(config['testing']['transform'])
-    
+        
+    train_loader.dataset.set_transform(
+         get_transforms(config['transform'].get('test', None))
+    )
+
+
     logger.info('Creating embeddings database from training data...')
     normalize_embeddings = config['testing'].get('normalize_embeddings', False)
     db_embeddings, db_labels = create_embeddings(
-        model, train_loader, normalize_embeddings, device, logger, desc='Creating database'
+        model,
+        train_loader,
+        normalize_embeddings,
+        device,
+        logger,
+        desc='Creating database',
     )
 
     logger.info('Generating query embeddings from test data...')
     query_embeddings, query_labels = create_embeddings(
-        model, test_loader, normalize_embeddings, device, logger, desc='Generating queries'
+        model,
+        test_loader,
+        normalize_embeddings,
+        device,
+        logger,
+        desc='Generating queries',
     )
 
     # Use the generalist function to get attributes
@@ -152,11 +171,11 @@ def create_embeddings_dict(
 
     if config['testing']['save_embeddings']:
         # Ensure the directory exists
-        os.makedirs(config['testing']['embeddings_save_path'], exist_ok=True)
+        os.makedirs(config['workspace_dir'], exist_ok=True)
 
         timestamp = time.strftime('%Y-%m-%d_%H-%M-%S')
         path = os.path.join(
-            config['testing']['embeddings_save_path'],
+            config['workspace_dir'],
             f'embeddings_{timestamp}.npz',
         )
         np.savez(path, **embeddings)

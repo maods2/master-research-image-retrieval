@@ -5,7 +5,8 @@ from dataloaders.dataset_terumo import TerumoImageDataset
 from dataloaders.dataset_triplet import MixedTripletDataset, TripletDataset
 from dataloaders.dataset_contrastive import ContrastiveDataset
 
-def get_dataloader(config, transform):
+
+def get_dataloader(config, transform_train, transforms_test):
     """
     Factory function to get data loaders for train and test sets.
 
@@ -42,7 +43,7 @@ def get_dataloader(config, transform):
     # Create dataset instances for training and testing
     train_dataset = dataset_class(
         root_dir=data_config['train_dir'],  # Directory for training data
-        transform=transform,  # Transformations to apply
+        transform=transform_train,  # Transformations to apply
         class_mapping=data_config['class_mapping'],  # Custom class mappings
         config=config,  # Additional config for dataset
     )
@@ -51,7 +52,7 @@ def get_dataloader(config, transform):
 
     test_dataset = dataset_class(
         root_dir=data_config['test_dir'],  # Directory for testing data
-        transform=transform,  # Transformations to apply
+        transform=transforms_test,  # Transformations to apply
         class_mapping=data_config['class_mapping'],  # Custom class mappings
         config=config,  # Additional config for dataset
     )

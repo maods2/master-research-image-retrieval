@@ -120,6 +120,7 @@ class TxtMetricLogger(MetricLoggerBase):
             f"{config.get('output').get('results_dir')}/{self.folder_name}",
         )
         FileUtils.ensure_dir_exists(self.workspace_dir)
+        config['workspace_dir'] = self.workspace_dir
 
         file_name = f'{self.folder_name}_metrics.txt'
         self.metric_file_path = os.path.join(self.workspace_dir, file_name)

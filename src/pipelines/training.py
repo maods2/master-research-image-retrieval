@@ -21,10 +21,13 @@ def train_wrapper(config):
     optimizer = get_optimizer(config['optimizer'], model)
 
     # Load transformations
-    transforms = get_transforms(config['transform'])
+    transforms_train = get_transforms(config['transform'].get('train', None))
+    transforms_test = get_transforms(config['transform'].get('test', None))
 
     # Load data loaders
-    train_loader, test_loader = get_dataloader(config, transforms)
+    train_loader, test_loader = get_dataloader(
+        config, transforms_train, transforms_test
+    )
 
     # Custom training function
     train_fn = get_train_function(config)

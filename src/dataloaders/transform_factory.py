@@ -30,8 +30,16 @@ def get_transforms(transform_config):
     Returns:
         albumentations.Compose: A composition of the specified transformations.
     """
+    if not transform_config:
+        print('No transformations provided, returning identity transform.')
+        return A.Compose([])
 
     transform_list = []
+    if 'random_crop' in transform_config:
+        crop_height, crop_width = transform_config['random_crop']
+        transform_list.append(
+            A.RandomResizedCrop(size=(crop_height, crop_width))
+        )
 
     if 'resize' in transform_config:
         resize_height, resize_width = transform_config['resize']
@@ -139,6 +147,9 @@ def get_transforms(transform_config):
                 p=transform_config['shift_scale_rotate']['probability'],
             )
         )
+
+    if transform_config.get('random_grayscale', False):
+        transform_list.append(A.ToGray(p=transform_config['random_grayscale']))
 
     if 'normalize' in transform_config:
         normalize_mean, normalize_std = tuple(

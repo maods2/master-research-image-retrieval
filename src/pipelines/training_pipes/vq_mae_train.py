@@ -15,25 +15,37 @@ class VectorQuantizer(nn.Module):
         self.commitment_cost = commitment_cost
 
         self.embedding = nn.Embedding(self.num_embeddings, self.embedding_dim)
-        self.embedding.weight.data.uniform_(-1.0/self.num_embeddings, 1.0/self.num_embeddings)
+        self.embedding.weight.data.uniform_(
+            -1.0 / self.num_embeddings, 1.0 / self.num_embeddings
+        )
 
     def forward(self, inputs):
         # Flatten input: (B, D, H, W) -> (B*H*W, D)
         input_shape = inputs.shape
-        flat_input = inputs.permute(0, 2, 3, 1).contiguous().view(-1, self.embedding_dim)
+        flat_input = (
+            inputs.permute(0, 2, 3, 1)
+            .contiguous()
+            .view(-1, self.embedding_dim)
+        )
 
         # Compute distances
-        distances = (flat_input.pow(2).sum(1, keepdim=True)
-                     - 2 * flat_input @ self.embedding.weight.t()
-                     + self.embedding.weight.pow(2).sum(1, keepdim=True).t())
+        distances = (
+            flat_input.pow(2).sum(1, keepdim=True)
+            - 2 * flat_input @ self.embedding.weight.t()
+            + self.embedding.weight.pow(2).sum(1, keepdim=True).t()
+        )
 
         # Get encoding indices
         encoding_indices = torch.argmin(distances, dim=1)
-        encodings = F.one_hot(encoding_indices, self.num_embeddings).type(flat_input.dtype)
+        encodings = F.one_hot(encoding_indices, self.num_embeddings).type(
+            flat_input.dtype
+        )
 
         # Quantize and unflatten
         quantized = encodings @ self.embedding.weight
-        quantized = quantized.view(input_shape[0], input_shape[2], input_shape[3], self.embedding_dim)
+        quantized = quantized.view(
+            input_shape[0], input_shape[2], input_shape[3], self.embedding_dim
+        )
         quantized = quantized.permute(0, 3, 1, 2).contiguous()
 
         # Loss
@@ -43,17 +55,25 @@ class VectorQuantizer(nn.Module):
 
         # Straight-through
         quantized = inputs + (quantized - inputs).detach()
-        return quantized, loss, encoding_indices.view(input_shape[0], input_shape[2], input_shape[3])
+        return (
+            quantized,
+            loss,
+            encoding_indices.view(
+                input_shape[0], input_shape[2], input_shape[3]
+            ),
+        )
 
 
 class VQMAE(nn.Module):
-    def __init__(self,
-                 backbone='resnet18',
-                 img_size=224,
-                 patch_size=16,
-                 num_embeddings=512,
-                 embedding_dim=512,
-                 mask_ratio=0.75):
+    def __init__(
+        self,
+        backbone='resnet18',
+        img_size=224,
+        patch_size=16,
+        num_embeddings=512,
+        embedding_dim=512,
+        mask_ratio=0.75,
+    ):
         super().__init__()
         self.img_size = img_size
         self.patch_size = patch_size
@@ -62,9 +82,14 @@ class VQMAE(nn.Module):
         # Encoder
         if backbone.startswith('resnet'):
             res = getattr(models, backbone)(pretrained=False)
-            self.encoder = nn.Sequential(*list(res.children())[:-2])  # remove avgpool & fc
+            self.encoder = nn.Sequential(
+                *list(res.children())[:-2]
+            )  # remove avgpool & fc
             self.enc_out_dim = res.fc.in_features
-            self.grid_size = (img_size // 32, img_size // 32)  # resnet downscale 32x
+            self.grid_size = (
+                img_size // 32,
+                img_size // 32,
+            )  # resnet downscale 32x
         elif 'vit' in backbone:
             vit = timm.create_model(backbone, pretrained=False)
             self.encoder = vit.patch_embed  # patch embedding
@@ -81,11 +106,27 @@ class VQMAE(nn.Module):
 
         # Decoder (simple convtranspose)
         self.decoder = nn.Sequential(
-            nn.ConvTranspose2d(embedding_dim, embedding_dim//2, kernel_size=4, stride=2, padding=1),
-            nn.BatchNorm2d(embedding_dim//2), nn.ReLU(True),
-            nn.ConvTranspose2d(embedding_dim//2, embedding_dim//4, kernel_size=4, stride=2, padding=1),
-            nn.BatchNorm2d(embedding_dim//4), nn.ReLU(True),
-            nn.ConvTranspose2d(embedding_dim//4, 3, kernel_size=4, stride=2, padding=1)
+            nn.ConvTranspose2d(
+                embedding_dim,
+                embedding_dim // 2,
+                kernel_size=4,
+                stride=2,
+                padding=1,
+            ),
+            nn.BatchNorm2d(embedding_dim // 2),
+            nn.ReLU(True),
+            nn.ConvTranspose2d(
+                embedding_dim // 2,
+                embedding_dim // 4,
+                kernel_size=4,
+                stride=2,
+                padding=1,
+            ),
+            nn.BatchNorm2d(embedding_dim // 4),
+            nn.ReLU(True),
+            nn.ConvTranspose2d(
+                embedding_dim // 4, 3, kernel_size=4, stride=2, padding=1
+            ),
         )
 
     def random_mask(self, x):
@@ -105,11 +146,12 @@ class VQMAE(nn.Module):
         if hasattr(self, 'encoder_blocks'):
             x_p = self.encoder(x_masked)  # patch embeddings
             B, n, _ = x_p.size()
-            x_p = x_p + self.pos_embed[:, 1:n+1, :]
+            x_p = x_p + self.pos_embed[:, 1 : n + 1, :]
             for blk in self.encoder_blocks:
                 x_p = blk(x_p)
-            feat = x_p.transpose(1, 2).reshape(B, self.enc_out_dim,
-                                              self.grid_size[0], self.grid_size[1])
+            feat = x_p.transpose(1, 2).reshape(
+                B, self.enc_out_dim, self.grid_size[0], self.grid_size[1]
+            )
         else:
             feat = self.encoder(x_masked)
         # Quantize
@@ -126,11 +168,12 @@ class VQMAE(nn.Module):
         if hasattr(self, 'encoder_blocks'):
             x_p = self.encoder(x)
             B, n, _ = x_p.size()
-            x_p = x_p + self.pos_embed[:, 1:n+1, :]
+            x_p = x_p + self.pos_embed[:, 1 : n + 1, :]
             for blk in self.encoder_blocks:
                 x_p = blk(x_p)
-            feat = x_p.transpose(1, 2).reshape(B, self.enc_out_dim,
-                                              self.grid_size[0], self.grid_size[1])
+            feat = x_p.transpose(1, 2).reshape(
+                B, self.enc_out_dim, self.grid_size[0], self.grid_size[1]
+            )
         else:
             feat = self.encoder(x)
         quantized, _, indices = self.quantizer(feat)
@@ -138,12 +181,16 @@ class VQMAE(nn.Module):
 
 
 def get_data_loaders(data_dir, img_size=224, batch_size=32, num_workers=4):
-    transform = transforms.Compose([
-        transforms.Resize((img_size, img_size)),
-        transforms.ToTensor(),
-    ])
+    transform = transforms.Compose(
+        [
+            transforms.Resize((img_size, img_size)),
+            transforms.ToTensor(),
+        ]
+    )
     dataset = datasets.ImageFolder(data_dir, transform=transform)
-    loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers)
+    loader = DataLoader(
+        dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers
+    )
     return loader
 
 
@@ -160,7 +207,9 @@ def train(model, data_loader, epochs=10, lr=1e-4, device='cuda'):
             loss.backward()
             optimizer.step()
             total_loss += loss.item()
-        print(f"Epoch {epoch+1}/{epochs}, Loss: {total_loss/len(data_loader):.4f}")
+        print(
+            f'Epoch {epoch+1}/{epochs}, Loss: {total_loss/len(data_loader):.4f}'
+        )
 
 
 # Example usage:

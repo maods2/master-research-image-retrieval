@@ -132,7 +132,7 @@ class FewShotTrain(BaseTrainer):
     def __call__(
         self,
         model,
-        loss_fn,  # Não usado nesse caso, pois a loss está embutida
+        loss_fn,
         optimizer,
         train_loader,
         test_loader,

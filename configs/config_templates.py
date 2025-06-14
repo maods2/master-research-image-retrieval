@@ -21,11 +21,9 @@ def update_config_fields(config: dict, dataset_name: str, model_config: Dict[str
     
     # Update fields in the 'testing' section
     config['testing']['embeddings_path'] = f'./artifacts/{dataset_name}/embeddings_{model_config["model_name"]}'
-    config['testing']['embeddings_save_path'] = f'./artifacts/{dataset_name}/embeddings_{model_config["model_name"]}'
     config['testing']['normalize_embeddings'] = False
     
     # Update fields in the 'output' section
-    config['output']['model_dir'] = f'./artifacts/{experiment_name}_{dataset_name}'
     config['output']['results_dir'] = f'./local_experiments/{experiment_name}_{dataset_name}'
     
     return config
@@ -47,7 +45,7 @@ def update_config_fields_fsl_train(config: dict, dataset_name: str, model_config
     
     # Update fields in the 'testing' section
     config['testing']['embeddings_path'] = f'./artifacts/{dataset_name}/embeddings_{model_config["model_name"]}'
-    config['testing']['embeddings_save_path'] = f'./artifacts/{dataset_name}/embeddings_{model_config["model_name"]}'
+    config['testing'][''] = f'./artifacts/{dataset_name}/embeddings_{model_config["model_name"]}'
     config['testing']['normalize_embeddings'] = False
     config['testing']['enabled'] = True
     

@@ -10,15 +10,14 @@ import os
 
 from utils.checkpoint_utils import load_full_model
 
+
 class Virchow2(nn.Module):
     def __init__(self, model_name='Virchow2', pretrained=True):
         """ """
         super(Virchow2, self).__init__()
-       
+
         self.backbone = load_full_model(
-            model_name=model_name,
-            save_dir=model_name,
-            map_location='cpu'
+            model_name=model_name, save_dir=model_name, map_location='cpu'
         )
 
     def forward(self, x, only_cls_token=True):
@@ -40,8 +39,9 @@ class Virchow2(nn.Module):
 
 if __name__ == '__main__':
     from huggingface_hub import login, hf_hub_download
+
     # login()
-   
+
     # os.makedirs(local_dir, exist_ok=True)  # create directory if it does not exist
     # hf_hub_download("paige-ai/Virchow2", filename="pytorch_model.bin", local_dir=local_dir, force_download=True)
     model = Virchow2()

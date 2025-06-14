@@ -154,6 +154,13 @@ retrieval-test-fsl-glomerulo:
 		done; \
 	done
 
+# =============================
+# Supervised Constrastive Learning
+# =============================
+train-supcon-glomerulo:
+	python3 src/main.py --config configs/templates/sup_con/default_train_config.yaml --pipeline train
+
+
 # ============================
 # Download Datasets
 # ============================

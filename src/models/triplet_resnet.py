@@ -4,6 +4,7 @@ from torchvision import models
 from torchvision.models import ResNet50_Weights
 import timm
 
+
 class TripletResNet(nn.Module):
     def __init__(self, embedding_size=512):
         super().__init__()
@@ -17,7 +18,8 @@ class TripletResNet(nn.Module):
         x = self.backbone(x)
         return self.normalize(x)  # Embeddings normalizados
 
-class ResNet50(nn.Module):
+
+class ResNet50_(nn.Module):
     def __init__(self, embedding_size=512):
         super().__init__()
         self.backbone = models.resnet50(weights=ResNet50_Weights.IMAGENET1K_V1)
@@ -27,9 +29,10 @@ class ResNet50(nn.Module):
         x = self.backbone(x)
         x = torch.nn.functional.normalize(x, p=1, dim=1)
         return x.view(x.size(0), -1)
-    
+
+
 class ResNet(nn.Module):
-    def __init__(self, model_name='vit_large_patch16_224', pretrained=True):
+    def __init__(self, model_name='', pretrained=True):
         """ """
         super(ResNet, self).__init__()
 
@@ -42,8 +45,8 @@ class ResNet(nn.Module):
 
     def forward(self, x):
         return self.backbone(x)  # Already returns flattened embeddings
-    
-    
+
+
 if __name__ == '__main__':
     model = ResNet50()
     out = model(torch.randn(2, 3, 224, 224))

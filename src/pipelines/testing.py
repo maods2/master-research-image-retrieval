@@ -11,10 +11,11 @@ def test_wrapper(config):
     metric_logger = setup_metric_logger(config)
 
     # load model
-    transforms = get_transforms(config['transform'])
+    transforms_test = get_transforms(config['transform'].get('test', None))
+
     model = get_model(config['model'])
 
-    train_loader, test_loader = get_dataloader(config, transforms)
+    train_loader, test_loader = get_dataloader(config, transforms_test)
 
     # Função de teste
     test_fn = get_test_function(config['testing'])

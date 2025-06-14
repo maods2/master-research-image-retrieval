@@ -35,7 +35,7 @@ testing:
   load_embeddings: false  # Load embeddings from disk
   embeddings_path: ./artifacts/glomerulo/embeddings_resnet_fsl      # Path to load embeddings
   save_embeddings: true  # Save embeddings to disk
-  embeddings_save_path: ./artifacts/glomerulo/embeddings_resnet_fsl      # Path to save embeddings
+  : ./artifacts/glomerulo/embeddings_resnet_fsl      # Path to save embeddings
   list_of_metrics:
     # - type: accuracy
     # - type: f1_score
