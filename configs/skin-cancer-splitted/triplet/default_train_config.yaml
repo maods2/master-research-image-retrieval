@@ -18,8 +18,8 @@ model:
   pretrained: true  # Use pre-trained weights
   freeze_params: true  # Freeze the parameters of the model
   num_classes: 7  # Number of classes in the dataset
-  load_checkpoint: false  # Load a pre-trained model checkpoint
-  checkpoint_path: ''  # Path to the model checkpoint
+  load_checkpoint: true  # Load a pre-trained model checkpoint
+  checkpoint_path: './local_experiments/triplet/skin-cancer-splitted/triplet_resnet_skin-cancer-splitted_2025-06-15_05-54-15/triplet_resnet_skin-cancer-splitted_triplet_resnet_2025-06-15_05-55-19_checkpoint.pth'  # Path to the model checkpoint
   hidden_dim: 2048  # Hidden dimension for FSL encoder
   out_dim: 1024  # Embedding dimension for FSL encoder
 
