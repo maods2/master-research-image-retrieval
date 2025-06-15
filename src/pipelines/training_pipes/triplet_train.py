@@ -87,7 +87,7 @@ class TripletTrain(BaseTrainer):
         epochs_without_improvement = 0
         checkpoint_path = None
         train_history = {'loss': []}
-        
+
         for epoch in range(epochs):
             avg_loss = self.train_one_epoch(
                 model, loss_fn, optimizer, train_loader, device, epoch
@@ -126,5 +126,3 @@ class TripletTrain(BaseTrainer):
         metric_logger.log_json(train_history, 'train_metrics')
 
         return model
-
-

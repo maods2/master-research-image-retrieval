@@ -135,12 +135,13 @@ class StandardImageDataset(Dataset):
             image = self.transform(image=image)['image']
 
         return image, label
-    
+
     def set_transform(self, transform):
         """
         ovwerride the base class method to set a new transform.
         """
         self.transform = transform
+
 
 if __name__ == '__main__':
     import os

@@ -120,15 +120,15 @@ def create_embeddings_dict(
         test_loader.dataset.validation_dataset = True
         train_loader.dataset.validation_dataset = True
 
-    if hasattr(train_loader.dataset, 'k_shot') and hasattr(test_loader.dataset, 'k_shot'):
+    if hasattr(train_loader.dataset, 'k_shot') and hasattr(
+        test_loader.dataset, 'k_shot'
+    ):
         train_loader.dataset.k_shot = 1
         test_loader.dataset.k_shot = 1
-        
-        
-    train_loader.dataset.set_transform(
-         get_transforms(config['transform'].get('test', None))
-    )
 
+    train_loader.dataset.set_transform(
+        get_transforms(config['transform'].get('test', None))
+    )
 
     logger.info('Creating embeddings database from training data...')
     normalize_embeddings = config['testing'].get('normalize_embeddings', False)

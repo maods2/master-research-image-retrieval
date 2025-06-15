@@ -2,7 +2,6 @@ import sys
 import os
 
 
-
 sys.path.append(
     os.path.dirname(
         os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -127,7 +126,9 @@ class TxtMetricLogger(MetricLoggerBase):
     def __init__(self, config: Dict):
         self.config = config
 
-        self.workspace_dir, self.folder_name = generate_experiment_folder(config)
+        self.workspace_dir, self.folder_name = generate_experiment_folder(
+            config
+        )
         file_name = f'{self.folder_name}_metrics.txt'
         self.metric_file_path = os.path.join(self.workspace_dir, file_name)
 

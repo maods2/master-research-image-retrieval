@@ -27,7 +27,6 @@ class TripletDataset(StandardImageDataset):
     def __len__(self):
         return len(self.image_paths)
 
-        
     def _open_image(self, path):
         """
         Open an image file and convert it to RGB format.
@@ -54,10 +53,10 @@ class TripletDataset(StandardImageDataset):
     def __getitem__(
         self, idx: int
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-        
+
         if self.validation_dataset is not None:
             return self._validation__getitem__(idx)
-        
+
         anchor_path = self.image_paths[idx]
         anchor_class = self.labels[idx]
 
@@ -91,6 +90,7 @@ class TripletDataset(StandardImageDataset):
 
     def set_transform(self, transform):
         self.transform = transform
+
 
 class MixedTripletDataset(Dataset):
     def __init__(

@@ -21,11 +21,12 @@ def get_train_function(config):
         return SupConTrainer(config)
 
     elif config['training']['pipeline'] == 'train_autoencoder':
-        from pipelines.training_pipes.autoencoder_trainer import AutoencoderTrainer
+        from pipelines.training_pipes.autoencoder_trainer import (
+            AutoencoderTrainer,
+        )
 
         return AutoencoderTrainer(config)
-    
-    
+
     else:
         raise ValueError(
             f'Training pipeline {config["training"]["pipeline"]} is not supported'

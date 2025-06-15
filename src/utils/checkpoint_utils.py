@@ -120,21 +120,21 @@ def load_full_model(model_name: str, save_dir: str, map_location=None):
     print(f'Model loaded from: {load_path}')
     return model
 
+
 def generate_experiment_folder(config) -> str:
     if 'workspace_dir' in config:
         folder_name = config['workspace_dir'].split('/')[-1]
         return config['workspace_dir'], folder_name
-    
+
     experiment_name = config.get('model', {}).get(
         'experiment_name', 'default_experiment'
     )
     timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     folder_name = f'{experiment_name}_{timestamp}'
-    
+
     workspace_dir = f"{config.get('output').get('results_dir')}/{folder_name}"
-    
+
     os.makedirs(workspace_dir, exist_ok=True)
     config['workspace_dir'] = workspace_dir
-    
-    return workspace_dir, folder_name
 
+    return workspace_dir, folder_name

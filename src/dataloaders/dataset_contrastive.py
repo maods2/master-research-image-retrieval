@@ -6,6 +6,7 @@ from dataloaders.dataset import StandardImageDataset
 import torch
 import cv2
 
+
 class ContrastiveDataset(StandardImageDataset):
     """
     Returns two randomly augmented views per sample, using an optional base transform
@@ -17,7 +18,7 @@ class ContrastiveDataset(StandardImageDataset):
         super().__init__(root_dir, transform=None, class_mapping=class_mapping)
         self._transform = transform
         self.validation_dataset = None
-        
+
     def _open_image(self, path):
         """
         Open an image file and convert it to RGB format.
@@ -44,7 +45,7 @@ class ContrastiveDataset(StandardImageDataset):
     def __getitem__(self, idx):
         if self.validation_dataset is not None:
             return self._validation__getitem__(idx)
-        
+
         image, label = super().__getitem__(idx)
 
         if self._transform:

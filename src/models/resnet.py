@@ -10,7 +10,7 @@ from torchvision.models import (
 
 
 class ResNet18(nn.Module):
-    def __init__(self, config):        
+    def __init__(self, config):
         super(ResNet18, self).__init__()
         freeze_params = config.get('freeze_params', True)
         self.backbone = models.resnet18(weights=ResNet18_Weights.IMAGENET1K_V1)
@@ -19,10 +19,10 @@ class ResNet18(nn.Module):
         )  # Remove the final fully connected layer
 
         if freeze_params:
-            print("Freezing ResNet18 parameters")
+            print('Freezing ResNet18 parameters')
             for param in self.backbone.parameters():
                 param.requires_grad = False
-            
+
     def forward(self, x):
         x = self.backbone(x)
         return x
@@ -38,10 +38,10 @@ class ResNet34(nn.Module):
         )  # Remove the final fully connected layer
 
         if freeze_params:
-            print("Freezing ResNet34 parameters")
+            print('Freezing ResNet34 parameters')
             for param in self.backbone.parameters():
                 param.requires_grad = False
-            
+
     def forward(self, x):
         x = self.backbone(x)
         return x
@@ -57,10 +57,10 @@ class ResNet50(nn.Module):
         )  # Remove the final fully connected layer
 
         if freeze_params:
-            print("Freezing ResNet50 parameters")
+            print('Freezing ResNet50 parameters')
             for param in self.backbone.parameters():
                 param.requires_grad = False
-            
+
     def forward(self, x):
         x = self.backbone(x)
         return x

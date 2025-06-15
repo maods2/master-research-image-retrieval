@@ -154,8 +154,7 @@ def get_model(model_config):
             hidden_dim=model_config.get('hidden_dim', 512),
             out_dim=model_config.get('out_dim', 128),
         )
-            
-            
+
     elif model_name == 'triplet_vit':
         model = TripletViT(embedding_size=model_config['embedding_size'])
 
@@ -177,7 +176,7 @@ def get_model(model_config):
             hidden_dim=model_config.get('hidden_dim', 512),
             out_dim=model_config.get('out_dim', 128),
         )
-        
+
     elif model_name == 'autoencoder_resnet':
         if model_config.get('model_name') == 'resnet18':
             backbone = ResNet18(model_config)
@@ -191,16 +190,12 @@ def get_model(model_config):
             )
 
         model = Autoencoder(
-            backbone, 
+            backbone,
             encoder_dim=model_config.get('encoder_dim', 512),
             decoder_channels=model_config.get('decoder_channels', 512),
             decoder_h=model_config.get('decoder_h', 8),
-            decoder_w=model_config.get('decoder_w', 8)
+            decoder_w=model_config.get('decoder_w', 8),
         )
-
-
-
-
 
     else:
         raise ValueError(f'Model {model_name} is not supported')
