@@ -2,13 +2,21 @@
 https://arxiv.org/pdf/2408.00738
 https://huggingface.co/paige-ai/Virchow2
 """
+import sys
+import os
 
+
+sys.path.append(
+    os.path.dirname(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    )
+)
 import torch
 import torch.nn as nn
 import timm
 import os
 
-from utils.checkpoint_utils import load_full_model
+from src.utils.checkpoint_utils import load_full_model
 
 
 class Virchow2(nn.Module):

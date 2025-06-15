@@ -3,12 +3,20 @@ https://huggingface.co/MahmoodLab/UNI
 https://github.com/mahmoodlab/UNI
 https://www.nature.com/articles/s41591-024-02857-3.epdf?sharing_token=CzM2TCW_6hilYJ6BCMgx5dRgN0jAjWel9jnR3ZoTv0PwDLGHgijc_t52lQyxVvw552KDCUhMbS4KuO_rvLnP6S1BpmIj9puojkF8lfR5R8uEX08B0FxePgIH0t7DovKvZF4NHQKlq4TZHGAA1wEIdkYKvcr8nUsaa-nNYbNw3JI%3D
 """
+import sys
+import os
 
+
+sys.path.append(
+    os.path.dirname(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    )
+)
 import torch
 import torch.nn as nn
 import timm
 import os
-from utils.checkpoint_utils import load_full_model
+from src.utils.checkpoint_utils import load_full_model
 
 
 class UNI(nn.Module):
