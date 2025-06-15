@@ -137,19 +137,34 @@ def get_model(model_config):
     ################### Triplet Models #################################################
 
     elif model_name == 'triplet_resnet':
-        model = TripletResNet(embedding_size=model_config['embedding_size'])
-
+        if model_config.get('model_name') == 'resnet18':
+            backbone = ResNet18(model_config)
+        elif model_config.get('model_name') == 'resnet20':
+            backbone = ResNet34(model_config)
+        elif model_config.get('model_name') == 'resnet50':
+            backbone = ResNet50(model_config)
+        else:
+            raise ValueError(
+                f'Model {model_config["model_name"]} is not supported'
+            )
+        model = ProjectionHead(
+            base_model=backbone,
+            hidden_dim=model_config.get('hidden_dim', 512),
+            out_dim=model_config.get('out_dim', 128),
+        )
+            
+            
     elif model_name == 'triplet_vit':
         model = TripletViT(embedding_size=model_config['embedding_size'])
 
     #################### Other Models ######################################################
     elif model_name == 'resnet_supcon':
         if model_config.get('model_name') == 'resnet18':
-            backbone = ResNet18()
+            backbone = ResNet18(model_config)
         elif model_config.get('model_name') == 'resnet20':
-            backbone = ResNet34()
+            backbone = ResNet34(model_config)
         elif model_config.get('model_name') == 'resnet50':
-            backbone = ResNet50()
+            backbone = ResNet50(model_config)
         else:
             raise ValueError(
                 f'Model {model_config["model_name"]} is not supported'

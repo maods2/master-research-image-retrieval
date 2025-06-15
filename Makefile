@@ -171,7 +171,22 @@ train-supcon:
 	python3 src/main.py --config configs/ovarian-cancer-splitted/sup_con/default_train_config.yaml--pipeline train
 	python3 src/main.py --config configs/skin-cancer-splitted/sup_con/default_train_config.yaml --pipeline train
 
+# ============================
+# Triplet Learning 
+# ============================
+train-triplet-glomerulo:
+	python3 src/main.py --config configs/glomerulo/triplet/default_train_config.yaml --pipeline train
 
+train-triplet-ovarian-cancer:
+	python3 src/main.py --config configs/ovarian-cancer-splitted/triplet/default_train_config.yaml --pipeline train
+
+train-triplet-skin-cancer:
+	python3 src/main.py --config configs/skin-cancer-splitted/triplet/default_train_config.yaml --pipeline train
+
+train-triplet:
+	python3 src/main.py --config configs/glomerulo/triplet/default_train_config.yaml --pipeline train
+	python3 src/main.py --config configs/ovarian-cancer-splitted/triplet/default_train_config.yaml --pipeline train
+	python3 src/main.py --config configs/skin-cancer-splitted/triplet/default_train_config.yaml --pipeline train
 
 # ============================
 # Download Datasets

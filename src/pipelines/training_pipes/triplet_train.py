@@ -11,7 +11,6 @@ class TripletTrain(BaseTrainer):
     def __init__(self, config: dict):
         self.config = config
         super().__init__()
-        self.retrieval_at_k_metrics = get_metrics(config['training'])
 
     def train_one_epoch(
         self,
@@ -83,7 +82,6 @@ class TripletTrain(BaseTrainer):
         )
         model.to(device)
         epochs = config['training']['epochs']
-        patience = config['training'].get('early_stopping_patience', 10)
 
         min_loss = float('inf')
         epochs_without_improvement = 0
