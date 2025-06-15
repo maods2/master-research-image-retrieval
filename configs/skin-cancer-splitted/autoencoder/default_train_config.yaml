@@ -4,8 +4,8 @@ data:
   train_dir: datasets/final/skin-cancer-splitted/train
   test_dir: datasets/final/skin-cancer-splitted/test
   class_mapping: {akiec: 0, bcc: 1, bkl: 2, df: 3, mel: 4, nv: 5, vasc: 6}
-  batch_size: 128 
-  batch_size_test: 128
+  batch_size: 64 
+  batch_size_test: 64
   num_workers: 3  # Number of workers to load the data
   suffle_train: true  # Shuffle the training data
   suffle_test: false
@@ -23,8 +23,7 @@ model:
   pretrained: true  # Use pre-trained weights
   load_checkpoint: false  # Load a pre-trained model checkpoint
   checkpoint_path: ''  # Path to the model checkpoint
-  hidden_dim: 2048  # Hidden dimension for FSL encoder
-  out_dim: 1024  # Embedding dimension for FSL encoder
+
 
 # Loss function configuration
 loss:

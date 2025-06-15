@@ -27,8 +27,17 @@ class Autoencoder(nn.Module):
         self.decoder_w = decoder_w
 
         # Project from encoder_dim to decoder_channels * decoder_h * decoder_w
-        self.project = nn.Linear(encoder_dim, 
-        decoder_channels * decoder_h * decoder_w)
+        # ReLU + BatchNorm1d maintains stable activation and improves training.
+        # Dropout helps avoid overfitting of the head, which is important since the backbone is frozen.
+        self.bottleneck_layer = nn.Sequential(
+            nn.Linear(encoder_dim, decoder_channels),
+            nn.ReLU(),
+            nn.BatchNorm1d(decoder_channels),
+            nn.Dropout(0.5),  
+        )
+        
+        
+        self.project = nn.Linear(decoder_channels, decoder_channels * decoder_h * decoder_w)
 
         # Decoder: input channels = decoder_channels
         self.decoder = nn.Sequential(
@@ -45,6 +54,7 @@ class Autoencoder(nn.Module):
         )
     def encode(self, x):
         x = self.encoder(x)  # [batch, encoder_dim]
+        x = self.bottleneck_layer(x)
         x = self.project(x)  # [batch, decoder_channels * decoder_h * decoder_w]
         x = x.view(x.size(0), self.decoder_channels, self.decoder_h, self.decoder_w)
         return x
@@ -56,4 +66,5 @@ class Autoencoder(nn.Module):
 
     def forward(self, x):
         x = self.encoder(x)
+        x = self.bottleneck_layer(x)
         return x

@@ -4,8 +4,8 @@ data:
   train_dir: datasets/final/ovarian-cancer-splitted/train
   test_dir: datasets/final/ovarian-cancer-splitted/test
   class_mapping: {Clear_Cell: 0, Endometri: 1, Mucinous: 2, Non_Cancerous: 3, Serous: 4}
-  batch_size: 128 
-  batch_size_test: 128
+  batch_size: 64 
+  batch_size_test: 64
   num_workers: 3  # Number of workers to load the data
   suffle_train: true  # Shuffle the training data
   suffle_test: false
@@ -14,7 +14,7 @@ data:
 model:
   name: autoencoder_resnet    # Example: You can set it to resnet18, resnet34, etc.
   model_name: resnet50
-  freeze_params: false  # Freeze the parameters of backbone model 
+  freeze_params: true  # Freeze the parameters of backbone model 
   encoder_dim: 2048  # Dimension of the encoder output.
   decoder_channels: 2048 #  Number of channels in the decoder output
   decoder_h: 8 # Height of the decoder output feature map.
@@ -23,8 +23,6 @@ model:
   pretrained: true  # Use pre-trained weights
   load_checkpoint: false  # Load a pre-trained model checkpoint
   checkpoint_path: ''  # Path to the model checkpoint
-  hidden_dim: 2048  # Hidden dimension for FSL encoder
-  out_dim: 1024  # Embedding dimension for FSL encoder
 
 # Loss function configuration
 loss:
