@@ -2,7 +2,6 @@ import sys
 import os
 
 
-
 sys.path.append(
     os.path.dirname(
         os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -17,6 +16,8 @@ from tqdm import tqdm
 from pipelines.training_pipes.base_trainer import BaseTrainer
 from metrics.metric_base import MetricLoggerBase
 from dataloaders.dataset import StandardImageDataset
+from models.autoencoder import Autoencoder
+
 
 class AutoencoderTrainer(BaseTrainer):
     def __init__(self, config: dict):
@@ -105,52 +106,18 @@ class AutoencoderTrainer(BaseTrainer):
         return model
 
 
-# -------------------------
-# Network Definition
-# -------------------------
-from torchvision import models
-from torchvision.models import ResNet18_Weights
 
-
-class Autoencoder(nn.Module):
-    def __init__(self, backbone=None):
-        super().__init__()
-        # Encoder (ResNet18 without final FC)
-        self.encoder = backbone
-        self.pool = nn.AdaptiveAvgPool2d((8, 8))
-
-        # Decoder (simple)
-        self.decoder = nn.Sequential(
-            nn.ConvTranspose2d(512, 256, 3, stride=2),
-            nn.ReLU(),
-            nn.ConvTranspose2d(256, 128, 3, stride=2),
-            nn.ReLU(),
-            nn.ConvTranspose2d(128, 64, 3, stride=2),
-            nn.ReLU(),
-            nn.ConvTranspose2d(64, 3, 3, stride=2, output_padding=1),
-            nn.Tanh(),
-        )
-    def encode(self, x):
-        x = self.encoder(x)
-        x = self.pool(x)
-        return x
-    
-    def decode(self, x):
-        x = self.decoder(x)
-        return x
-
-    def forward(self, x):
-        x = self.encode(x)
-        return x
-
-
-# -------------------------
-# Dummy Test
-# -------------------------
 if __name__ == "__main__":
+    # -------------------------
+    #  Test
+    # -------------------------
     import albumentations as A
     from albumentations.pytorch import ToTensorV2
     from torch.utils.data import DataLoader
+    from torchvision import models
+    from torchvision.models import ResNet18_Weights, ResNet50_Weights
+
+
 
     transform = A.Compose(
         [
@@ -162,13 +129,14 @@ if __name__ == "__main__":
 
     root_dir = './datasets/final/glomerulo/train'
     dataset = StandardImageDataset(root_dir, transform=transform)
-    dataloader = DataLoader(dataset, batch_size=96, shuffle=True)
+    dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
 
 
-    backbone = models.resnet18(pretrained=False)
+    # backbone = models.resnet18(weights=ResNet18_Weights.IMAGENET1K_V1)
+    backbone = models.resnet50(weights=ResNet50_Weights.IMAGENET1K_V1)
     backbone.fc = nn.Identity()
     
-    model = Autoencoder(backbone)
+    model = Autoencoder(backbone=backbone, encoder_dim=2048, decoder_channels=2048, decoder_h=8, decoder_w=8)
     trainer = AutoencoderTrainer(config={"training": {"epochs": 10, "early_stopping_patience": 3}})
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
     criterion = nn.MSELoss()

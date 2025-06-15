@@ -21,6 +21,8 @@ def get_loss(loss_config):
         loss_fn = nn.BCEWithLogitsLoss()  # For multilabel classification
     elif loss_name == 'cross_entropy':
         loss_fn = nn.CrossEntropyLoss()  # For multiclass classification
+    elif loss_name == 'mse':
+        loss_fn = nn.MSELoss()
     elif loss_name == 'adaptative_triplet':
         loss_fn = AdaptiveTripletLoss()
     elif loss_name == 'prototypical':

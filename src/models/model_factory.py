@@ -6,6 +6,8 @@ sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'))
 )
 
+
+from src.models.autoencoder import Autoencoder
 from src.models.resnet import ResNet18, ResNet34, ResNet50
 from src.models.clip import CLIP
 from src.models.triplet_resnet import TripletResNet, ResNet
@@ -175,6 +177,30 @@ def get_model(model_config):
             hidden_dim=model_config.get('hidden_dim', 512),
             out_dim=model_config.get('out_dim', 128),
         )
+        
+    elif model_name == 'autoencoder_resnet':
+        if model_config.get('model_name') == 'resnet18':
+            backbone = ResNet18(model_config)
+        elif model_config.get('model_name') == 'resnet20':
+            backbone = ResNet34(model_config)
+        elif model_config.get('model_name') == 'resnet50':
+            backbone = ResNet50(model_config)
+        else:
+            raise ValueError(
+                f'Model {model_config["model_name"]} is not supported'
+            )
+
+        model = Autoencoder(
+            backbone, 
+            encoder_dim=model_config.get('encoder_dim', 512),
+            decoder_channels=model_config.get('decoder_channels', 512),
+            decoder_h=model_config.get('decoder_h', 8),
+            decoder_w=model_config.get('decoder_w', 8)
+        )
+
+
+
+
 
     else:
         raise ValueError(f'Model {model_name} is not supported')
