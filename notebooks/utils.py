@@ -230,7 +230,9 @@ def plot_metric_comparison(
             "dinov2": "DINOv2",
             "dino_": "DINO",
             "vit_": "ViT",
-            "resnet": "ResNet",
+            "resnet_supcon": "SupCon-ResNet50",
+            "triplet_resnet_": "Triplet-ResNet50",
+            "resnet": "ResNet50",
             "clip": "CLIP",
             "uni_": "UNI",
             "UNI2-h": "UNI2-h",
@@ -257,7 +259,6 @@ def plot_metric_comparison(
         'DINOv2': {'color': '#1f77b4', 'marker': 'o'},   # Tableau blue
         'DINO': {'color': '#2ca02c', 'marker': 's'},     # Tableau green
         'ViT': {'color': '#ff7f0e', 'marker': '^'},      # Tableau orange
-        'ResNet': {'color': '#9467bd', 'marker': 'D'},   # Tableau purple
         'CLIP': {'color': '#d62728', 'marker': 'v'},     # Tableau red
         'Virchow2': {'color': '#e377c2', 'marker': 'P'},  # Tableau pink
         'Phikon-v2': {'color': '#bcbd22', 'marker': 'h'},  # Tableau olive
@@ -265,7 +266,22 @@ def plot_metric_comparison(
         'UNI2-h': {'color': '#17becf', 'marker': 'X'},    # Tableau cyan
         'UNI': {'color': '#8c564b', 'marker': '*'},      # Tableau brown
         
-    }
+        'SupCon-ResNet50': {'color': '#0b4c8c', 'marker': None, 'linestyle':'--'},  # Darker blue
+        'Triplet-ResNet50': {'color': '#1a75ff', 'marker': None, 'linestyle':':'},   # Lighter blue
+        
+        'ResNet': {'color': '#9467bd', 'marker': 'D'},   # Tableau purple
+        }
+
+        # Reference for line styles:
+        # Line Style | Description
+        # -----------|-------------
+        # '-'        | Solid line
+        # '--'       | Dashed line
+        # '-.'       | Dash-dot line
+        # ':'        | Dotted line
+        # 'None'     | No line
+        # ''         | No line
+
 
     # Plot the sorted experiments using consistent styles
     handles = []
@@ -274,6 +290,7 @@ def plot_metric_comparison(
     # Adiciona separadores
     foundation_models = []
     pretrained_backbones = []
+    representation_models = []
 
     for exp in exp_data:
         label = get_label(exp)
@@ -284,12 +301,15 @@ def plot_metric_comparison(
             exp['ks'], exp['values'], 
             color=style['color'], 
             marker=style['marker'],
+            linestyle=style.get('linestyle', '-'),
             label=label
         )
 
         # Decide a qual grupo pertence
         if model_type in ['UNI', 'UNI2-h', 'Phikon', 'Phikon-v2', 'Virchow2']:
             foundation_models.append((line, label))
+        elif model_type in ['Triplet-ResNet50', 'SupCon-ResNet50']:
+            representation_models.append((line, label))
         else:
             pretrained_backbones.append((line, label))
 
@@ -306,14 +326,20 @@ def plot_metric_comparison(
         handles.append(h)
         labels.append(l)
 
-    # Adiciona a legenda formatada
+    handles += [plt.Line2D([0], [0], color='none', label='— Representation Learning Methods —')]
+    labels += ['• Representation Learning Methods ']
+    for h, l in representation_models:
+        handles.append(h)
+        labels.append(l)
 
+    # Adiciona a legenda formatada
+    # 'xx-small', 'x-small', 'small', 'medium', 'large', 'x-large', 'xx-large'.
     plt.xlabel("k", fontsize=14)
     plt.ylabel(metric_name, fontsize=14)
     plt.ylim(0, 1)  # Fix y-axis from 0 to 1
     plt.xlim(0, 16)  # Fix y-axis from 0 to 1
     plt.yticks(np.arange(0, 1.05, 0.1))  # Set y-axis ticks from 0 to 1 in steps of 0.5 print("•")
-    plt.legend(handles=handles, labels=labels, loc=legend_location)
+    plt.legend(handles=handles, labels=labels, loc=legend_location, fontsize='x-small')
     plt.grid(True)
     if save_as:
         plt.savefig(f"{save_as}.pdf", format="pdf")
