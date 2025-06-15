@@ -1,10 +1,11 @@
 # Paths and directories for training and testing data
 data:
   dataset_type: StandardImageDataset    # Specify the dataset type (e.g., terumo, etc.)
-  train_dir: datasets/final/skin-cancer-splitted/train
-  test_dir: datasets/final/skin-cancer-splitted/test
-  class_mapping: {akiec: 0, bcc: 1, bkl: 2, df: 3, mel: 4, nv: 5, vasc: 6}
-  batch_size: 128 # Batch size for few-shot learning = 1
+  train_dir: datasets/final/glomerulo/train
+  test_dir: datasets/final/glomerulo/test
+  class_mapping: {Crescent: 0, Hypercellularity: 1, Membranous: 2, Normal: 3, Podocytopathy: 4,
+    Sclerosis: 5}
+  batch_size: 128 
   batch_size_test: 128
   num_workers: 3  # Number of workers to load the data
   suffle_train: true  # Shuffle the training data
@@ -12,19 +13,24 @@ data:
 
 # Model configuration
 model:
-  name: resnet_supcon    # Example: You can set it to resnet18, resnet34, etc.
-  model_name: resnet18
-  experiment_name: resnet_supcon_skin-cancer-splitted             # Name of the experiment
+  name: autoencoder_resnet    # Example: You can set it to resnet18, resnet34, etc.
+  model_name: resnet50
+  freeze_params: true  # Freeze the parameters of backbone model 
+  encoder_dim: 2048  # Dimension of the encoder output.
+  decoder_channels: 2048 #  Number of channels in the decoder output
+  decoder_h: 8 # Height of the decoder output feature map.
+  decoder_w: 8 # Width of the decoder output feature map.
+  experiment_name: autoencoder_resnet_glomerulo             # Name of the experiment
   pretrained: true  # Use pre-trained weights
   num_classes: 6  # Number of classes in the dataset
   load_checkpoint: false  # Load a pre-trained model checkpoint
   checkpoint_path: ''  # Path to the model checkpoint
-  hidden_dim: 512  # Hidden dimension for FSL encoder
-  out_dim: 128  # Embedding dimension for FSL encoder
+  hidden_dim: 2048  # Hidden dimension for FSL encoder
+  out_dim: 1024  # Embedding dimension for FSL encoder
 
 # Loss function configuration
 loss:
-  name: "supervised_contrastive"  # Specify the loss function (cross_entropy, etc.)
+  name: "mse"  # Specify the loss function (cross_entropy, etc.)
 
 # Optimizer configuration
 optimizer:
@@ -34,8 +40,8 @@ optimizer:
 
 # Training configuration
 training:
-  pipeline: "supervised_constrastive_leaning"  # The pipeline to run (e.g., train, finetune, etc.)
-  epochs: 100  # Number of epochs to train
+  pipeline: "train_autoencoder"  # The pipeline to run (e.g., train, finetune, etc.)
+  epochs: 2  # Number of epochs to train
   lr_scheduler:
     name: "step_lr"  # Learning rate scheduler (step_lr, cosine_annealing, etc.)
     step_size: 10  # Step size for scheduler (for step_lr)
@@ -44,7 +50,7 @@ training:
 # Transformation configuration for image preprocessing
 transform:
   train:
-    random_crop: [224, 224]  # Resize images to 224x224
+    resize: [224, 224]  # Resize images to 224x224
     horizontal_flip: true  # Disable random horizontal flip for testing
     color_jitter:
       brightness: 0.4  # Brightness factor
@@ -101,7 +107,7 @@ metric_logging:
   tool: txt    # Tool to log metrics (txt, csv, mlflow, etc.)
 # Output configuration
 output:
-  results_dir: ./local_experiments/supcon/skin-cancer-splitted    # Directory to save results
+  results_dir: ./local_experiments/autoencoder/glomerulo    # Directory to save results
 
 
 

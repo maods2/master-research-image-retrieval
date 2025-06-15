@@ -189,6 +189,23 @@ train-triplet:
 	python3 src/main.py --config configs/skin-cancer-splitted/triplet/default_train_config.yaml --pipeline train
 
 # ============================
+# Autoencoder Learning
+# ============================
+train-autoencoder-glomerulo:
+	python3 src/main.py --config configs/glomerulo/autoencoder/default_train_config.yaml --pipeline train
+	
+train-autoencoder-ovarian-cancer:
+	python3 src/main.py --config configs/ovarian-cancer-splitted/autoencoder/default_train_config.yaml --pipeline train
+
+train-autoencoder-skin-cancer:
+	python3 src/main.py --config configs/skin-cancer-splitted/autoencoder/default_train_config.yaml --pipeline train
+
+train-autoencoder:
+	make train-autoencoder-glomerulo
+	make train-autoencoder-ovarian-cancer
+	make train-autoencoder-skin-cancer
+
+# ============================
 # Download Datasets
 # ============================
 download-datasets:
