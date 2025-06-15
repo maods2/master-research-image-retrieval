@@ -1,7 +1,6 @@
 # Paths and directories for training and testing data
 data:
   dataset_type: StandardImageDataset    # Specify the dataset type (e.g., terumo, etc.)
-  dataset_type: ContrastiveDataset    # Specify the dataset type (e.g., terumo, etc.)
   train_dir: datasets/final/ovarian-cancer-splitted/train
   test_dir: datasets/final/ovarian-cancer-splitted/test
   class_mapping: {Clear_Cell: 0, Endometri: 1, Mucinous: 2, Non_Cancerous: 3, Serous: 4}
@@ -15,7 +14,7 @@ data:
 model:
   name: autoencoder_resnet    # Example: You can set it to resnet18, resnet34, etc.
   model_name: resnet50
-  freeze_params: true  # Freeze the parameters of backbone model 
+  freeze_params: false  # Freeze the parameters of backbone model 
   encoder_dim: 2048  # Dimension of the encoder output.
   decoder_channels: 2048 #  Number of channels in the decoder output
   decoder_h: 8 # Height of the decoder output feature map.
@@ -40,7 +39,7 @@ optimizer:
 # Training configuration
 training:
   pipeline: "train_autoencoder"  # The pipeline to run (e.g., train, finetune, etc.)
-  epochs: 2  # Number of epochs to train
+  epochs: 100  # Number of epochs to train
   lr_scheduler:
     name: "step_lr"  # Learning rate scheduler (step_lr, cosine_annealing, etc.)
     step_size: 10  # Step size for scheduler (for step_lr)

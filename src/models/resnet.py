@@ -19,6 +19,7 @@ class ResNet18(nn.Module):
         )  # Remove the final fully connected layer
 
         if freeze_params:
+            print("Freezing ResNet18 parameters")
             for param in self.backbone.parameters():
                 param.requires_grad = False
             
@@ -37,6 +38,7 @@ class ResNet34(nn.Module):
         )  # Remove the final fully connected layer
 
         if freeze_params:
+            print("Freezing ResNet34 parameters")
             for param in self.backbone.parameters():
                 param.requires_grad = False
             
@@ -55,6 +57,7 @@ class ResNet50(nn.Module):
         )  # Remove the final fully connected layer
 
         if freeze_params:
+            print("Freezing ResNet50 parameters")
             for param in self.backbone.parameters():
                 param.requires_grad = False
             
