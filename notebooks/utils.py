@@ -232,6 +232,7 @@ def plot_metric_comparison(
             "vit_": "ViT",
             "resnet_supcon": "SupCon-ResNet50",
             "triplet_resnet_": "Triplet-ResNet50",
+            "autoencoder_resnet": "Autoencoder-ResNet50",
             "resnet": "ResNet50",
             "clip": "CLIP",
             "uni_": "UNI",
@@ -268,6 +269,7 @@ def plot_metric_comparison(
         
         'SupCon-ResNet50': {'color': '#0b4c8c', 'marker': None, 'linestyle':'--'},  # Darker blue
         'Triplet-ResNet50': {'color': '#1a75ff', 'marker': None, 'linestyle':':'},   # Lighter blue
+        'Autoencoder-ResNet50': {'color': '#ffbb78', 'marker': None, 'linestyle':'-.'},  # Light orange
         
         'ResNet': {'color': '#9467bd', 'marker': 'D'},   # Tableau purple
         }
@@ -308,7 +310,7 @@ def plot_metric_comparison(
         # Decide a qual grupo pertence
         if model_type in ['UNI', 'UNI2-h', 'Phikon', 'Phikon-v2', 'Virchow2']:
             foundation_models.append((line, label))
-        elif model_type in ['Triplet-ResNet50', 'SupCon-ResNet50']:
+        elif model_type in ['Triplet-ResNet50', 'SupCon-ResNet50', 'Autoencoder-ResNet50']:
             representation_models.append((line, label))
         else:
             pretrained_backbones.append((line, label))
