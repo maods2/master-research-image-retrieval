@@ -101,7 +101,7 @@ def load_checkpoint(filepath, model, optimizer=None, scheduler=None):
     }
 
 
-def load_full_model(model_name: str, save_dir: str, map_location=None):
+def load_full_model(model_name: str, save_dir: str, map_location=None, artifact_dir=None):
     """
     Loads a previously saved model using torch.save.
 
@@ -113,7 +113,9 @@ def load_full_model(model_name: str, save_dir: str, map_location=None):
     Returns:
         model: Loaded PyTorch model
     """
-    load_path = os.path.join(f'./assets/{model_name}', f'{model_name}.pt')
+    
+    load_path =  artifact_dir if artifact_dir else os.path.join(f'./assets/{model_name}', f'{model_name}.pt')
+    
     model = torch.load(
         load_path, map_location=map_location, weights_only=False
     )
