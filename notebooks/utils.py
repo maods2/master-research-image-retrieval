@@ -269,7 +269,7 @@ def plot_metric_comparison(
         
         'SupCon-ResNet50': {'color': '#0b4c8c', 'marker': None, 'linestyle':'--'},  # Darker blue
         'Triplet-ResNet50': {'color': '#1a75ff', 'marker': None, 'linestyle':':'},   # Lighter blue
-        'Autoencoder-ResNet50': {'color': '#ffbb78', 'marker': None, 'linestyle':'-.'},  # Light orange
+        'Autoencoder-ResNet50': {'color': "#471be8", 'marker': None, 'linestyle':'-.'},  # Light orange
         
         'ResNet': {'color': '#9467bd', 'marker': 'D'},   # Tableau purple
         }
