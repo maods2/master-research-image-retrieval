@@ -205,6 +205,16 @@ train-autoencoder:
 	make train-autoencoder-ovarian-cancer
 	make train-autoencoder-skin-cancer
 
+
+
+# ============================
+# Retrival embeddings calculation best models
+# ============================
+retrival-best-models:
+	python3 src/main.py --config configs/glomerulo/retr_fsl_train_test/best_model_test_uni_fsl_config.yaml --pipeline test
+	python3 src/main.py --config configs/skin-cancer-splitted/retr_fsl_train_test/best_model_test_phikon-v2_fsl_config.yaml --pipeline test
+	python3 src/main.py --config configs/ovarian-cancer-splitted/retr_fsl_train_test/best_model_test_UNI2-h_fsl_config.yaml --pipeline test
+
 # ============================
 # Download Datasets
 # ============================

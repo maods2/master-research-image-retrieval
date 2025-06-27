@@ -45,12 +45,13 @@ if __name__ == '__main__':
     # local_dir = "./assets/ckpts/vit_large_patch16_224.dinov2.uni_mass100k/"
     # os.makedirs(local_dir, exist_ok=True)  # create directory if it does not exist
     # hf_hub_download("MahmoodLab/UNI", filename="pytorch_model.bin", local_dir=local_dir, force_download=True)
-    model = UNI()
+    model = UNI('UNI2-h')
     model = model.to('cuda')
     model.eval()
     with torch.no_grad():
         # Dummy input tensor
         x = torch.randn(32, 3, 224, 224).to('cuda')
         output = model(x)
-        print(output.shape)
-        print(output)
+        print(model)
+        # print(output.shape)
+        # print(output)

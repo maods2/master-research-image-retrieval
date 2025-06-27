@@ -36,3 +36,11 @@ class Phikon(nn.Module):
     def forward(self, x):
         x = self.backbone(x)
         return x.last_hidden_state[:, 0, :]
+
+
+if __name__ == '__main__':
+    model = Phikon('phikon')
+    x = torch.randn(1, 3, 224, 224)
+    output = model(x)
+    print(output.shape) 
+    

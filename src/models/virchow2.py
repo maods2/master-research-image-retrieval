@@ -60,7 +60,7 @@ if __name__ == '__main__':
     model.eval()
     with torch.no_grad():
         # Dummy input tensor
-        x = torch.randn(32, 3, 224, 224).to('cuda')
+        x = torch.randn(1, 3, 224, 224).to('cuda')
         output = model(x)
         print(output.shape)
         print(output)
