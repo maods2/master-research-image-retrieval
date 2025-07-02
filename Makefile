@@ -210,10 +210,17 @@ train-autoencoder:
 # ============================
 # Retrival embeddings calculation best models
 # ============================
-retrival-best-models:
+retrival-best-models-fsl:
 	python3 src/main.py --config configs/glomerulo/retr_fsl_train_test/best_model_test_uni_fsl_config.yaml --pipeline test
 	python3 src/main.py --config configs/skin-cancer-splitted/retr_fsl_train_test/best_model_test_phikon-v2_fsl_config.yaml --pipeline test
 	python3 src/main.py --config configs/ovarian-cancer-splitted/retr_fsl_train_test/best_model_test_UNI2-h_fsl_config.yaml --pipeline test
+
+retrival-best-models-pt:
+	python3 src/main.py --config configs/glomerulo/retr_test_backone/uni_config.yaml --pipeline test
+	python3 src/main.py --config configs/skin-cancer-splitted/retr_test_backone/phikon-v2_config.yaml --pipeline test
+	python3 src/main.py --config configs/ovarian-cancer-splitted/retr_test_backone/UNI2-h_config.yaml --pipeline test
+
+
 
 # ============================
 # Download Datasets

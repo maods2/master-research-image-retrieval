@@ -677,43 +677,55 @@ def permutation_test(model1, model2, confidence=95, n_permutations=10000, seed=4
     }
 
 
-def plot_permutation_test_distribution(result, model, save_as=None):
+def plot_permutation_test_distribution(
+        result, 
+        model, 
+        font_size=None,
+        label_size=None, 
+        legend_location='upper right',
+        save_as=None
+        ):
     # Estilo compatível com publicações
-    # plt.style.use('seaborn-whitegrid')
     plt.rcParams.update({
-        'font.size': 12,
-        'axes.labelsize': 13,
-        'axes.titlesize': 14,
-        'legend.fontsize': 11,
-        'xtick.labelsize': 11,
-        'ytick.labelsize': 11,
-        'pdf.fonttype': 42,  # Fonte compatível com LaTeX/IEEE
-        'ps.fonttype': 42,
+    'font.size': font_size if font_size else 12,
+    'axes.labelsize': 18,
+    'axes.titlesize': 14,
+    'legend.fontsize': font_size if font_size else 12,
+    'xtick.labelsize': 15,
+    'ytick.labelsize': 15,
+    'pdf.fonttype': 42,  # Fonte compatível com LaTeX/IEEE
+    'ps.fonttype': 42,
     })
     
     fig, ax = plt.subplots(figsize=(15, 8))
 
     # Histograma da distribuição de permutação
     ax.hist(result["permutation_distribution"], bins=50, alpha=0.8,
-            color='#1f77b4', edgecolor='black', label='Permutation Distribution')
+        color='#1f77b4', edgecolor='black')
+    # ax.hist(result["permutation_distribution"], bins=50, alpha=0.8,
+    #     color='#1f77b4', edgecolor='black', label='Permutation Distribution')
 
     # Linha da diferença observada
-    ax.axvline(result["observed_difference"], color='#d62728', linestyle='--', linewidth=2,
-               label=f'Observed Difference = {result["observed_difference"]:.4f}')
+    ax.axvline(result["observed_difference"], color='#d62728', linestyle='--', linewidth=6,
+           label=f'Observed Difference = {result["observed_difference"]:.4f}')
 
     # Linhas do intervalo de confiança
     lower, upper = result["confidence_interval"]
-    ax.axvline(lower, color='#2ca02c', linestyle='--', linewidth=2, label=f'95% Confidence Interval = [{lower:.3f}, {upper:.3f}]')
-    ax.axvline(upper, color='#2ca02c', linestyle='--', linewidth=2)
+    ax.axvline(lower, color='#2ca02c', linestyle='--', linewidth=5, label=f'95% Confidence Interval')
+    ax.axvline(upper, color='#2ca02c', linestyle='--', linewidth=5)
 
     # Descrição dos eixos e título
-    # ax.set_title("Permutation Test - Average Precision", pad=12)
-    ax.set_title(f"AP@15 (p_value = {result.get('p_value'):.2e})")
-    ax.set_xlabel(f"Difference in Mean Performance (FineTuned - Pretreined) Bootstrap Distribution for {model} models (CI = 95%)")
     ax.set_ylabel("Frequency")
 
     # Grade e legenda
-    ax.legend(frameon=True)
+    # Adiciona AP@15 (p_value = ...) na legenda
+    handles, labels = ax.get_legend_handles_labels()
+    p_value = result.get('p_value')
+    extra_label = f"AP@15 (p value = {p_value:.2e})"
+    handles = [plt.Line2D([0], [0], color='none', label=extra_label)] + handles
+    labels = [extra_label] + labels
+    labels.append(extra_label)
+    ax.legend(handles=handles, labels=labels, frameon=True, loc=legend_location)
     ax.grid(True, linestyle='--', linewidth=0.5, alpha=0.7)
 
     plt.tight_layout()
